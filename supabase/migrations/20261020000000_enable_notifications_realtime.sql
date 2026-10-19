@@ -2,7 +2,7 @@ DO $$
 DECLARE
   publication_has_all_tables BOOLEAN;
 BEGIN
-  SELECT puball
+  SELECT puballtables
   INTO publication_has_all_tables
   FROM pg_publication
   WHERE pubname = 'supabase_realtime';
