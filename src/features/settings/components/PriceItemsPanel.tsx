@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pencil, Plus, X } from 'lucide-react';
+import { FileUp, Plus, X } from 'lucide-react';
 import { Button, ConfirmDialog, Input, Select, useToast } from '../../../components/ui';
 import { getMessages } from '../../../i18n';
-import { formatRupiah, formatTanggal } from '../../../utils/format';
 import { priceItemSchema, type PriceItemFormInput } from '../schemas/settings.schema';
+import { PriceItemsImportDialog } from './PriceItemsImportDialog';
+import { PriceItemsList } from './PriceItemsList';
 import {
   createPriceItem,
   fetchPriceItems,
@@ -48,6 +49,7 @@ export function PriceItemsPanel({
   const [isSaving, setIsSaving] = useState(false);
   const [archiveTarget, setArchiveTarget] = useState<PriceItem | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -151,8 +153,6 @@ export function PriceItemsPanel({
     }
   };
 
-  const unitById = new Map(units.map((unit) => [unit.id, unit]));
-
   return (
     <section className="grid gap-4" aria-labelledby="price-items-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -160,7 +160,15 @@ export function PriceItemsPanel({
           <h3 id="price-items-title" className="text-base font-semibold text-text">{messages.priceItems}</h3>
           <p className="mt-1 text-sm text-muted">{messages.estimatingCatalogHint}</p>
         </div>
-        {editing && <Button variant="outline" size="sm" onClick={resetForm}><X className="h-4 w-4" aria-hidden="true" />{messages.cancel}</Button>}
+        <div className="flex flex-wrap gap-2">
+          {canEdit && !editing && (
+            <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)}>
+              <FileUp className="h-4 w-4" aria-hidden="true" />
+              {messages.importExcel}
+            </Button>
+          )}
+          {editing && <Button variant="outline" size="sm" onClick={resetForm}><X className="h-4 w-4" aria-hidden="true" />{messages.cancel}</Button>}
+        </div>
       </div>
 
       {canEdit && (
@@ -225,47 +233,17 @@ export function PriceItemsPanel({
       ) : items.length === 0 ? (
         <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">{messages.emptyPriceItems}</p>
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full min-w-[850px] text-left text-sm">
-            <thead className="bg-surface-2 text-xs uppercase text-muted">
-              <tr>
-                <th scope="col" className="px-3 py-3">{messages.category}</th>
-                <th scope="col" className="px-3 py-3">{messages.code}</th>
-                <th scope="col" className="px-3 py-3">{messages.name}</th>
-                <th scope="col" className="px-3 py-3">{messages.unit}</th>
-                <th scope="col" className="px-3 py-3">{messages.unitPrice}</th>
-                <th scope="col" className="px-3 py-3">{messages.region}</th>
-                <th scope="col" className="px-3 py-3">{messages.validFrom}</th>
-                <th scope="col" className="px-3 py-3">{messages.actions}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((item) => {
-                const unit = unitById.get(item.unit_id);
-                return (
-                  <tr key={item.id} className="text-text">
-                    <td className="px-3 py-3">{messages.categoryNames[item.category]}</td>
-                    <td className="px-3 py-3 font-mono">{item.code}</td>
-                    <td className="px-3 py-3">{item.name}</td>
-                    <td className="px-3 py-3">{unit ? `${unit.symbol} — ${unit.name}` : item.unit_id}</td>
-                    <td className="px-3 py-3 whitespace-nowrap">{formatRupiah(item.unit_price)}</td>
-                    <td className="px-3 py-3">{item.region || '—'}</td>
-                    <td className="px-3 py-3 whitespace-nowrap">{formatTanggal(item.valid_from)}</td>
-                    <td className="px-3 py-3">
-                      {canEdit && (
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => editItem(item)}><Pencil className="h-4 w-4" aria-hidden="true" />{messages.edit}</Button>
-                          <Button variant="ghost" size="sm" onClick={() => setArchiveTarget(item)}>{messages.archive}</Button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <PriceItemsList items={items} units={units} canEdit={canEdit} onEdit={editItem} onArchive={setArchiveTarget} />
       )}
+
+      <PriceItemsImportDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        organizationId={organizationId}
+        units={units}
+        existingItems={items}
+        onImported={load}
+      />
 
       <ConfirmDialog
         open={archiveTarget !== null}

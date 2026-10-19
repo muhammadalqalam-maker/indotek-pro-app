@@ -9,6 +9,7 @@ import type {
   PriceItemInput,
   RolePermissionOverride,
 } from '../types';
+import type { PriceItemFormInput } from '../schemas/settings.schema';
 
 function getSettingsClient() {
   const supabase = getSupabase();
@@ -89,6 +90,23 @@ export async function createPriceItem(
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function createPriceItems(
+  organizationId: string,
+  inputs: PriceItemFormInput[],
+): Promise<void> {
+  if (inputs.length === 0) return;
+  const rows: PriceItemInput[] = inputs.map((input) => ({
+    ...input,
+    region: input.region || null,
+    valid_until: input.valid_until || null,
+    source: input.source || null,
+  }));
+  const { error } = await getSettingsClient()
+    .from('price_items')
+    .insert(rows.map((input) => ({ organization_id: organizationId, ...input })));
+  if (error) throw error;
 }
 
 export async function updatePriceItem(
