@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
   Organization,
   Project,
@@ -40,13 +40,11 @@ import {
   fetchProjects,
   fetchMembers,
   fetchAuditLogs,
-  fetchNotifications,
   createProject,
   updateProject,
   deleteProject,
   addProjectAddendum,
   approveProjectAddendum,
-  markNotificationAsRead,
   resetDemoData,
   fetchAHSPResources,
   fetchAHSPTemplates,
@@ -92,6 +90,16 @@ import {
   processApproval,
 } from '../services/dataService';
 import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '../services/dataService';
+import {
+  applyNotificationRealtimeEvent,
+  subscribeToNotifications,
+  type NotificationRealtimeStatus,
+} from '../features/notifications/services/notification.service';
+import {
   acceptOrganizationInvitation,
   fetchPendingOrganizationInvitations,
   sendMemberInvitation,
@@ -110,6 +118,7 @@ import {
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import { authMessages as messages, memberMessages, organizationMessages } from '../i18n/id';
+import { getMessages } from '../i18n';
 
 export type NavigationTab =
   | 'dashboard'
@@ -203,6 +212,12 @@ interface AppContextType {
   auditLogs: AuditLog[];
   notifications: NotificationItem[];
   unreadNotifsCount: number;
+  notificationsLoading: boolean;
+  notificationsError: string;
+  notificationsRealtimeStatus: NotificationRealtimeStatus;
+  notificationsRealtimeError: string;
+  notificationEventCount: number;
+  reloadNotifications: () => Promise<void>;
   isLoading: boolean;
 
   // Fase 2 Data & Actions
@@ -267,6 +282,7 @@ interface AppContextType {
 
   // Notification Actions
   handleMarkRead: (id: string) => Promise<void>;
+  handleMarkAllRead: () => Promise<void>;
 
   // System
   reloadAllData: () => Promise<void>;
@@ -344,7 +360,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const pendingInvitationsRequestId = useRef(0);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [notificationsRealtimeStatus, setNotificationsRealtimeStatus] = useState<NotificationRealtimeStatus>('disabled');
+  const [notificationsRealtimeError, setNotificationsRealtimeError] = useState('');
+  const [notificationEventCount, setNotificationEventCount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const notificationRequestId = useRef(0);
+  const notificationRealtimeRevision = useRef(0);
+  const removedNotificationIds = useRef(new Set<string>());
+  const notificationScope = useRef('');
 
   // Fase 2 states
   const [resources, setResources] = useState<any[]>([]);
@@ -388,6 +413,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMembersError('');
     setAuditLogs([]);
     setNotifications([]);
+    setNotificationsLoading(false);
+    setNotificationsError('');
     setResources([]);
     setAhspTemplates([]);
     setActiveBoq(null);
@@ -776,7 +803,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const [
         projData,
         logData,
-        notifData,
         resData,
         ahspData,
         vnds,
@@ -802,7 +828,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ] = await Promise.all([
         fetchProjects(currentOrg.id),
         fetchAuditLogs(currentOrg.id),
-        fetchNotifications(),
         fetchAHSPResources(currentOrg.id),
         fetchAHSPTemplates(currentOrg.id),
         fetchVendors(currentOrg.id),
@@ -846,7 +871,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       setProjects(projData);
       setAuditLogs(logData);
-      setNotifications(notifData);
       setResources(resData);
       setAhspTemplates(ahspData);
       setVendors(vnds);
@@ -889,6 +913,112 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reloadAllData();
     }
   }, [currentOrg?.id, selectedProjectId]);
+
+  const reloadNotifications = useCallback(async () => {
+    const organizationId = currentOrg?.id;
+    const userId = isSupabaseLive ? authSession?.user.id : undefined;
+    const requestId = ++notificationRequestId.current;
+    if (!organizationId) {
+      setNotifications([]);
+      setNotificationsError('');
+      setNotificationsLoading(false);
+      return;
+    }
+
+    setNotificationsLoading(true);
+    setNotificationsError('');
+    const revisionAtStart = notificationRealtimeRevision.current;
+    try {
+      const result = await fetchNotifications(organizationId);
+      if (requestId !== notificationRequestId.current) return;
+      setNotifications((previous) => {
+        const merged = new Map(result.map((notification) => [notification.id, notification]));
+        if (notificationRealtimeRevision.current !== revisionAtStart) {
+          for (const notification of previous) {
+            if (
+              notification.organization_id === organizationId
+              && (!userId || notification.user_id === userId)
+            ) {
+              merged.set(notification.id, notification);
+            }
+          }
+        }
+        for (const id of removedNotificationIds.current) merged.delete(id);
+        return [...merged.values()]
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))
+          .slice(0, 50);
+      });
+    } catch (error: unknown) {
+      if (requestId === notificationRequestId.current) {
+        setNotificationsError(error instanceof Error ? error.message : getMessages().notifications.loadError);
+      }
+    } finally {
+      if (requestId === notificationRequestId.current) setNotificationsLoading(false);
+    }
+  }, [authSession?.user.id, currentOrg?.id, isSupabaseLive]);
+
+  useEffect(() => {
+    const scope = `${currentOrg?.id ?? ''}:${authSession?.user.id ?? ''}`;
+    if (scope !== notificationScope.current) {
+      notificationScope.current = scope;
+      notificationRealtimeRevision.current = 0;
+      removedNotificationIds.current.clear();
+      setNotifications([]);
+    }
+    void reloadNotifications();
+  }, [authSession?.user.id, currentOrg?.id, reloadNotifications]);
+
+  useEffect(() => {
+    const userId = authSession?.user.id;
+    const organizationId = currentOrg?.id;
+    if (!isSupabaseLive || !userId || !organizationId) {
+      setNotificationsRealtimeStatus('disabled');
+      setNotificationsRealtimeError('');
+      return;
+    }
+
+    let hasConnected = false;
+    let disconnectedAfterConnection = false;
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = subscribeToNotifications(
+        organizationId,
+        userId,
+        (event) => {
+          notificationRealtimeRevision.current += 1;
+          if (event.type === 'DELETE') {
+            removedNotificationIds.current.add(event.id);
+            setNotifications((previous) => applyNotificationRealtimeEvent(previous, event));
+            return;
+          }
+
+          removedNotificationIds.current.delete(event.notification.id);
+          setNotifications((previous) => applyNotificationRealtimeEvent(previous, event));
+          if (event.type === 'INSERT') setNotificationEventCount((count) => count + 1);
+        },
+        (status, error) => {
+          setNotificationsRealtimeStatus(status);
+          if (status === 'connected') {
+            setNotificationsRealtimeError('');
+            if (hasConnected && disconnectedAfterConnection) void reloadNotifications();
+            hasConnected = true;
+            disconnectedAfterConnection = false;
+          } else if (status === 'error' || status === 'closed') {
+            if (hasConnected) disconnectedAfterConnection = true;
+            if (status === 'error') {
+              setNotificationsRealtimeError(error || getMessages().notifications.realtimeError);
+            }
+          }
+        },
+      );
+    } catch (error: unknown) {
+      setNotificationsRealtimeStatus('error');
+      setNotificationsRealtimeError(
+        error instanceof Error ? error.message : getMessages().notifications.realtimeError,
+      );
+    }
+    return () => unsubscribe?.();
+  }, [authSession?.user.id, currentOrg?.id, isSupabaseLive, reloadNotifications]);
 
   // Module Handlers
   const handleCreateVendor = async (data: Omit<Vendor, 'id' | 'created_at'>) => {
@@ -1134,10 +1264,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleMarkRead = async (id: string) => {
-    await markNotificationAsRead(id);
+    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    await markNotificationAsRead(id, currentOrg.id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
+  };
+
+  const handleMarkAllRead = async () => {
+    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    await markAllNotificationsAsRead(currentOrg.id);
+    setNotifications((previous) => previous.map((notification) => ({ ...notification, is_read: true })));
   };
 
   const handleResetDemo = () => {
@@ -1205,6 +1342,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         auditLogs,
         notifications,
         unreadNotifsCount,
+        notificationsLoading,
+        notificationsError,
+        notificationsRealtimeStatus,
+        notificationsRealtimeError,
+        notificationEventCount,
+        reloadNotifications,
         isLoading,
         resources,
         ahspTemplates,
@@ -1257,6 +1400,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleUpdateRole,
         handleToggleMember,
         handleMarkRead,
+        handleMarkAllRead,
         reloadAllData,
         handleResetDemo,
       }}

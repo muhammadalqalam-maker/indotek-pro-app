@@ -8,7 +8,7 @@ import {
   ProjectAddendum,
   ProjectAddendumInput,
 } from '../types/database';
-import type { TablesInsert, TablesUpdate } from '../types/database';
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database';
 import {
   INITIAL_ORGANIZATION,
   INITIAL_MEMBERS,
@@ -662,18 +662,89 @@ export async function createAuditLog(log: Omit<AuditLog, 'id' | 'created_at'>): 
 // -------------------------------------------------------------
 // NOTIFICATIONS
 // -------------------------------------------------------------
-export async function fetchNotifications(): Promise<NotificationItem[]> {
-  initLocalStorage();
-  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+function mapNotification(row: Tables<'notifications'>): NotificationItem {
+  return {
+    id: row.id,
+    organization_id: row.organization_id,
+    user_id: row.user_id,
+    title: row.title,
+    message: row.message,
+    type: row.type,
+    link: row.link ?? null,
+    is_read: row.is_read,
+    created_at: row.created_at,
+  };
 }
 
-export async function markNotificationAsRead(id: string): Promise<void> {
+export async function fetchNotifications(organizationId: string): Promise<NotificationItem[]> {
+  initLocalStorage();
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memuat notifikasi.');
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id, organization_id, user_id, title, message, type, link, is_read, created_at')
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return (data ?? []).map(mapNotification);
+  }
+  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS)
+    .filter((notification) => notification.organization_id === organizationId);
+}
+
+export async function markNotificationAsRead(id: string, organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id);
+    if (error) throw error;
+    return;
+  }
   const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
-  const target = list.find((n) => n.id === id);
+  const target = list.find((notification) => notification.id === id
+    && notification.organization_id === organizationId);
   if (target) {
     target.is_read = true;
     setLocal(KEY_NOTIFS, list);
   }
+}
+
+export async function markAllNotificationsAsRead(organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .eq('is_read', false);
+    if (error) throw error;
+    return;
+  }
+  const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+  let changed = false;
+  for (const notification of list) {
+    if (notification.organization_id === organizationId && !notification.is_read) {
+      notification.is_read = true;
+      changed = true;
+    }
+  }
+  if (changed) setLocal(KEY_NOTIFS, list);
 }
 
 // -------------------------------------------------------------

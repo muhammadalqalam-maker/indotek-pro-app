@@ -117,10 +117,12 @@ export interface AuditLog {
 
 export interface NotificationItem {
   id: string;
+  organization_id: string;
+  user_id: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'urgent' | 'success';
-  link?: string;
+  type: string;
+  link: string | null;
   is_read: boolean;
   created_at: string;
 }
