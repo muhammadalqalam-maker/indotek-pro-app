@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useRef 
 import {
   Organization,
   Project,
+  ProjectAddendum,
+  ProjectAddendumInput,
   OrganizationMember,
   AuditLog,
   NotificationItem,
@@ -43,6 +45,7 @@ import {
   updateProject,
   deleteProject,
   addProjectAddendum,
+  approveProjectAddendum,
   markNotificationAsRead,
   resetDemoData,
   fetchAHSPResources,
@@ -253,7 +256,8 @@ interface AppContextType {
   handleCreateProject: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<Project>;
   handleUpdateProject: (id: string, updates: Partial<Project>) => Promise<Project>;
   handleDeleteProject: (id: string) => Promise<void>;
-  handleAddAddendum: (projectId: string, addendum: any) => Promise<any>;
+  handleAddAddendum: (projectId: string, addendum: ProjectAddendumInput) => Promise<ProjectAddendum>;
+  handleApproveAddendum: (projectId: string, addendumId: string) => Promise<ProjectAddendum>;
 
   // Member Actions
   handleInviteMember: (data: MemberInvitationInput) => Promise<MemberInvitationSendResult>;
@@ -1071,10 +1075,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const handleAddAddendum = async (projectId: string, addendumData: any) => {
-    const created = await addProjectAddendum(projectId, addendumData);
-    await reloadAllData();
+  const handleAddAddendum = async (projectId: string, addendumData: ProjectAddendumInput) => {
+    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
+    const created = await addProjectAddendum(projectId, currentOrg.id, addendumData);
+    setProjects((previous) => previous.map((project) => (
+      project.id === projectId
+        ? { ...project, addendums: [...(project.addendums ?? []), created] }
+        : project
+    )));
     return created;
+  };
+
+  const handleApproveAddendum = async (projectId: string, addendumId: string) => {
+    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
+    const approved = await approveProjectAddendum(projectId, currentOrg.id, addendumId);
+    setProjects((previous) => previous.map((project) => (
+      project.id === projectId
+        ? {
+          ...project,
+          addendums: (project.addendums ?? []).map((addendum) => (
+            addendum.id === addendumId ? approved : addendum
+          )),
+        }
+        : project
+    )));
+    return approved;
   };
 
   // Member handlers
@@ -1219,6 +1244,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleUpdateProject,
         handleDeleteProject,
         handleAddAddendum,
+        handleApproveAddendum,
         handleInviteMember,
         handleUpdateRole,
         handleToggleMember,

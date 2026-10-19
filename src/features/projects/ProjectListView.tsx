@@ -22,6 +22,7 @@ import { useApp } from '../../context/AppContext';
 import { useCan } from '../../hooks/useCan';
 import { getMessages } from '../../i18n';
 import { formatRupiah, formatTanggal } from '../../utils/format';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { projectCategories, projectStatuses } from './schemas/projectSchema';
 import { projectStatusLabels, projectStatusVariants } from './projectStatus';
 
@@ -229,7 +230,7 @@ export function ProjectListView({
                   <dl className="grid grid-cols-2 gap-3 rounded-md bg-surface-2 p-3">
                     <div>
                       <dt className="text-xs text-muted">{messages.contractValue}</dt>
-                      <dd className="mt-1 text-sm font-semibold tabular-nums text-text">{formatRupiah(project.contract_value)}</dd>
+                      <dd className="mt-1 text-sm font-semibold tabular-nums text-text">{formatRupiah(calculateEffectiveProjectContractValue(project))}</dd>
                     </div>
                     <div>
                       <dt className="text-xs text-muted">{messages.retention}</dt>

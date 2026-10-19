@@ -6,6 +6,7 @@ import {
   AuditLog,
   NotificationItem,
   ProjectAddendum,
+  ProjectAddendumInput,
 } from '../types/database';
 import type { TablesInsert, TablesUpdate } from '../types/database';
 import {
@@ -445,39 +446,119 @@ export async function deleteProject(id: string, organizationId: string): Promise
 
 export async function addProjectAddendum(
   projectId: string,
-  addendum: Omit<ProjectAddendum, 'id' | 'created_at' | 'project_id'>
+  organizationId: string,
+  addendum: ProjectAddendumInput,
 ): Promise<ProjectAddendum> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Sesi pengguna tidak tersedia.');
+
+    const { data, error } = await supabase
+      .from('project_addendums')
+      .insert({
+        ...addendum,
+        organization_id: organizationId,
+        project_id: projectId,
+        approved_at: null,
+        approved_by: null,
+        created_by: authData.user.id,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data as ProjectAddendum;
+  }
+
+  initLocalStorage();
   const newAdd: ProjectAddendum = {
     ...addendum,
     id: `add-${Date.now()}`,
+    organization_id: organizationId,
     project_id: projectId,
+    approved_at: null,
+    approved_by: null,
+    created_by: null,
     created_at: new Date().toISOString(),
   };
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === projectId);
+  const index = list.findIndex((p) => p.id === projectId && p.organization_id === organizationId);
   if (index !== -1) {
     if (!list[index].addendums) list[index].addendums = [];
     list[index].addendums!.push(newAdd);
-    list[index].contract_value += newAdd.amount;
     list[index].updated_at = new Date().toISOString();
     setLocal(KEY_PROJECTS, list);
 
     await createAuditLog({
-      organization_id: addendum.organization_id,
+      organization_id: organizationId,
       project_id: projectId,
       project_name: list[index].name,
-      user_name: addendum.approved_by_name || 'Admin',
+      user_name: 'Pengguna demo',
       user_role: 'owner',
-      action: 'APPROVE_ADDENDUM',
+      action: 'CREATE_ADDENDUM',
       entity_type: 'addendum',
       entity_id: newAdd.addendum_number,
-      details: `Menambahkan amandemen kontrak ${newAdd.title} senilai Rp ${newAdd.amount.toLocaleString('id-ID')}`,
+      details: `Membuat addendum ${newAdd.addendum_number}; menunggu persetujuan.`,
     });
 
     return newAdd;
   }
   throw new Error('Proyek tidak ditemukan');
+}
+
+export async function approveProjectAddendum(
+  projectId: string,
+  organizationId: string,
+  addendumId: string,
+): Promise<ProjectAddendum> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Sesi pengguna tidak tersedia.');
+
+    const { data, error } = await supabase
+      .from('project_addendums')
+      .update({
+        approved_by: authData.user.id,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', addendumId)
+      .eq('project_id', projectId)
+      .eq('organization_id', organizationId)
+      .is('approved_at', null)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as ProjectAddendum;
+  }
+
+  initLocalStorage();
+  const projects = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
+  const project = projects.find((entry) => (
+    entry.id === projectId && entry.organization_id === organizationId
+  ));
+  const addendum = project?.addendums?.find((entry) => entry.id === addendumId);
+  if (!project || !addendum) throw new Error('Addendum proyek tidak ditemukan.');
+  if (addendum.approved_at) throw new Error('Addendum ini sudah disetujui.');
+
+  addendum.approved_at = new Date().toISOString();
+  project.updated_at = new Date().toISOString();
+  setLocal(KEY_PROJECTS, projects);
+  await createAuditLog({
+    organization_id: organizationId,
+    project_id: projectId,
+    project_name: project.name,
+    user_name: 'Pengguna demo',
+    user_role: 'owner',
+    action: 'APPROVE_ADDENDUM',
+    entity_type: 'addendum',
+    entity_id: addendum.addendum_number,
+    details: `Menyetujui addendum ${addendum.addendum_number}.`,
+  });
+  return addendum;
 }
 
 // -------------------------------------------------------------

@@ -6,6 +6,7 @@ import {
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardList,
+  FilePlus2,
   FileText,
   FolderOpen,
   Pencil,
@@ -31,6 +32,7 @@ import {
 import { getMessages } from '../../i18n';
 import { projectStatusLabels, projectStatusVariants } from './projectStatus';
 import { ProjectDocumentsTab } from './components/ProjectDocumentsTab';
+import { ProjectAddendumsTab } from './components/ProjectAddendumsTab';
 import { ProjectPlaceholderTab } from './components/ProjectPlaceholderTab';
 import { ProjectSummaryTab } from './components/ProjectSummaryTab';
 import { ProjectTeamTab } from './components/ProjectTeamTab';
@@ -39,6 +41,7 @@ const messages = getMessages('id').projects;
 
 const projectDetailTabs = [
   { value: 'summary', label: messages.detailTabs.summary, icon: BriefcaseBusiness },
+  { value: 'addendums', label: messages.detailTabs.addendums, icon: FilePlus2 },
   { value: 'schedule', label: messages.detailTabs.schedule, icon: CalendarDays },
   { value: 'boq', label: messages.detailTabs.boq, icon: ClipboardList },
   { value: 'progress', label: messages.detailTabs.progress, icon: ChartNoAxesCombined },
@@ -134,6 +137,9 @@ export const ProjectDetailView: React.FC<{
 
         <TabsContent value="summary">
           <ProjectSummaryTab project={project} />
+        </TabsContent>
+        <TabsContent value="addendums">
+          <ProjectAddendumsTab project={project} />
         </TabsContent>
         <TabsContent value="schedule">
           <ProjectPlaceholderTab

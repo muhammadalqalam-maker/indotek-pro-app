@@ -163,6 +163,7 @@ export const INITIAL_PROJECTS: Project[] = [
         description: 'Perubahan kapasitas daya listrik gedung dari 1.500 kVA menjadi 2.000 kVA sesuai permintaan tenant utama.',
         amount: 850000000,
         time_extension_days: 14,
+        approved_at: '2026-05-14T10:00:00Z',
         approved_by_name: 'Ir. Bambang Suryono, MT',
         created_at: '2026-05-14T10:00:00Z',
       },

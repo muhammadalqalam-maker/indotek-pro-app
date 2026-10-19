@@ -25,6 +25,7 @@ import {
   dashboardProjectStatusLabels,
   dashboardProjectStatusVariants,
 } from '../dashboardProjectStatus';
+import { calculateEffectiveProjectContractValue } from '../../../utils/projectCalculations';
 
 const messages = getMessages('id').dashboard;
 
@@ -46,7 +47,7 @@ export function DashboardInsights({
   const budgetChartData = useMemo(
     () => projects.map((project) => ({
       name: project.code,
-      contractValue: project.contract_value / 1_000_000,
+      contractValue: calculateEffectiveProjectContractValue(project) / 1_000_000,
       realizedCost: project.realized_cost / 1_000_000,
     })),
     [projects],

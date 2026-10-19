@@ -56,9 +56,17 @@ export interface ProjectAddendum {
   description?: string;
   amount: number;
   time_extension_days: number;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  created_by?: string | null;
   approved_by_name?: string;
   created_at: string;
 }
+
+export type ProjectAddendumInput = Pick<
+  ProjectAddendum,
+  'addendum_number' | 'title' | 'description' | 'amount' | 'time_extension_days'
+>;
 
 export interface Project {
   id: string;

@@ -6,6 +6,7 @@ import {
   dashboardProjectStatusLabels,
   dashboardProjectStatusVariants,
 } from '../dashboardProjectStatus';
+import { calculateEffectiveProjectContractValue } from '../../../utils/projectCalculations';
 
 export function DashboardProjectList({
   title,
@@ -61,7 +62,7 @@ export function DashboardProjectList({
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted">
-                    {formatRupiah(project.contract_value)}
+                    {formatRupiah(calculateEffectiveProjectContractValue(project))}
                     <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                   </span>
                 </button>

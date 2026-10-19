@@ -4,6 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { getMessages } from '../../../i18n';
 import type { Project } from '../../../types/database';
 import { formatPersen, formatRupiah, formatTanggal } from '../../../utils/format';
+import {
+  calculateApprovedTimeExtensionDays,
+  calculateEffectiveContractEndDate,
+  calculateEffectiveProjectContractValue,
+} from '../../../utils/projectCalculations';
 
 const messages = getMessages('id').projects;
 
@@ -25,9 +30,13 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
     .join(', ');
   const actualProgress = Number.isFinite(project.actual_progress) ? project.actual_progress : 0;
   const plannedProgress = Number.isFinite(project.planned_progress) ? project.planned_progress : 0;
+  const addendums = project.addendums ?? [];
+  const approvedExtensionDays = calculateApprovedTimeExtensionDays(addendums);
+  const effectiveEndDate = calculateEffectiveContractEndDate(project.end_date, approvedExtensionDays);
+  const effectiveContractValue = calculateEffectiveProjectContractValue(project);
 
   const metrics = [
-    { label: details.contractValue, value: formatRupiah(project.contract_value) },
+    { label: details.effectiveContractValue, value: formatRupiah(effectiveContractValue) },
     { label: details.realizedCost, value: formatRupiah(project.realized_cost) },
     { label: details.actualProgress, value: formatPersen(actualProgress) },
   ];
@@ -54,6 +63,8 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
             <DetailField label={details.client}>{project.client_name}</DetailField>
             <DetailField label={details.clientContact}>{project.client_contact}</DetailField>
             <DetailField label={details.contractNumber}>{project.contract_number}</DetailField>
+            <DetailField label={details.baseContractValue}>{formatRupiah(project.contract_value)}</DetailField>
+            <DetailField label={details.effectiveContractValue}>{formatRupiah(effectiveContractValue)}</DetailField>
             <DetailField label={details.category}>{messages.categoryLabels[project.category]}</DetailField>
             <DetailField label={details.location}>
               <span className="inline-flex items-start gap-2">
@@ -64,8 +75,13 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
             <DetailField label={details.schedule}>
               <span className="inline-flex items-start gap-2">
                 <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-                {messages.projectDateRange(formatTanggal(project.start_date), formatTanggal(project.end_date))}
+                {messages.projectDateRange(formatTanggal(project.start_date), formatTanggal(effectiveEndDate))}
               </span>
+              {approvedExtensionDays > 0 && (
+                <span className="mt-1 block text-xs text-muted">
+                  {details.approvedTimeExtension}: {approvedExtensionDays} {messages.days}
+                </span>
+              )}
             </DetailField>
             <DetailField label={details.maintenance}>
               {messages.maintenancePeriod(project.maintenance_days)}

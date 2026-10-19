@@ -1,4 +1,5 @@
 import type { Project } from '../../types/database';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 
 export type DashboardPeriod = 'all' | 'this_year' | 'last_year' | 'custom';
 
@@ -78,7 +79,9 @@ export function calculateDashboardMetrics(projects: Project[]): DashboardMetrics
     ({ status }) => status === 'active' || status === 'delayed',
   );
   const contractValue = projects.reduce(
-    (total, project) => total + (Number.isFinite(project.contract_value) ? project.contract_value : 0),
+    (total, project) => total + (
+      Number.isFinite(project.contract_value) ? calculateEffectiveProjectContractValue(project) : 0
+    ),
     0,
   );
   const realizedCost = projects.reduce(

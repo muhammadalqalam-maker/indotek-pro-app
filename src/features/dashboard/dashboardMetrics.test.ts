@@ -125,4 +125,37 @@ describe('calculateDashboardMetrics', () => {
     assert.equal(metrics.budgetUsagePercent, 0);
     assert.equal(metrics.averageActualProgress, 0);
   });
+
+  it('includes only approved addendum values in contract totals', () => {
+    const projects = [
+      makeProject({
+        addendums: [
+          {
+            id: 'add-approved',
+            organization_id: 'org-1',
+            project_id: 'project-1',
+            addendum_number: 'ADD-01',
+            title: 'Perubahan disetujui',
+            amount: 250_000,
+            time_extension_days: 0,
+            approved_at: '2026-10-18T09:00:00Z',
+            created_at: '2026-10-18T08:00:00Z',
+          },
+          {
+            id: 'add-pending',
+            organization_id: 'org-1',
+            project_id: 'project-1',
+            addendum_number: 'ADD-02',
+            title: 'Perubahan menunggu',
+            amount: 900_000,
+            time_extension_days: 0,
+            approved_at: null,
+            created_at: '2026-10-18T10:00:00Z',
+          },
+        ],
+      }),
+    ];
+
+    assert.equal(calculateDashboardMetrics(projects).contractValue, 1_250_000);
+  });
 });

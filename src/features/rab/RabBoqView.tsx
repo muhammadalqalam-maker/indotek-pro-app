@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatPercent } from '../../utils/format';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { calculateItemTotal, calculateItemWeight, calculateBOQSummary } from '../../utils/constructionCalculations';
 import { ProjectBOQItem } from '../../types/database';
 import {
@@ -96,7 +97,7 @@ export const RabBoqView: React.FC = () => {
     const volNum = parseFloat(volume) || 0;
     const priceNum = parseFloat(unitPrice) || 0;
     const totalPrice = calculateItemTotal(volNum, priceNum);
-    const totalProj = activeProject.contract_value || 48500000000;
+    const totalProj = calculateEffectiveProjectContractValue(activeProject) || 48500000000;
     const weight = calculateItemWeight(totalPrice, totalProj);
 
     await handleAddBOQItem({
