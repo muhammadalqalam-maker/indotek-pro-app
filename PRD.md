@@ -228,3 +228,4 @@ Setiap modul punya prioritas: **P0** = wajib untuk go-live internal, **P1** = pe
 | — | Versi awal | — |
 | 2026-10-19 | Implementasi Dashboard v1 dibatasi ke ringkasan dari data proyek tersimpan. Filter periode mencocokkan rentang jadwal proyek; progres dan biaya adalah snapshot terkini. KPI tugas dan approval ditunda sampai sumber data persisten tersedia; perubahan cakupan disetujui pengguna. | Pengguna |
 | 2026-10-19 | Implementasi daftar dan CRUD proyek mencakup validasi form, pencarian/filter, penanggung jawab dari anggota organisasi, edit, soft-delete, serta tautan peta. Tidak ada migrasi; perbedaan izin policy UPDATE dan DELETE untuk soft-delete dicatat untuk peninjauan terpisah. | Pengguna |
+| 2026-10-19 | Halaman fitur dimuat sesuai kebutuhan dan vendor utama dipisah agar tidak ada chunk JavaScript produksi di atas 500 kB; tidak mengubah perilaku atau cakupan fitur. | Pengguna |
