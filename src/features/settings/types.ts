@@ -1,34 +1,9 @@
 import type { Json, Tables } from '../../types/database';
 import type { AppAction, AppModule, UserRole } from '../../utils/permissions';
 
-export type MeasurementUnit = {
-  id: string;
-  organization_id: string;
-  created_by: string | null;
-  code: string;
-  name: string;
-  symbol: string;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
-};
-
-export type PriceItem = {
-  id: string;
-  organization_id: string;
-  unit_id: string;
+export type MeasurementUnit = Tables<'measurement_units'>;
+export type PriceItem = Omit<Tables<'price_items'>, 'category'> & {
   category: 'bahan' | 'upah' | 'alat';
-  code: string;
-  name: string;
-  unit_price: number;
-  region: string | null;
-  valid_from: string;
-  valid_until: string | null;
-  source: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
 };
 
 export type PriceItemInput = Omit<

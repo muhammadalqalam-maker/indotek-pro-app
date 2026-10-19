@@ -1,6 +1,5 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabase } from '../../../lib/supabase';
-import type { Database, Tables } from '../../../types/database';
+import type { Tables } from '../../../types/database';
 import type { AppAction, AppModule, UserRole } from '../../../utils/permissions';
 import type {
   DocumentSequence,
@@ -11,33 +10,10 @@ import type {
   RolePermissionOverride,
 } from '../types';
 
-type CatalogTable<T> = {
-  Row: T;
-  Insert: Omit<T, 'id' | 'created_by' | 'created_at' | 'updated_at' | 'deleted_at'> & {
-    id?: string;
-    created_by?: string | null;
-    created_at?: string;
-    updated_at?: string;
-    deleted_at?: string | null;
-  };
-  Update: Partial<T>;
-  Relationships: [];
-};
-
-type SettingsDatabase = Omit<Database, 'public'> & {
-  public: Omit<Database['public'], 'Tables'> & {
-    Tables: Database['public']['Tables'] & {
-      measurement_units: CatalogTable<MeasurementUnit>;
-      price_items: CatalogTable<PriceItem>;
-    };
-  };
-};
-
-function getSettingsClient(): SupabaseClient<SettingsDatabase> {
+function getSettingsClient() {
   const supabase = getSupabase();
   if (!supabase) throw new Error('Koneksi Supabase belum tersedia.');
-  // Local schema types are extended here until the approved migration is applied and types are regenerated.
-  return supabase as SupabaseClient<SettingsDatabase>;
+  return supabase;
 }
 
 export async function fetchMeasurementUnits(organizationId: string): Promise<MeasurementUnit[]> {
@@ -155,7 +131,7 @@ export async function fetchDocumentSequences(
     .eq('year', year)
     .order('entity_type');
   if (error) throw error;
-  return (data ?? []) as DocumentSequence[];
+  return data ?? [];
 }
 
 export async function saveDocumentSequencePrefix(
@@ -195,7 +171,7 @@ export async function saveDocumentSequencePrefix(
       .select('id, organization_id, entity_type, year, prefix, last_value, updated_at')
       .single();
   if (result.error) throw result.error;
-  return result.data as DocumentSequence;
+  return result.data;
 }
 
 export async function fetchOrganizationRolePermissions(

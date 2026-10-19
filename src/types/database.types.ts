@@ -431,6 +431,57 @@ export type Database = {
           },
         ]
       }
+      measurement_units: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          organization_id: string
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_units_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "measurement_units_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -478,6 +529,89 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string
+          department: string | null
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          invited_by: string
+          job_title: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by: string
+          department?: string | null
+          email: string
+          expires_at?: string
+          full_name: string
+          id?: string
+          invited_by: string
+          job_title?: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string
+          department?: string | null
+          email?: string
+          expires_at?: string
+          full_name?: string
+          id?: string
+          invited_by?: string
+          job_title?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["user_role_type"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invitations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -656,6 +790,82 @@ export type Database = {
           price_idr?: number
         }
         Relationships: []
+      }
+      price_items: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          name: string
+          organization_id: string
+          region: string | null
+          source: string | null
+          unit_id: string
+          unit_price: number
+          updated_at: string
+          valid_from: string
+          valid_until: string | null
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name: string
+          organization_id: string
+          region?: string | null
+          source?: string | null
+          unit_id: string
+          unit_price: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          organization_id?: string
+          region?: string | null
+          source?: string | null
+          unit_id?: string
+          unit_price?: number
+          updated_at?: string
+          valid_from?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_items_org_unit_fkey"
+            columns: ["organization_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "price_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1246,6 +1456,62 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_organization_invitation: {
+        Args: { p_email: string; p_invitation_id: string; p_user_id: string }
+        Returns: {
+          created_at: string
+          department: string | null
+          id: string
+          invited_by: string | null
+          is_active: boolean
+          job_title: string | null
+          joined_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_members"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_organization_invitation: {
+        Args: {
+          p_department: string
+          p_email: string
+          p_full_name: string
+          p_invited_by: string
+          p_job_title: string
+          p_organization_id: string
+          p_role: Database["public"]["Enums"]["user_role_type"]
+        }
+        Returns: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string
+          department: string | null
+          email: string
+          expires_at: string
+          full_name: string
+          id: string
+          invited_by: string
+          job_title: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_organization_with_owner: {
         Args: { org_data?: Json }
         Returns: {
@@ -1299,6 +1565,36 @@ export type Database = {
         Returns: boolean
       }
       is_org_member: { Args: { target_org_id: string }; Returns: boolean }
+      manage_organization_member_access: {
+        Args: {
+          p_is_active: boolean
+          p_member_id: string
+          p_role: Database["public"]["Enums"]["user_role_type"]
+        }
+        Returns: {
+          created_at: string
+          department: string | null
+          id: string
+          invited_by: string | null
+          is_active: boolean
+          job_title: string | null
+          joined_at: string
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_members"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_organization_invitation_delivery_failed: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       project_status_type:
