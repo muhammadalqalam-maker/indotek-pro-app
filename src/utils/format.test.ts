@@ -73,8 +73,10 @@ describe('locale dictionaries', () => {
   it('provides Indonesian messages and an English-ready catalog', () => {
     assert.equal(getMessages('id').shell.home, 'Beranda');
     assert.equal(getMessages('id').shell.allProjects(3), 'Semua Proyek (3)');
+    assert.match(getMessages('id').dashboard.scopeNotice, /Tugas dan approval/);
     assert.equal(getMessages('en').common.retry, 'Try again');
     assert.equal(getMessages('en').shell.allProjects(3), 'All Projects (3)');
+    assert.match(getMessages('en').dashboard.scopeNotice, /Tasks and approvals/);
     assert.equal(getMessages().common.save, 'Simpan');
   });
 });

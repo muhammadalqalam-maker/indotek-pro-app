@@ -226,3 +226,4 @@ Setiap modul punya prioritas: **P0** = wajib untuk go-live internal, **P1** = pe
 | Tanggal | Perubahan | Oleh |
 |---|---|---|
 | — | Versi awal | — |
+| 2026-10-19 | Implementasi Dashboard v1 dibatasi ke ringkasan dari data proyek tersimpan. Filter periode mencocokkan rentang jadwal proyek; progres dan biaya adalah snapshot terkini. KPI tugas dan approval ditunda sampai sumber data persisten tersedia; perubahan cakupan disetujui pengguna. | Pengguna |
