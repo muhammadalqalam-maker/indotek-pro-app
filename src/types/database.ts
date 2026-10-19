@@ -83,6 +83,8 @@ export interface Project {
   planned_progress: number;
   actual_progress: number;
   status: ProjectStatus;
+  project_manager_id?: string | null;
+  site_manager_id?: string | null;
   project_manager_name?: string;
   site_manager_name?: string;
   notes?: string;
@@ -705,4 +707,3 @@ export interface ApprovalItem {
   approval_level: string; // e.g. "Level 1 (Site Manager)", "Level 2 (Direktur)"
   comments?: string;
 }
-

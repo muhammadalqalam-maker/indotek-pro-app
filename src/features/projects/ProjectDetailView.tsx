@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useToast } from '../../components/ui';
+import { getMessages } from '../../i18n';
 import { Can } from '../../components/shared/Can';
 import { Project, ProjectAddendum } from '../../types/database';
 import { formatRupiah, formatPercent, formatDateIndo, parseRupiah } from '../../utils/format';
@@ -30,12 +32,15 @@ import {
   FileCheck2,
 } from 'lucide-react';
 
+const projectMessages = getMessages('id').projects;
+
 export const ProjectDetailView: React.FC<{
   projectId: string;
   onEdit: (project: Project) => void;
   onBack: () => void;
 }> = ({ projectId, onEdit, onBack }) => {
-  const { projects, handleDeleteProject, handleAddAddendum, currentOrg } = useApp();
+  const { projects, members, handleDeleteProject, handleAddAddendum, currentOrg } = useApp();
+  const { toast } = useToast();
   const project = projects.find((p) => p.id === projectId);
 
   const [activeTab, setActiveTab] = useState<'summary' | 'addendums' | 'wbs' | 'team' | 'docs'>('summary');
@@ -90,10 +95,16 @@ export const ProjectDetailView: React.FC<{
     setAddDesc('');
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (confirm(`Apakah Anda yakin ingin menghapus proyek ${project.name} (${project.code})?`)) {
-      handleDeleteProject(project.id);
-      onBack();
+      try {
+        await handleDeleteProject(project.id);
+        toast({ title: projectMessages.deleted, variant: 'success' });
+        onBack();
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : projectMessages.deleteFailed;
+        toast({ title: projectMessages.deleteFailed, description: detail, variant: 'error' });
+      }
     }
   };
 
@@ -437,7 +448,9 @@ export const ProjectDetailView: React.FC<{
             <div>
               <p className="text-xs text-slate-400">Project Manager (PM)</p>
               <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">
-                {project.project_manager_name || 'Hendra Gunawan, ST'}
+                {project.project_manager_name
+                  || members.find((member) => member.user_id === project.project_manager_id)?.user?.full_name
+                  || projectMessages.unassigned}
               </h4>
               <p className="text-[10px] text-slate-500">Penanggung jawab operasional & budget</p>
             </div>
@@ -450,7 +463,9 @@ export const ProjectDetailView: React.FC<{
             <div>
               <p className="text-xs text-slate-400">Site Manager Lapangan</p>
               <h4 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">
-                {project.site_manager_name || 'Rian Pratama, ST'}
+                {project.site_manager_name
+                  || members.find((member) => member.user_id === project.site_manager_id)?.user?.full_name
+                  || projectMessages.unassigned}
               </h4>
               <p className="text-[10px] text-slate-500">Pelaksana harian & logistik lapangan</p>
             </div>

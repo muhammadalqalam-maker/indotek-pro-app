@@ -1056,7 +1056,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleUpdateProject = async (id: string, updates: Partial<Project>) => {
-    const updated = await updateProject(id, updates);
+    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
+    const updated = await updateProject(id, currentOrg.id, updates);
     setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
     return updated;
   };

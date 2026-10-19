@@ -7,6 +7,7 @@ import {
   NotificationItem,
   ProjectAddendum,
 } from '../types/database';
+import type { TablesInsert, TablesUpdate } from '../types/database';
 import {
   INITIAL_ORGANIZATION,
   INITIAL_MEMBERS,
@@ -292,16 +293,42 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
 
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([project])
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase createProject failed, saving locally:', e);
-    }
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    const projectRecord: TablesInsert<'projects'> = {
+      organization_id: project.organization_id,
+      code: project.code,
+      name: project.name,
+      client_name: project.client_name,
+      client_contact: project.client_contact || null,
+      contract_number: project.contract_number || null,
+      category: project.category,
+      location_address: project.location_address,
+      location_city: project.location_city,
+      location_province: project.location_province,
+      latitude: project.latitude ?? null,
+      longitude: project.longitude ?? null,
+      contract_value: project.contract_value,
+      realized_cost: project.realized_cost,
+      start_date: project.start_date,
+      end_date: project.end_date,
+      maintenance_days: project.maintenance_days,
+      retention_percent: project.retention_percent,
+      planned_progress: project.planned_progress,
+      actual_progress: project.actual_progress,
+      status: project.status,
+      project_manager_id: project.project_manager_id ?? null,
+      site_manager_id: project.site_manager_id ?? null,
+      notes: project.notes || null,
+      created_by: authData.user?.id ?? null,
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .insert(projectRecord)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
@@ -324,24 +351,52 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   return newProject;
 }
 
-export async function updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+export async function updateProject(
+  id: string,
+  organizationId: string,
+  updates: Partial<Project>,
+): Promise<Project> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase updateProject failed, saving locally:', e);
-    }
+    const projectUpdates: TablesUpdate<'projects'> = {
+      ...(updates.code !== undefined && { code: updates.code }),
+      ...(updates.name !== undefined && { name: updates.name }),
+      ...(updates.client_name !== undefined && { client_name: updates.client_name }),
+      ...(updates.client_contact !== undefined && { client_contact: updates.client_contact || null }),
+      ...(updates.contract_number !== undefined && { contract_number: updates.contract_number || null }),
+      ...(updates.category !== undefined && { category: updates.category }),
+      ...(updates.location_address !== undefined && { location_address: updates.location_address }),
+      ...(updates.location_city !== undefined && { location_city: updates.location_city }),
+      ...(updates.location_province !== undefined && { location_province: updates.location_province }),
+      ...(updates.latitude !== undefined && { latitude: updates.latitude }),
+      ...(updates.longitude !== undefined && { longitude: updates.longitude }),
+      ...(updates.contract_value !== undefined && { contract_value: updates.contract_value }),
+      ...(updates.realized_cost !== undefined && { realized_cost: updates.realized_cost }),
+      ...(updates.start_date !== undefined && { start_date: updates.start_date }),
+      ...(updates.end_date !== undefined && { end_date: updates.end_date }),
+      ...(updates.maintenance_days !== undefined && { maintenance_days: updates.maintenance_days }),
+      ...(updates.retention_percent !== undefined && { retention_percent: updates.retention_percent }),
+      ...(updates.planned_progress !== undefined && { planned_progress: updates.planned_progress }),
+      ...(updates.actual_progress !== undefined && { actual_progress: updates.actual_progress }),
+      ...(updates.status !== undefined && { status: updates.status }),
+      ...(updates.project_manager_id !== undefined && { project_manager_id: updates.project_manager_id }),
+      ...(updates.site_manager_id !== undefined && { site_manager_id: updates.site_manager_id }),
+      ...(updates.notes !== undefined && { notes: updates.notes || null }),
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ ...projectUpdates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === id);
+  const index = list.findIndex((p) => p.id === id && p.organization_id === organizationId);
   if (index !== -1) {
     list[index] = { ...list[index], ...updates, updated_at: new Date().toISOString() };
     setLocal(KEY_PROJECTS, list);
@@ -353,19 +408,24 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
 export async function deleteProject(id: string, organizationId: string): Promise<void> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      await supabase
-        .from('projects')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
-    } catch (e) {
-      console.warn('Supabase deleteProject failed:', e);
-    }
+    const { error } = await supabase
+      .from('projects')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null);
+    if (error) throw error;
+    return;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const target = list.find((p) => p.id === id);
-  const filtered = list.filter((p) => p.id !== id);
+  const target = list.find((project) => (
+    project.id === id && project.organization_id === organizationId
+  ));
+  if (!target) throw new Error('Proyek tidak ditemukan.');
+  const filtered = list.filter((project) => (
+    project.id !== id || project.organization_id !== organizationId
+  ));
   setLocal(KEY_PROJECTS, filtered);
 
   if (target) {
