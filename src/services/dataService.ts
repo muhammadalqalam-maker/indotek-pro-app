@@ -570,7 +570,7 @@ export async function fetchMembers(organizationId: string): Promise<Organization
   if (!supabase) return getLocal<OrganizationMember[]>(KEY_MEMBERS, INITIAL_MEMBERS).filter((m) => m.organization_id === organizationId);
   const { data, error } = await supabase
     .from('organization_members')
-    .select('*, user:profiles(*)')
+    .select('*, user:profiles!organization_members_user_id_fkey(*)')
     .eq('organization_id', organizationId);
   if (error) throw error;
   return (data ?? []) as OrganizationMember[];
