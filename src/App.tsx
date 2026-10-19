@@ -284,6 +284,7 @@ function MainApp() {
           ) : activeTab === 'projects' && activeProjectDetailId ? (
             <Suspense fallback={<ViewLoadingFallback />}>
             <ProjectDetailView
+              key={activeProjectDetailId}
               projectId={activeProjectDetailId}
               onEdit={handleEditProject}
               onBack={closeProjectDetail}
