@@ -167,6 +167,7 @@ interface AppContextType {
   reloadOrganizations: () => void;
   setCurrentOrgId: (id: string) => void;
   completeOrganization: (organization: Organization) => void;
+  updateCurrentOrganization: (organization: Organization) => void;
 
   // Role simulation
   currentRole: UserRole;
@@ -1031,6 +1032,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveProjectDetailId(null);
   };
 
+  const updateCurrentOrganization = (organization: Organization) => {
+    setOrganizations((previous) => previous.map((item) => (
+      item.id === organization.id ? organization : item
+    )));
+  };
+
   const openProjectDetail = (projectId: string) => {
     setActiveProjectDetailId(projectId);
     setActiveTab('projects');
@@ -1172,6 +1179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reloadOrganizations,
         setCurrentOrgId,
         completeOrganization,
+        updateCurrentOrganization,
         currentRole,
         setCurrentRole,
         can,

@@ -243,17 +243,14 @@ export async function createOrganization(org: Omit<Organization, 'id' | 'created
 export async function updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Organization;
-    } catch (e) {
-      console.warn('Supabase update failed, saving locally:', e);
-    }
+    const { data, error } = await supabase
+      .from('organizations')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Organization;
   }
 
   const list = getLocal<Organization[]>(KEY_ORGS, [INITIAL_ORGANIZATION]);
@@ -296,9 +293,16 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   if (supabase) {
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError) throw authError;
+    const prefixMatch = /^(.+)-\d{4}-\d+$/.exec(project.code);
+    const { data: generatedCode, error: numberingError } = await supabase.rpc('generate_document_number', {
+      p_entity_type: 'project',
+      p_organization_id: project.organization_id,
+      p_prefix: prefixMatch?.[1] ?? '',
+    });
+    if (numberingError) throw numberingError;
     const projectRecord: TablesInsert<'projects'> = {
       organization_id: project.organization_id,
-      code: project.code,
+      code: generatedCode,
       name: project.name,
       client_name: project.client_name,
       client_contact: project.client_contact || null,

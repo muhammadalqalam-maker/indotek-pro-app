@@ -66,6 +66,7 @@ export function CreateProjectModal({
 }) {
   const {
     currentOrg,
+    isSupabaseLive,
     projects,
     members,
     membersLoading,
@@ -162,7 +163,7 @@ export function CreateProjectModal({
       project.organization_id === currentOrg.id
       && project.id !== projectToEdit?.id
       && project.code.toLocaleUpperCase('id-ID') === form.code
-    ));
+    )) && (!isSupabaseLive || Boolean(projectToEdit));
     if (duplicateCode) {
       setError('code', { type: 'validate', message: messages.duplicateCode });
       return;
@@ -225,9 +226,15 @@ export function CreateProjectModal({
               required
               maxLength={32}
               error={errors.code?.message}
+              readOnly={isSupabaseLive && !projectToEdit}
               {...codeField}
               onChange={(event) => setValue('code', event.target.value.toUpperCase(), { shouldDirty: true, shouldValidate: true })}
             />
+            {isSupabaseLive && !projectToEdit && (
+              <p className="text-xs text-muted sm:col-span-2">
+                {getMessages('id').settings.generatedProjectCodeHint}
+              </p>
+            )}
             <Input label={messages.name} required error={errors.name?.message} {...register('name')} />
             <Input label={messages.client} required error={errors.client_name?.message} {...register('client_name')} />
             <Input label={messages.clientContact} error={errors.client_contact?.message} {...register('client_contact')} />
