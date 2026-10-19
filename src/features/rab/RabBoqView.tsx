@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { getMessages } from '../../i18n';
 import { formatRupiah, formatPercent } from '../../utils/format';
 import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { calculateItemTotal, calculateItemWeight, calculateBOQSummary } from '../../utils/constructionCalculations';
 import { ProjectBOQItem } from '../../types/database';
+import { AhspPanel } from './components/AhspPanel';
 import {
   Calculator,
   Plus,
@@ -27,6 +29,7 @@ import {
 } from 'lucide-react';
 
 export const RabBoqView: React.FC = () => {
+  const rabMessages = getMessages().rab;
   const {
     projects,
     selectedProjectId,
@@ -164,10 +167,10 @@ export const RabBoqView: React.FC = () => {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveSubTab('boq')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
+          className={`flex shrink-0 items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
             activeSubTab === 'boq'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -179,19 +182,19 @@ export const RabBoqView: React.FC = () => {
 
         <button
           onClick={() => setActiveSubTab('ahsp')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
+          className={`flex shrink-0 items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
             activeSubTab === 'ahsp'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
           }`}
         >
           <Calculator className="w-4 h-4" />
-          <span>Analisa Harga Satuan (AHSP SNI)</span>
+          <span>{rabMessages.tabAhsp}</span>
         </button>
 
         <button
           onClick={() => setActiveSubTab('resources')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
+          className={`flex shrink-0 items-center gap-2 px-4 py-2.5 text-xs font-bold border-b-2 transition ${
             activeSubTab === 'resources'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -359,93 +362,7 @@ export const RabBoqView: React.FC = () => {
         </div>
       )}
 
-      {/* SUB-TAB 2: AHSP TEMPLATES */}
-      {activeSubTab === 'ahsp' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Daftar Analisa Harga Satuan Pekerjaan (Standar SNI PUPR)
-              </h3>
-              <p className="text-xs text-slate-500">
-                Koefisien indeks kebutuhan bahan, upah tenaga kerja, dan operasional alat
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {ahspTemplates.map((tmpl) => (
-              <div
-                key={tmpl.id}
-                className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-3"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
-                      {tmpl.code}
-                    </span>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">
-                      {tmpl.title}
-                    </h4>
-                    <span className="text-[11px] text-slate-400">Divisi: {tmpl.division}</span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-xs text-slate-400">Harga Satuan Analisa:</span>
-                    <p className="text-base font-black text-slate-900 dark:text-white">
-                      {formatRupiah(tmpl.unit_price)} / {tmpl.unit}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Components Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50 dark:bg-slate-800/40 text-[10px] font-bold uppercase text-slate-400">
-                      <tr>
-                        <th className="px-3 py-1.5">Unsur</th>
-                        <th className="px-3 py-1.5">Uraian Komponen</th>
-                        <th className="px-3 py-1.5 text-center">Satuan</th>
-                        <th className="px-3 py-1.5 text-right">Koefisien</th>
-                        <th className="px-3 py-1.5 text-right">Harga Dasar (Rp)</th>
-                        <th className="px-3 py-1.5 text-right">Subtotal (Rp)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 text-[11px]">
-                      {tmpl.components.map((c: { category: string; name: string; unit: string; coef: number; unit_price: number; subtotal: number }, idx: number) => (
-                        <tr key={idx}>
-                          <td className="px-3 py-1.5">
-                            <span
-                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                                c.category === 'bahan'
-                                  ? 'bg-blue-500/10 text-blue-600'
-                                  : c.category === 'upah'
-                                  ? 'bg-amber-500/10 text-amber-600'
-                                  : 'bg-purple-500/10 text-purple-600'
-                              }`}
-                            >
-                              {c.category}
-                            </span>
-                          </td>
-                          <td className="px-3 py-1.5 font-medium text-slate-900 dark:text-white">{c.name}</td>
-                          <td className="px-3 py-1.5 text-center text-slate-500">{c.unit}</td>
-                          <td className="px-3 py-1.5 text-right font-mono">{c.coef}</td>
-                          <td className="px-3 py-1.5 text-right font-mono text-slate-600 dark:text-slate-300">
-                            {formatRupiah(c.unit_price, false)}
-                          </td>
-                          <td className="px-3 py-1.5 text-right font-bold text-slate-900 dark:text-white">
-                            {formatRupiah(c.subtotal, false)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {activeSubTab === 'ahsp' && <AhspPanel />}
 
       {/* SUB-TAB 3: MASTER HARGA SATUAN DASAR */}
       {activeSubTab === 'resources' && (
