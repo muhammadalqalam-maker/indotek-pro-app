@@ -55,21 +55,77 @@ export function PriceItemsList({
       {filteredItems.length === 0 ? (
         <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">{messages.priceItemsNoMatches}</p>
       ) : (
-        <div className="overflow-x-auto rounded-md border border-border">
-          <table className="w-full min-w-[850px] text-left text-sm">
-            <thead className="bg-surface-2 text-xs uppercase text-muted">
-              <tr>
-                <th scope="col" className="px-3 py-3">{messages.category}</th>
-                <th scope="col" className="px-3 py-3">{messages.code}</th>
-                <th scope="col" className="px-3 py-3">{messages.name}</th>
-                <th scope="col" className="px-3 py-3">{messages.unit}</th>
-                <th scope="col" className="px-3 py-3">{messages.unitPrice}</th>
-                <th scope="col" className="px-3 py-3">{messages.region}</th>
-                <th scope="col" className="px-3 py-3">{messages.validFrom}</th>
-                <th scope="col" className="px-3 py-3">{messages.actions}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
+        <>
+          <ul className="grid gap-3 md:hidden">
+            {filteredItems.map((item) => {
+              const unit = unitById.get(item.unit_id);
+              return (
+                <li key={item.id} className="rounded-md border border-border bg-surface p-3">
+                  <article className="grid gap-3">
+                    <div className="flex min-w-0 items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-muted">{messages.categoryNames[item.category]}</p>
+                        <h4 className="mt-1 break-words text-sm font-semibold text-text">{item.name}</h4>
+                        <p className="mt-1 break-all font-mono text-xs text-muted">{item.code}</p>
+                      </div>
+                      <p className="shrink-0 text-right text-sm font-semibold tabular-nums text-text">
+                        {formatRupiah(item.unit_price)}
+                      </p>
+                    </div>
+                    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 border-t border-border pt-3 text-xs">
+                      <div className="min-w-0">
+                        <dt className="text-muted">{messages.unit}</dt>
+                        <dd className="mt-0.5 break-words text-text">
+                          {unit ? `${unit.symbol} — ${unit.name}` : item.unit_id}
+                        </dd>
+                      </div>
+                      <div className="min-w-0">
+                        <dt className="text-muted">{messages.region}</dt>
+                        <dd className="mt-0.5 break-words text-text">{item.region || '—'}</dd>
+                      </div>
+                      <div className="min-w-0">
+                        <dt className="text-muted">{messages.validFrom}</dt>
+                        <dd className="mt-0.5 text-text">{formatTanggal(item.valid_from)}</dd>
+                      </div>
+                      {item.valid_until && (
+                        <div className="min-w-0">
+                          <dt className="text-muted">{messages.validUntil}</dt>
+                          <dd className="mt-0.5 text-text">{formatTanggal(item.valid_until)}</dd>
+                        </div>
+                      )}
+                      {item.source && (
+                        <div className="col-span-2 min-w-0">
+                          <dt className="text-muted">{messages.source}</dt>
+                          <dd className="mt-0.5 break-words text-text">{item.source}</dd>
+                        </div>
+                      )}
+                    </dl>
+                    {canEdit && (
+                      <div className="flex flex-wrap gap-2 border-t border-border pt-2">
+                        <Button variant="outline" size="sm" onClick={() => onEdit(item)}>{messages.edit}</Button>
+                        <Button variant="ghost" size="sm" onClick={() => onArchive(item)}>{messages.archive}</Button>
+                      </div>
+                    )}
+                  </article>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-md border border-border md:block">
+            <table className="w-full min-w-[850px] text-left text-sm">
+              <thead className="bg-surface-2 text-xs uppercase text-muted">
+                <tr>
+                  <th scope="col" className="px-3 py-3">{messages.category}</th>
+                  <th scope="col" className="px-3 py-3">{messages.code}</th>
+                  <th scope="col" className="px-3 py-3">{messages.name}</th>
+                  <th scope="col" className="px-3 py-3">{messages.unit}</th>
+                  <th scope="col" className="px-3 py-3">{messages.unitPrice}</th>
+                  <th scope="col" className="px-3 py-3">{messages.region}</th>
+                  <th scope="col" className="px-3 py-3">{messages.validFrom}</th>
+                  <th scope="col" className="px-3 py-3">{messages.actions}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
               {filteredItems.map((item) => {
                 const unit = unitById.get(item.unit_id);
                 return (
@@ -95,9 +151,10 @@ export function PriceItemsList({
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );
