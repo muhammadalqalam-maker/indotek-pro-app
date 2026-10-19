@@ -14,6 +14,135 @@ export type Database = {
   }
   public: {
     Tables: {
+      ahsp: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          division: string
+          id: string
+          organization_id: string
+          title: string
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          division: string
+          id?: string
+          organization_id: string
+          title: string
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          division?: string
+          id?: string
+          organization_id?: string
+          title?: string
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ahsp_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ahsp_org_unit_fkey"
+            columns: ["organization_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "ahsp_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ahsp_components: {
+        Row: {
+          ahsp_id: string
+          coefficient: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          organization_id: string
+          price_item_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          ahsp_id: string
+          coefficient: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          organization_id: string
+          price_item_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          ahsp_id?: string
+          coefficient?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          organization_id?: string
+          price_item_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ahsp_components_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ahsp_components_org_ahsp_fkey"
+            columns: ["organization_id", "ahsp_id"]
+            isOneToOne: false
+            referencedRelation: "ahsp"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "ahsp_components_org_price_item_fkey"
+            columns: ["organization_id", "price_item_id"]
+            isOneToOne: false
+            referencedRelation: "price_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "ahsp_components_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ahsp_resources: {
         Row: {
           category: string
