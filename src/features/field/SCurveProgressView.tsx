@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatPercent, formatRupiah, formatDateIndo } from '../../utils/format';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { calculateEarnedValue } from '../../utils/constructionCalculations';
 import {
   TrendingUp,
@@ -38,7 +39,9 @@ export const SCurveProgressView: React.FC<{ projectId: string }> = ({ projectId 
   const [inputWeeklyActual, setInputWeeklyActual] = useState('');
   const [inputCumulativeActual, setInputCumulativeActual] = useState('');
 
-  const contractVal = project?.contract_value || 48500000000;
+  const contractVal = project
+    ? calculateEffectiveProjectContractValue(project) || 48500000000
+    : 48500000000;
   const currentActual = project?.actual_progress || 48.0;
   const currentPlanned = project?.planned_progress || 46.5;
   const earnedValue = calculateEarnedValue(contractVal, currentActual);

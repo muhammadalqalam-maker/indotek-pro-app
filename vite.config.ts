@@ -80,6 +80,31 @@ export default defineConfig(() => {
         '@': new URL('./src', import.meta.url).pathname,
       },
     },
+    build: {
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                name: 'react-vendor',
+                test: /node_modules[\\/]((react|react-dom|scheduler)([\\/]|$))/,
+                priority: 20,
+              },
+              {
+                name: 'supabase-vendor',
+                test: /node_modules[\\/]@supabase[\\/]/,
+                priority: 10,
+              },
+              {
+                name: 'form-vendor',
+                test: /node_modules[\\/](zod|react-hook-form)[\\/]/,
+                priority: 10,
+              },
+            ],
+          },
+        },
+      },
+    },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.

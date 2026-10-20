@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, formatPercent } from '../../utils/format';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import {
   FileText,
   Printer,
@@ -35,7 +36,10 @@ export const ReportsAnalyticsView: React.FC = () => {
       ? projects
       : projects.filter((p) => p.id === selectedProjectId);
 
-  const totalContract = targetProjects.reduce((acc, p) => acc + p.contract_value, 0);
+  const totalContract = targetProjects.reduce(
+    (acc, project) => acc + calculateEffectiveProjectContractValue(project),
+    0,
+  );
   const totalCost = targetProjects.reduce((acc, p) => acc + p.realized_cost, 0);
 
   const exportCSV = () => {
@@ -43,7 +47,7 @@ export const ReportsAnalyticsView: React.FC = () => {
     const rows = targetProjects
       .map(
         (p) =>
-          `"${p.code}","${p.name}","${p.client_name}",${p.contract_value},${p.realized_cost},${p.planned_progress},${p.actual_progress},"${p.status}"`
+          `"${p.code}","${p.name}","${p.client_name}",${calculateEffectiveProjectContractValue(p)},${p.realized_cost},${p.planned_progress},${p.actual_progress},"${p.status}"`
       )
       .join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -179,7 +183,7 @@ export const ReportsAnalyticsView: React.FC = () => {
                         <span className="block text-slate-400 text-[10px]">{p.code}</span>
                       </td>
                       <td className="p-3 text-slate-600 dark:text-slate-400">{p.client_name}</td>
-                      <td className="p-3 text-right font-medium">{formatRupiah(p.contract_value)}</td>
+                      <td className="p-3 text-right font-medium">{formatRupiah(calculateEffectiveProjectContractValue(p))}</td>
                       <td className="p-3 text-center font-medium">{formatPercent(p.planned_progress)}</td>
                       <td className="p-3 text-center font-bold text-slate-900 dark:text-white">
                         {formatPercent(p.actual_progress)}

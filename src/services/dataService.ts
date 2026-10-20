@@ -6,7 +6,9 @@ import {
   AuditLog,
   NotificationItem,
   ProjectAddendum,
+  ProjectAddendumInput,
 } from '../types/database';
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database';
 import {
   INITIAL_ORGANIZATION,
   INITIAL_MEMBERS,
@@ -241,17 +243,14 @@ export async function createOrganization(org: Omit<Organization, 'id' | 'created
 export async function updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Organization;
-    } catch (e) {
-      console.warn('Supabase update failed, saving locally:', e);
-    }
+    const { data, error } = await supabase
+      .from('organizations')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Organization;
   }
 
   const list = getLocal<Organization[]>(KEY_ORGS, [INITIAL_ORGANIZATION]);
@@ -292,16 +291,49 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
 
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([project])
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase createProject failed, saving locally:', e);
-    }
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    const prefixMatch = /^(.+)-\d{4}-\d+$/.exec(project.code);
+    const { data: generatedCode, error: numberingError } = await supabase.rpc('generate_document_number', {
+      p_entity_type: 'project',
+      p_organization_id: project.organization_id,
+      p_prefix: prefixMatch?.[1] ?? '',
+    });
+    if (numberingError) throw numberingError;
+    const projectRecord: TablesInsert<'projects'> = {
+      organization_id: project.organization_id,
+      code: generatedCode,
+      name: project.name,
+      client_name: project.client_name,
+      client_contact: project.client_contact || null,
+      contract_number: project.contract_number || null,
+      category: project.category,
+      location_address: project.location_address,
+      location_city: project.location_city,
+      location_province: project.location_province,
+      latitude: project.latitude ?? null,
+      longitude: project.longitude ?? null,
+      contract_value: project.contract_value,
+      realized_cost: project.realized_cost,
+      start_date: project.start_date,
+      end_date: project.end_date,
+      maintenance_days: project.maintenance_days,
+      retention_percent: project.retention_percent,
+      planned_progress: project.planned_progress,
+      actual_progress: project.actual_progress,
+      status: project.status,
+      project_manager_id: project.project_manager_id ?? null,
+      site_manager_id: project.site_manager_id ?? null,
+      notes: project.notes || null,
+      created_by: authData.user?.id ?? null,
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .insert(projectRecord)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
@@ -324,24 +356,52 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   return newProject;
 }
 
-export async function updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+export async function updateProject(
+  id: string,
+  organizationId: string,
+  updates: Partial<Project>,
+): Promise<Project> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase updateProject failed, saving locally:', e);
-    }
+    const projectUpdates: TablesUpdate<'projects'> = {
+      ...(updates.code !== undefined && { code: updates.code }),
+      ...(updates.name !== undefined && { name: updates.name }),
+      ...(updates.client_name !== undefined && { client_name: updates.client_name }),
+      ...(updates.client_contact !== undefined && { client_contact: updates.client_contact || null }),
+      ...(updates.contract_number !== undefined && { contract_number: updates.contract_number || null }),
+      ...(updates.category !== undefined && { category: updates.category }),
+      ...(updates.location_address !== undefined && { location_address: updates.location_address }),
+      ...(updates.location_city !== undefined && { location_city: updates.location_city }),
+      ...(updates.location_province !== undefined && { location_province: updates.location_province }),
+      ...(updates.latitude !== undefined && { latitude: updates.latitude }),
+      ...(updates.longitude !== undefined && { longitude: updates.longitude }),
+      ...(updates.contract_value !== undefined && { contract_value: updates.contract_value }),
+      ...(updates.realized_cost !== undefined && { realized_cost: updates.realized_cost }),
+      ...(updates.start_date !== undefined && { start_date: updates.start_date }),
+      ...(updates.end_date !== undefined && { end_date: updates.end_date }),
+      ...(updates.maintenance_days !== undefined && { maintenance_days: updates.maintenance_days }),
+      ...(updates.retention_percent !== undefined && { retention_percent: updates.retention_percent }),
+      ...(updates.planned_progress !== undefined && { planned_progress: updates.planned_progress }),
+      ...(updates.actual_progress !== undefined && { actual_progress: updates.actual_progress }),
+      ...(updates.status !== undefined && { status: updates.status }),
+      ...(updates.project_manager_id !== undefined && { project_manager_id: updates.project_manager_id }),
+      ...(updates.site_manager_id !== undefined && { site_manager_id: updates.site_manager_id }),
+      ...(updates.notes !== undefined && { notes: updates.notes || null }),
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ ...projectUpdates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === id);
+  const index = list.findIndex((p) => p.id === id && p.organization_id === organizationId);
   if (index !== -1) {
     list[index] = { ...list[index], ...updates, updated_at: new Date().toISOString() };
     setLocal(KEY_PROJECTS, list);
@@ -353,19 +413,24 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
 export async function deleteProject(id: string, organizationId: string): Promise<void> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      await supabase
-        .from('projects')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
-    } catch (e) {
-      console.warn('Supabase deleteProject failed:', e);
-    }
+    const { error } = await supabase
+      .from('projects')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null);
+    if (error) throw error;
+    return;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const target = list.find((p) => p.id === id);
-  const filtered = list.filter((p) => p.id !== id);
+  const target = list.find((project) => (
+    project.id === id && project.organization_id === organizationId
+  ));
+  if (!target) throw new Error('Proyek tidak ditemukan.');
+  const filtered = list.filter((project) => (
+    project.id !== id || project.organization_id !== organizationId
+  ));
   setLocal(KEY_PROJECTS, filtered);
 
   if (target) {
@@ -385,39 +450,119 @@ export async function deleteProject(id: string, organizationId: string): Promise
 
 export async function addProjectAddendum(
   projectId: string,
-  addendum: Omit<ProjectAddendum, 'id' | 'created_at' | 'project_id'>
+  organizationId: string,
+  addendum: ProjectAddendumInput,
 ): Promise<ProjectAddendum> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Sesi pengguna tidak tersedia.');
+
+    const { data, error } = await supabase
+      .from('project_addendums')
+      .insert({
+        ...addendum,
+        organization_id: organizationId,
+        project_id: projectId,
+        approved_at: null,
+        approved_by: null,
+        created_by: authData.user.id,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    return data as ProjectAddendum;
+  }
+
+  initLocalStorage();
   const newAdd: ProjectAddendum = {
     ...addendum,
     id: `add-${Date.now()}`,
+    organization_id: organizationId,
     project_id: projectId,
+    approved_at: null,
+    approved_by: null,
+    created_by: null,
     created_at: new Date().toISOString(),
   };
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === projectId);
+  const index = list.findIndex((p) => p.id === projectId && p.organization_id === organizationId);
   if (index !== -1) {
     if (!list[index].addendums) list[index].addendums = [];
     list[index].addendums!.push(newAdd);
-    list[index].contract_value += newAdd.amount;
     list[index].updated_at = new Date().toISOString();
     setLocal(KEY_PROJECTS, list);
 
     await createAuditLog({
-      organization_id: addendum.organization_id,
+      organization_id: organizationId,
       project_id: projectId,
       project_name: list[index].name,
-      user_name: addendum.approved_by_name || 'Admin',
+      user_name: 'Pengguna demo',
       user_role: 'owner',
-      action: 'APPROVE_ADDENDUM',
+      action: 'CREATE_ADDENDUM',
       entity_type: 'addendum',
       entity_id: newAdd.addendum_number,
-      details: `Menambahkan amandemen kontrak ${newAdd.title} senilai Rp ${newAdd.amount.toLocaleString('id-ID')}`,
+      details: `Membuat addendum ${newAdd.addendum_number}; menunggu persetujuan.`,
     });
 
     return newAdd;
   }
   throw new Error('Proyek tidak ditemukan');
+}
+
+export async function approveProjectAddendum(
+  projectId: string,
+  organizationId: string,
+  addendumId: string,
+): Promise<ProjectAddendum> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Sesi pengguna tidak tersedia.');
+
+    const { data, error } = await supabase
+      .from('project_addendums')
+      .update({
+        approved_by: authData.user.id,
+        approved_at: new Date().toISOString(),
+      })
+      .eq('id', addendumId)
+      .eq('project_id', projectId)
+      .eq('organization_id', organizationId)
+      .is('approved_at', null)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as ProjectAddendum;
+  }
+
+  initLocalStorage();
+  const projects = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
+  const project = projects.find((entry) => (
+    entry.id === projectId && entry.organization_id === organizationId
+  ));
+  const addendum = project?.addendums?.find((entry) => entry.id === addendumId);
+  if (!project || !addendum) throw new Error('Addendum proyek tidak ditemukan.');
+  if (addendum.approved_at) throw new Error('Addendum ini sudah disetujui.');
+
+  addendum.approved_at = new Date().toISOString();
+  project.updated_at = new Date().toISOString();
+  setLocal(KEY_PROJECTS, projects);
+  await createAuditLog({
+    organization_id: organizationId,
+    project_id: projectId,
+    project_name: project.name,
+    user_name: 'Pengguna demo',
+    user_role: 'owner',
+    action: 'APPROVE_ADDENDUM',
+    entity_type: 'addendum',
+    entity_id: addendum.addendum_number,
+    details: `Menyetujui addendum ${addendum.addendum_number}.`,
+  });
+  return addendum;
 }
 
 // -------------------------------------------------------------
@@ -429,7 +574,7 @@ export async function fetchMembers(organizationId: string): Promise<Organization
   if (!supabase) return getLocal<OrganizationMember[]>(KEY_MEMBERS, INITIAL_MEMBERS).filter((m) => m.organization_id === organizationId);
   const { data, error } = await supabase
     .from('organization_members')
-    .select('*, user:profiles(*)')
+    .select('*, user:profiles!organization_members_user_id_fkey(*)')
     .eq('organization_id', organizationId);
   if (error) throw error;
   return (data ?? []) as OrganizationMember[];
@@ -517,18 +662,89 @@ export async function createAuditLog(log: Omit<AuditLog, 'id' | 'created_at'>): 
 // -------------------------------------------------------------
 // NOTIFICATIONS
 // -------------------------------------------------------------
-export async function fetchNotifications(): Promise<NotificationItem[]> {
-  initLocalStorage();
-  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+function mapNotification(row: Tables<'notifications'>): NotificationItem {
+  return {
+    id: row.id,
+    organization_id: row.organization_id,
+    user_id: row.user_id,
+    title: row.title,
+    message: row.message,
+    type: row.type,
+    link: row.link ?? null,
+    is_read: row.is_read,
+    created_at: row.created_at,
+  };
 }
 
-export async function markNotificationAsRead(id: string): Promise<void> {
+export async function fetchNotifications(organizationId: string): Promise<NotificationItem[]> {
+  initLocalStorage();
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memuat notifikasi.');
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id, organization_id, user_id, title, message, type, link, is_read, created_at')
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return (data ?? []).map(mapNotification);
+  }
+  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS)
+    .filter((notification) => notification.organization_id === organizationId);
+}
+
+export async function markNotificationAsRead(id: string, organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id);
+    if (error) throw error;
+    return;
+  }
   const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
-  const target = list.find((n) => n.id === id);
+  const target = list.find((notification) => notification.id === id
+    && notification.organization_id === organizationId);
   if (target) {
     target.is_read = true;
     setLocal(KEY_NOTIFS, list);
   }
+}
+
+export async function markAllNotificationsAsRead(organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .eq('is_read', false);
+    if (error) throw error;
+    return;
+  }
+  const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+  let changed = false;
+  for (const notification of list) {
+    if (notification.organization_id === organizationId && !notification.is_read) {
+      notification.is_read = true;
+      changed = true;
+    }
+  }
+  if (changed) setLocal(KEY_NOTIFS, list);
 }
 
 // -------------------------------------------------------------

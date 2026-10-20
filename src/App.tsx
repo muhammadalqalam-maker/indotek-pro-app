@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { TopNavbar } from './components/layout/TopNavbar';
 import { Sidebar } from './components/layout/Sidebar';
@@ -7,26 +7,6 @@ import { CommandPalette } from './components/layout/CommandPalette';
 import { OfflineIndicator } from './components/pwa/OfflineIndicator';
 import { SupabaseConnectionModal } from './components/modals/SupabaseConnectionModal';
 import { CreateOrgModal } from './components/modals/CreateOrgModal';
-import { CreateProjectModal } from './features/projects/CreateProjectModal';
-import { DashboardView } from './features/dashboard/DashboardView';
-import { ProjectListView } from './features/projects/ProjectListView';
-import { ProjectDetailView } from './features/projects/ProjectDetailView';
-import { RabBoqView } from './features/rab/RabBoqView';
-import { DailyReportsView } from './features/field/DailyReportsView';
-import { ProcurementView } from './features/procurement/ProcurementView';
-import { WarehouseView } from './features/warehouse/WarehouseView';
-import { SubcontractorsView } from './features/subcontractors/SubcontractorsView';
-import { FinanceView } from './features/finance/FinanceView';
-import { HrManpowerView } from './features/hr/HrManpowerView';
-import { EquipmentView } from './features/equipment/EquipmentView';
-import { SafetyQcView } from './features/safety/SafetyQcView';
-import { DocumentsView } from './features/documents/DocumentsView';
-import { ApprovalsView } from './features/approvals/ApprovalsView';
-import { ReportsAnalyticsView } from './features/reports/ReportsAnalyticsView';
-import { SettingsView } from './features/settings/SettingsView';
-import { SetupGuideView } from './features/guide/SetupGuideView';
-import { AuthView } from './features/auth/AuthView';
-import { OrganizationOnboardingPage } from './features/organizations/OrganizationOnboardingPage';
 import { OrganizationInvitationInbox } from './features/settings/OrganizationInvitationInbox';
 import { authMessages as messages, organizationMessages } from './i18n/id';
 import { Project } from './types/database';
@@ -36,6 +16,42 @@ import { ShieldAlert } from 'lucide-react';
 import { ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
+
+const CreateProjectModal = lazy(() => import('./features/projects/CreateProjectModal').then((module) => ({ default: module.CreateProjectModal })));
+const DashboardView = lazy(() => import('./features/dashboard/DashboardView').then((module) => ({ default: module.DashboardView })));
+const ProjectListView = lazy(() => import('./features/projects/ProjectListView').then((module) => ({ default: module.ProjectListView })));
+const ProjectDetailView = lazy(() => import('./features/projects/ProjectDetailView').then((module) => ({ default: module.ProjectDetailView })));
+const RabBoqView = lazy(() => import('./features/rab/RabBoqView').then((module) => ({ default: module.RabBoqView })));
+const DailyReportsView = lazy(() => import('./features/field/DailyReportsView').then((module) => ({ default: module.DailyReportsView })));
+const ProcurementView = lazy(() => import('./features/procurement/ProcurementView').then((module) => ({ default: module.ProcurementView })));
+const WarehouseView = lazy(() => import('./features/warehouse/WarehouseView').then((module) => ({ default: module.WarehouseView })));
+const SubcontractorsView = lazy(() => import('./features/subcontractors/SubcontractorsView').then((module) => ({ default: module.SubcontractorsView })));
+const FinanceView = lazy(() => import('./features/finance/FinanceView').then((module) => ({ default: module.FinanceView })));
+const HrManpowerView = lazy(() => import('./features/hr/HrManpowerView').then((module) => ({ default: module.HrManpowerView })));
+const EquipmentView = lazy(() => import('./features/equipment/EquipmentView').then((module) => ({ default: module.EquipmentView })));
+const SafetyQcView = lazy(() => import('./features/safety/SafetyQcView').then((module) => ({ default: module.SafetyQcView })));
+const DocumentsView = lazy(() => import('./features/documents/DocumentsView').then((module) => ({ default: module.DocumentsView })));
+const ApprovalsView = lazy(() => import('./features/approvals/ApprovalsView').then((module) => ({ default: module.ApprovalsView })));
+const ReportsAnalyticsView = lazy(() => import('./features/reports/ReportsAnalyticsView').then((module) => ({ default: module.ReportsAnalyticsView })));
+const SettingsView = lazy(() => import('./features/settings/SettingsView').then((module) => ({ default: module.SettingsView })));
+const SetupGuideView = lazy(() => import('./features/guide/SetupGuideView').then((module) => ({ default: module.SetupGuideView })));
+const AuthView = lazy(() => import('./features/auth/AuthView').then((module) => ({ default: module.AuthView })));
+const OrganizationOnboardingPage = lazy(() => import('./features/organizations/OrganizationOnboardingPage').then((module) => ({ default: module.OrganizationOnboardingPage })));
+
+function ViewLoadingFallback() {
+  return (
+    <section className="space-y-4" role="status" aria-busy="true" aria-label={organizationMessages.organizationDataLoading}>
+      <div className="h-8 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+      </div>
+      <div className="h-64 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+    </section>
+  );
+}
 
 function MainApp() {
   const {
@@ -127,7 +143,7 @@ function MainApp() {
   }
 
   if (isSupabaseLive && (!authSession || authMode === 'update_password')) {
-    return <AuthView />;
+    return <Suspense fallback={<ViewLoadingFallback />}><AuthView /></Suspense>;
   }
 
   if (isSupabaseLive && authSession && organizationsLoading) {
@@ -180,7 +196,7 @@ function MainApp() {
         </main>
       );
     }
-    return <OrganizationOnboardingPage />;
+    return <Suspense fallback={<ViewLoadingFallback />}><OrganizationOnboardingPage /></Suspense>;
   }
 
   return (
@@ -266,48 +282,61 @@ function MainApp() {
               <p className="text-sm text-slate-500 dark:text-slate-400">{organizationMessages.permissionDeniedDescription}</p>
             </section>
           ) : activeTab === 'projects' && activeProjectDetailId ? (
+            <Suspense fallback={<ViewLoadingFallback />}>
             <ProjectDetailView
+              key={activeProjectDetailId}
               projectId={activeProjectDetailId}
               onEdit={handleEditProject}
               onBack={closeProjectDetail}
             />
+            </Suspense>
           ) : activeTab === 'dashboard' ? (
-            <DashboardView onOpenCreateProject={handleOpenCreateProject} />
+            <Suspense fallback={<ViewLoadingFallback />}>
+              <DashboardView onOpenCreateProject={handleOpenCreateProject} />
+            </Suspense>
           ) : activeTab === 'projects' ? (
+            <Suspense fallback={<ViewLoadingFallback />}>
             <ProjectListView
               onOpenCreateProject={handleOpenCreateProject}
               onEditProject={handleEditProject}
             />
+            </Suspense>
           ) : activeTab === 'rab' ? (
-            <RabBoqView />
+            <Suspense fallback={<ViewLoadingFallback />}><RabBoqView /></Suspense>
           ) : activeTab === 'field_reports' ? (
-            <DailyReportsView />
+            <Suspense fallback={<ViewLoadingFallback />}><DailyReportsView /></Suspense>
           ) : activeTab === 'procurement' ? (
-            <ProcurementView />
+            <Suspense fallback={<ViewLoadingFallback />}><ProcurementView /></Suspense>
           ) : activeTab === 'warehouse' ? (
-            <WarehouseView />
+            <Suspense fallback={<ViewLoadingFallback />}><WarehouseView /></Suspense>
           ) : activeTab === 'subcontractors' ? (
-            <SubcontractorsView />
+            <Suspense fallback={<ViewLoadingFallback />}><SubcontractorsView /></Suspense>
           ) : activeTab === 'finance' ? (
-            <FinanceView />
+            <Suspense fallback={<ViewLoadingFallback />}><FinanceView /></Suspense>
           ) : activeTab === 'hr_manpower' ? (
-            <HrManpowerView />
+            <Suspense fallback={<ViewLoadingFallback />}><HrManpowerView /></Suspense>
           ) : activeTab === 'equipment' ? (
-            <EquipmentView />
+            <Suspense fallback={<ViewLoadingFallback />}><EquipmentView /></Suspense>
           ) : activeTab === 'safety_qc' ? (
-            <SafetyQcView />
+            <Suspense fallback={<ViewLoadingFallback />}><SafetyQcView /></Suspense>
           ) : activeTab === 'documents' ? (
-            <DocumentsView />
+            <Suspense fallback={<ViewLoadingFallback />}><DocumentsView /></Suspense>
           ) : activeTab === 'approvals' ? (
-            <ApprovalsView />
+            <Suspense fallback={<ViewLoadingFallback />}><ApprovalsView /></Suspense>
           ) : activeTab === 'reports' ? (
-            <ReportsAnalyticsView />
+            <Suspense fallback={<ViewLoadingFallback />}><ReportsAnalyticsView /></Suspense>
           ) : activeTab === 'settings' ? (
-            <SettingsView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
+            <Suspense fallback={<ViewLoadingFallback />}>
+              <SettingsView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
+            </Suspense>
           ) : activeTab === 'guide' ? (
-            <SetupGuideView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
+            <Suspense fallback={<ViewLoadingFallback />}>
+              <SetupGuideView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
+            </Suspense>
           ) : (
-            <DashboardView onOpenCreateProject={handleOpenCreateProject} />
+            <Suspense fallback={<ViewLoadingFallback />}>
+              <DashboardView onOpenCreateProject={handleOpenCreateProject} />
+            </Suspense>
           )}
         </main>
       </div>
@@ -336,11 +365,15 @@ function MainApp() {
         onClose={() => setIsCreateOrgModalOpen(false)}
       />
 
-      <CreateProjectModal
-        isOpen={isCreateProjectModalOpen}
-        onClose={() => setIsCreateProjectModalOpen(false)}
-        projectToEdit={projectToEdit}
-      />
+      {isCreateProjectModalOpen && (
+        <Suspense fallback={null}>
+          <CreateProjectModal
+            isOpen={isCreateProjectModalOpen}
+            onClose={() => setIsCreateProjectModalOpen(false)}
+            projectToEdit={projectToEdit}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

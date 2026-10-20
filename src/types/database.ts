@@ -56,9 +56,17 @@ export interface ProjectAddendum {
   description?: string;
   amount: number;
   time_extension_days: number;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  created_by?: string | null;
   approved_by_name?: string;
   created_at: string;
 }
+
+export type ProjectAddendumInput = Pick<
+  ProjectAddendum,
+  'addendum_number' | 'title' | 'description' | 'amount' | 'time_extension_days'
+>;
 
 export interface Project {
   id: string;
@@ -83,6 +91,8 @@ export interface Project {
   planned_progress: number;
   actual_progress: number;
   status: ProjectStatus;
+  project_manager_id?: string | null;
+  site_manager_id?: string | null;
   project_manager_name?: string;
   site_manager_name?: string;
   notes?: string;
@@ -107,10 +117,12 @@ export interface AuditLog {
 
 export interface NotificationItem {
   id: string;
+  organization_id: string;
+  user_id: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'urgent' | 'success';
-  link?: string;
+  type: string;
+  link: string | null;
   is_read: boolean;
   created_at: string;
 }
@@ -705,4 +717,3 @@ export interface ApprovalItem {
   approval_level: string; // e.g. "Level 1 (Site Manager)", "Level 2 (Direktur)"
   comments?: string;
 }
-
