@@ -301,6 +301,220 @@ export type Database = {
           },
         ]
       }
+      boq_items: {
+        Row: {
+          ahsp_id: string | null
+          boq_version_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          description: string
+          id: string
+          item_code: string
+          item_type: string
+          line_total: number | null
+          organization_id: string
+          parent_id: string | null
+          project_id: string
+          sort_order: number
+          unit_id: string | null
+          unit_price: number | null
+          updated_at: string
+          volume: number | null
+        }
+        Insert: {
+          ahsp_id?: string | null
+          boq_version_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description: string
+          id?: string
+          item_code: string
+          item_type: string
+          line_total?: number | null
+          organization_id: string
+          parent_id?: string | null
+          project_id: string
+          sort_order?: number
+          unit_id?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          volume?: number | null
+        }
+        Update: {
+          ahsp_id?: string | null
+          boq_version_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          item_code?: string
+          item_type?: string
+          line_total?: number | null
+          organization_id?: string
+          parent_id?: string | null
+          project_id?: string
+          sort_order?: number
+          unit_id?: string | null
+          unit_price?: number | null
+          updated_at?: string
+          volume?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boq_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boq_items_org_ahsp_fkey"
+            columns: ["organization_id", "ahsp_id"]
+            isOneToOne: false
+            referencedRelation: "ahsp"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "boq_items_org_unit_fkey"
+            columns: ["organization_id", "unit_id"]
+            isOneToOne: false
+            referencedRelation: "measurement_units"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "boq_items_org_version_fkey"
+            columns: ["organization_id", "project_id", "boq_version_id"]
+            isOneToOne: false
+            referencedRelation: "boq_versions"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+          {
+            foreignKeyName: "boq_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boq_items_parent_fkey"
+            columns: [
+              "organization_id",
+              "project_id",
+              "boq_version_id",
+              "parent_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "boq_items"
+            referencedColumns: [
+              "organization_id",
+              "project_id",
+              "boq_version_id",
+              "id",
+            ]
+          },
+        ]
+      }
+      boq_versions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          grand_total: number
+          id: string
+          organization_id: string
+          overhead_amount: number
+          overhead_percent: number
+          ppn_amount: number
+          ppn_percent: number
+          profit_amount: number
+          profit_percent: number
+          project_id: string
+          revision_number: number
+          status: string
+          subtotal_direct_cost: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          grand_total?: number
+          id?: string
+          organization_id: string
+          overhead_amount?: number
+          overhead_percent?: number
+          ppn_amount?: number
+          ppn_percent?: number
+          profit_amount?: number
+          profit_percent?: number
+          project_id: string
+          revision_number?: number
+          status?: string
+          subtotal_direct_cost?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          grand_total?: number
+          id?: string
+          organization_id?: string
+          overhead_amount?: number
+          overhead_percent?: number
+          ppn_amount?: number
+          ppn_percent?: number
+          profit_amount?: number
+          profit_percent?: number
+          project_id?: string
+          revision_number?: number
+          status?: string
+          subtotal_direct_cost?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boq_versions_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boq_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boq_versions_org_project_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "boq_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_report_equipment: {
         Row: {
           active_hours: number
