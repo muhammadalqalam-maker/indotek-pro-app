@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { formatDateIndo, formatPersen, formatPercent, formatRupiah, formatTanggal, parseRupiah } from './format.ts';
+import { formatDateIndo, formatPersen, formatPercent, formatRupiah, formatTanggal, formatVolume, parseRupiah } from './format.ts';
 import { getMessages } from '../i18n/index.ts';
 
 describe('formatRupiah', () => {
@@ -30,6 +30,20 @@ describe('parseRupiah', () => {
     assert.equal(parseRupiah('-Rp 1.250'), -1250);
     assert.equal(parseRupiah(''), 0);
     assert.equal(parseRupiah('Rp'), 0);
+  });
+});
+
+describe('formatVolume', () => {
+  it('formats BOQ volumes with Indonesian separators and up to four decimals', () => {
+    assert.equal(formatVolume(1250.25), '1.250,25');
+    assert.equal(formatVolume(0.0001), '0,0001');
+    assert.equal(formatVolume(4), '4');
+  });
+
+  it('uses zero for nullish or non-finite values and limits precision', () => {
+    assert.equal(formatVolume(null), '0');
+    assert.equal(formatVolume(Number.POSITIVE_INFINITY), '0');
+    assert.throws(() => formatVolume(1, 5), RangeError);
   });
 });
 

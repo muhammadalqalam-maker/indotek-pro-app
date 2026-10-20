@@ -81,6 +81,22 @@ export function formatRupiah(
   return includeSymbol ? `Rp ${formatted}` : formatted;
 }
 
+export function formatVolume(
+  value: number | null | undefined,
+  maximumFractionDigits = 4,
+): string {
+  if (!Number.isInteger(maximumFractionDigits) || maximumFractionDigits < 0 || maximumFractionDigits > 4) {
+    throw new RangeError('Jumlah desimal volume harus berupa bilangan bulat 0–4.');
+  }
+
+  const formatted = new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits,
+  }).format(isFiniteNumber(value) ? value : 0);
+
+  return formatted;
+}
+
 export function parseRupiah(input: string): number {
   const cleaned = input.replace(/[^\d-]/g, '').replace(/(?!^)-/g, '');
   const parsed = Number.parseInt(cleaned, 10);

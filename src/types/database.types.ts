@@ -879,9 +879,9 @@ export type Database = {
           photo_paths: Json
           project_id: string
           report_date: string
-          solutions: string
           site_manager_name: string
           site_manager_signature_path: string | null
+          solutions: string
           status: string
           submitted_at: string | null
           submitted_by: string | null
@@ -902,9 +902,9 @@ export type Database = {
           photo_paths?: Json
           project_id: string
           report_date: string
-          solutions?: string
           site_manager_name?: string
           site_manager_signature_path?: string | null
+          solutions?: string
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -925,9 +925,9 @@ export type Database = {
           photo_paths?: Json
           project_id?: string
           report_date?: string
-          solutions?: string
           site_manager_name?: string
           site_manager_signature_path?: string | null
+          solutions?: string
           status?: string
           submitted_at?: string | null
           submitted_by?: string | null
@@ -936,6 +936,13 @@ export type Database = {
           work_summary?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "daily_reports_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "daily_reports_created_by_fkey"
             columns: ["created_by"]
@@ -955,6 +962,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_reports_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2206,14 +2220,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      create_boq_revision: {
-        Args: {
-          p_organization_id: string
-          p_project_id: string
-          p_source_version_id: string
-        }
-        Returns: string
-      }
       approve_daily_report: {
         Args: {
           p_approver_signature_path: string
@@ -2223,20 +2229,11 @@ export type Database = {
         }
         Returns: string
       }
-      save_daily_report_draft: {
+      create_boq_revision: {
         Args: {
           p_organization_id: string
           p_project_id: string
-          p_report_id: string
-          p_values: Json
-        }
-        Returns: string
-      }
-      submit_daily_report: {
-        Args: {
-          p_organization_id: string
-          p_project_id: string
-          p_report_id: string
+          p_source_version_id: string
         }
         Returns: string
       }
@@ -2371,6 +2368,33 @@ export type Database = {
           p_profit_percent: number
           p_project_id: string
           p_title: string
+        }
+        Returns: string
+      }
+      save_daily_report_draft: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
+          p_values: Json
+        }
+        Returns: string
+      }
+      save_daily_report_progress: {
+        Args: {
+          p_boq_version_id: string
+          p_entries: Json
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
+        }
+        Returns: undefined
+      }
+      submit_daily_report: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
         }
         Returns: string
       }

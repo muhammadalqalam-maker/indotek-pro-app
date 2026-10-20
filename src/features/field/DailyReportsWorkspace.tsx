@@ -12,6 +12,7 @@ import {
 import { DailyReportEditorPanel } from './components/DailyReportEditorPanel';
 import { DailyReportConflictPanel } from './components/DailyReportConflictPanel';
 import { DailyReportListPanel } from './components/DailyReportListPanel';
+import { DailyReportProgressSection } from './components/DailyReportProgressSection';
 import { useDailyReportEditor } from './hooks/useDailyReportEditor';
 import { useDailyReportConflicts } from './hooks/useDailyReportConflicts';
 import { useOfflineSync } from '../../hooks/useOfflineSync';
@@ -214,50 +215,61 @@ export function DailyReportsWorkspace() {
         onKeepLocal={(reportId) => void conflictActions.keepOfflineVersion(reportId)}
       />
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(16rem,0.85fr)_minmax(0,2fr)]">
-      <DailyReportListPanel
-        projectOptions={projectOptions}
-        projectId={projectId}
-        selectedReportId={selectedReportId}
-        reports={[
-          ...(reportsQuery.data ?? []),
-          ...visibleOfflineDrafts
-            .filter((draft) => !reportsQuery.data?.some((report) => report.id === draft.reportId))
-            .map((draft) => ({
-              id: draft.reportId,
-              report_date: draft.payload.report_date,
-              work_summary: draft.payload.work_summary,
-              status: 'draft',
-            })),
-        ]}
-        isLoading={reportsQuery.isPending && visibleOfflineDrafts.length === 0}
-        isError={reportsQuery.isError && visibleOfflineDrafts.length === 0}
-        isOnline={editor.isOnline}
-        canCreate={canCreate}
-        isCreating={isCreating}
-        isSaving={editor.isSaving}
-        creationError={creationError}
-        today={today}
-        timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
-        onProjectChange={(nextProjectId) => void selectProject(nextProjectId)}
-        onSelectReport={(reportId) => void selectReport(reportId)}
-        onCreateDraft={() => void createDraft()}
-        onRetry={() => void reportsQuery.refetch()}
-      />
-      <DailyReportEditorPanel
-        projectId={projectId}
-        reportId={selectedReportId}
-        report={selectedReport}
-        details={activeDetails}
-        isLoading={detailsQuery.isPending && !offlineDetails}
-        isError={detailsQuery.isError && !offlineDetails}
-        error={detailsQuery.error}
-        timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
-        canApprove={canApprove}
-        editor={editor}
-        onRetry={() => void detailsQuery.refetch()}
-      />
-      {isCreating && <span className="sr-only" role="status">{messages.saving}</span>}
+        <DailyReportListPanel
+          projectOptions={projectOptions}
+          projectId={projectId}
+          selectedReportId={selectedReportId}
+          reports={[
+            ...(reportsQuery.data ?? []),
+            ...visibleOfflineDrafts
+              .filter((draft) => !reportsQuery.data?.some((report) => report.id === draft.reportId))
+              .map((draft) => ({
+                id: draft.reportId,
+                report_date: draft.payload.report_date,
+                work_summary: draft.payload.work_summary,
+                status: 'draft',
+              })),
+          ]}
+          isLoading={reportsQuery.isPending && visibleOfflineDrafts.length === 0}
+          isError={reportsQuery.isError && visibleOfflineDrafts.length === 0}
+          isOnline={editor.isOnline}
+          canCreate={canCreate}
+          isCreating={isCreating}
+          isSaving={editor.isSaving}
+          creationError={creationError}
+          today={today}
+          timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
+          onProjectChange={(nextProjectId) => void selectProject(nextProjectId)}
+          onSelectReport={(reportId) => void selectReport(reportId)}
+          onCreateDraft={() => void createDraft()}
+          onRetry={() => void reportsQuery.refetch()}
+        />
+        <DailyReportEditorPanel
+          projectId={projectId}
+          reportId={selectedReportId}
+          report={selectedReport}
+          details={activeDetails}
+          isLoading={detailsQuery.isPending && !offlineDetails}
+          isError={detailsQuery.isError && !offlineDetails}
+          error={detailsQuery.error}
+          timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
+          canApprove={canApprove}
+          editor={editor}
+          onRetry={() => void detailsQuery.refetch()}
+        />
       </div>
+      {selectedReport && selectedReportId && (
+        <DailyReportProgressSection
+          organizationId={organizationId}
+          projectId={projectId}
+          reportId={selectedReportId}
+          reportStatus={selectedReport.status}
+          editable={editor.editable}
+          isOnline={editor.isOnline}
+          enabled={isSupabaseLive}
+        />
+      )}
+      {isCreating && <span className="sr-only" role="status">{messages.saving}</span>}
     </div>
   );
 }

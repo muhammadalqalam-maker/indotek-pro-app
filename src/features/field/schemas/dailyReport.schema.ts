@@ -16,6 +16,7 @@ export const DAILY_REPORT_STATUSES = {
   draft: 'draft',
   submitted: 'submitted',
   approved: 'approved',
+  rejected: 'rejected',
 } as const;
 
 export const dailyReportPhotoSchema = z.object({
