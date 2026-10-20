@@ -5,7 +5,7 @@ import { FileSpreadsheet } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { getMessages } from '../../../i18n';
 import { useCan } from '../../../hooks/useCan';
-import { EmptyState, ErrorState, Select, Skeleton } from '../../../components/ui';
+import { EmptyState, ErrorState, Skeleton } from '../../../components/ui';
 import { calculateBoqDraftTotals, type BoqDraftItem } from '../boqCalculations';
 import { applyBoqFormErrors } from '../schemas/applyBoqFormErrors';
 import { boqDraftSchema, type BoqDraftFormValues } from '../schemas/boq.schema';
@@ -16,7 +16,9 @@ import {
   toBoqDraftForm,
 } from '../services/boq.service';
 import { BoqDraftEditor } from './BoqDraftEditor';
+import { BoqRevisionTools } from './BoqRevisionTools';
 import { BoqVersionDetails } from './BoqVersionDetails';
+import { BoqWorkspaceHeader } from './BoqWorkspaceHeader';
 
 function getErrorMessage(error: unknown, fallback: string): string {
   if (error instanceof Error) return error.message;
@@ -215,32 +217,19 @@ export function BoqPanel() {
 
   return (
     <section className="grid gap-4">
-      <header className="grid gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm sm:grid-cols-[minmax(14rem,1fr)_minmax(14rem,20rem)] sm:items-end sm:p-6">
-        <div>
-          <h2 className="text-lg font-semibold text-text">{messages.boqTitle}</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{messages.boqDescription}</p>
-          <p className="mt-2 text-sm text-muted">{project.code} · {project.name}</p>
-        </div>
-        {versions.length > 0 && (
-          <Select
-            name="boq-version-selector"
-            label={messages.boqVersion}
-            value={versionId ?? ''}
-            onChange={(event) => {
-              setVersionId(event.target.value || null);
-              setEditorOpen(false);
-              setFeedback('');
-              setActionError('');
-            }}
-          >
-            {versions.map((version) => (
-              <option key={version.id} value={version.id}>
-                {version.title} — Rev {version.revision_number}
-              </option>
-            ))}
-          </Select>
-        )}
-      </header>
+      <BoqWorkspaceHeader
+        projectCode={project.code}
+        projectName={project.name}
+        versions={versions}
+        selectedVersionId={versionId}
+        messages={messages}
+        onVersionChange={(newVersionId) => {
+          setVersionId(newVersionId);
+          setEditorOpen(false);
+          setFeedback('');
+          setActionError('');
+        }}
+      />
 
       {actionError && (
         <div ref={errorSummaryRef} tabIndex={-1} className="grid gap-1 rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-danger" role="alert">
@@ -249,6 +238,26 @@ export function BoqPanel() {
         </div>
       )}
       {feedback && <p className="rounded-md border border-success/30 bg-success/5 p-3 text-sm text-success" role="status">{feedback}</p>}
+
+      {selectedVersion && !editorOpen && (
+        <BoqRevisionTools
+          organizationId={organizationId}
+          projectId={project.id}
+          versions={versions}
+          selectedVersion={selectedVersion}
+          canEdit={canEdit}
+          comparisonUnits={workspace.units}
+          analyses={analyses}
+          messages={messages}
+          onRevisionCreated={(newVersionId) => {
+            setVersionId(newVersionId);
+            setEditorOpen(true);
+            setFeedback(messages.boqRevisionCreated);
+            setActionError('');
+            setValidationErrors([]);
+          }}
+        />
+      )}
 
       {versions.length === 0 && !editorOpen ? (
         <EmptyState
@@ -275,10 +284,7 @@ export function BoqPanel() {
         />
       ) : (
         <>
-          {!canEdit && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.boqReadOnly}</p>}
-          {canEdit && versions.length > 0 && selectedVersion?.status !== 'draft' && (
-            <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.boqReadOnly}</p>
-          )}
+          {readOnly && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.boqReadOnly}</p>}
           {editorOpen ? (
             <BoqDraftEditor
               form={form}

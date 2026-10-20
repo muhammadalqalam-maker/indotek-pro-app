@@ -553,6 +553,76 @@ export type Database = {
           },
         ]
       }
+      daily_report_equipment_entries: {
+        Row: {
+          active_hours: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          equipment_name: string
+          id: string
+          organization_id: string
+          project_id: string
+          quantity: number
+          remarks: string
+          report_id: string
+          standby_hours: number
+          updated_at: string
+        }
+        Insert: {
+          active_hours?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          equipment_name: string
+          id?: string
+          organization_id: string
+          project_id: string
+          quantity?: number
+          remarks?: string
+          report_id: string
+          standby_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          active_hours?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          equipment_name?: string
+          id?: string
+          organization_id?: string
+          project_id?: string
+          quantity?: number
+          remarks?: string
+          report_id?: string
+          standby_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_report_equipment_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_equipment_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_equipment_entries_report_fkey"
+            columns: ["organization_id", "project_id", "report_id"]
+            isOneToOne: false
+            referencedRelation: "daily_reports"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+        ]
+      }
       daily_report_manpower: {
         Row: {
           headcount: number
@@ -582,6 +652,143 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "daily_site_reports"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_report_manpower_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          headcount: number
+          id: string
+          organization_id: string
+          project_id: string
+          remarks: string
+          report_id: string
+          trade_type: string
+          updated_at: string
+          work_hours: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          headcount?: number
+          id?: string
+          organization_id: string
+          project_id: string
+          remarks?: string
+          report_id: string
+          trade_type: string
+          updated_at?: string
+          work_hours?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          headcount?: number
+          id?: string
+          organization_id?: string
+          project_id?: string
+          remarks?: string
+          report_id?: string
+          trade_type?: string
+          updated_at?: string
+          work_hours?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_report_manpower_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_manpower_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_manpower_entries_report_fkey"
+            columns: ["organization_id", "project_id", "report_id"]
+            isOneToOne: false
+            referencedRelation: "daily_reports"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+        ]
+      }
+      daily_report_material_entries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          delivery_note_no: string
+          id: string
+          material_name: string
+          organization_id: string
+          project_id: string
+          quantity: number
+          report_id: string
+          supplier_name: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          delivery_note_no?: string
+          id?: string
+          material_name: string
+          organization_id: string
+          project_id: string
+          quantity: number
+          report_id: string
+          supplier_name?: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          delivery_note_no?: string
+          id?: string
+          material_name?: string
+          organization_id?: string
+          project_id?: string
+          quantity?: number
+          report_id?: string
+          supplier_name?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_report_material_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_material_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_report_material_entries_report_fkey"
+            columns: ["organization_id", "project_id", "report_id"]
+            isOneToOne: false
+            referencedRelation: "daily_reports"
+            referencedColumns: ["organization_id", "project_id", "id"]
           },
         ]
       }
@@ -654,6 +861,100 @@ export type Database = {
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "daily_site_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_reports: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approver_signature_path: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          obstacles: string
+          organization_id: string
+          photo_paths: Json
+          project_id: string
+          report_date: string
+          solutions: string
+          site_manager_name: string
+          site_manager_signature_path: string | null
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          updated_at: string
+          weather_conditions: string
+          work_summary: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approver_signature_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          obstacles?: string
+          organization_id: string
+          photo_paths?: Json
+          project_id: string
+          report_date: string
+          solutions?: string
+          site_manager_name?: string
+          site_manager_signature_path?: string | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          weather_conditions?: string
+          work_summary?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approver_signature_path?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          obstacles?: string
+          organization_id?: string
+          photo_paths?: Json
+          project_id?: string
+          report_date?: string
+          solutions?: string
+          site_manager_name?: string
+          site_manager_signature_path?: string | null
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          weather_conditions?: string
+          work_summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_reports_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_reports_org_project_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "daily_reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1243,6 +1544,90 @@ export type Database = {
         }
         Relationships: []
       }
+      progress_entries: {
+        Row: {
+          boq_item_id: string
+          boq_version_id: string
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          installed_volume: number
+          organization_id: string
+          project_id: string
+          remarks: string
+          report_id: string
+          updated_at: string
+        }
+        Insert: {
+          boq_item_id: string
+          boq_version_id: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          installed_volume: number
+          organization_id: string
+          project_id: string
+          remarks?: string
+          report_id: string
+          updated_at?: string
+        }
+        Update: {
+          boq_item_id?: string
+          boq_version_id?: string
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          installed_volume?: number
+          organization_id?: string
+          project_id?: string
+          remarks?: string
+          report_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "progress_entries_boq_item_fkey"
+            columns: [
+              "organization_id",
+              "project_id",
+              "boq_version_id",
+              "boq_item_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "boq_items"
+            referencedColumns: [
+              "organization_id",
+              "project_id",
+              "boq_version_id",
+              "id",
+            ]
+          },
+          {
+            foreignKeyName: "progress_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "progress_entries_report_fkey"
+            columns: ["organization_id", "project_id", "report_id"]
+            isOneToOne: false
+            referencedRelation: "daily_reports"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+        ]
+      }
       project_addendums: {
         Row: {
           addendum_number: string
@@ -1820,6 +2205,40 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      create_boq_revision: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+          p_source_version_id: string
+        }
+        Returns: string
+      }
+      approve_daily_report: {
+        Args: {
+          p_approver_signature_path: string
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
+        }
+        Returns: string
+      }
+      save_daily_report_draft: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
+          p_values: Json
+        }
+        Returns: string
+      }
+      submit_daily_report: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+          p_report_id: string
+        }
+        Returns: string
       }
       create_organization_invitation: {
         Args: {

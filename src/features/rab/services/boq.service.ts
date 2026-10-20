@@ -105,6 +105,21 @@ export async function saveBoqDraft(
   return data;
 }
 
+export async function createBoqRevision(
+  organizationId: string,
+  projectId: string,
+  sourceVersionId: string,
+): Promise<string> {
+  const { data, error } = await getBoqClient().rpc('create_boq_revision', {
+    p_organization_id: organizationId,
+    p_project_id: projectId,
+    p_source_version_id: sourceVersionId,
+  });
+
+  if (error) throw error;
+  return data;
+}
+
 export function toBoqDraftForm(
   version: BoqVersion | null,
   items: BoqItem[],

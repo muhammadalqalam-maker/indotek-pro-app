@@ -7,7 +7,7 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "tsx --test src/utils/format.test.ts src/utils/pure_logic.test.ts src/features/dashboard/dashboardMetrics.test.ts src/features/projects/schemas/projectSchema.test.ts src/features/projects/schemas/projectAddendumSchema.test.ts src/features/settings/schemas/settings.schema.test.ts src/features/settings/services/priceItemImport.test.ts src/features/notifications/services/notification.service.test.ts src/features/rab/ahspCalculations.test.ts src/features/rab/schemas/ahsp.schema.test.ts src/features/rab/boqCalculations.test.ts src/features/rab/schemas/boq.schema.test.ts",
+    "test": "tsx --test src/utils/format.test.ts src/utils/pure_logic.test.ts src/features/dashboard/dashboardMetrics.test.ts src/features/projects/schemas/projectSchema.test.ts src/features/projects/schemas/projectAddendumSchema.test.ts src/features/settings/schemas/settings.schema.test.ts src/features/settings/services/priceItemImport.test.ts src/features/notifications/services/notification.service.test.ts src/features/rab/ahspCalculations.test.ts src/features/rab/schemas/ahsp.schema.test.ts src/features/rab/boqCalculations.test.ts src/features/rab/boqRevisionComparison.test.ts src/features/rab/schemas/boq.schema.test.ts src/features/field/schemas/dailyReport.schema.test.ts",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
