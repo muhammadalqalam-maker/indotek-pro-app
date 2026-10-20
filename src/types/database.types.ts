@@ -1938,6 +1938,23 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      refresh_boq_version_totals: {
+        Args: { target_version_id: string }
+        Returns: undefined
+      }
+      save_boq_draft: {
+        Args: {
+          p_boq_version_id: string
+          p_items: Json
+          p_organization_id: string
+          p_overhead_percent: number
+          p_ppn_percent: number
+          p_profit_percent: number
+          p_project_id: string
+          p_title: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       project_status_type:

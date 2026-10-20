@@ -8,6 +8,7 @@ describe('formatRupiah', () => {
     assert.equal(formatRupiah(1250000), 'Rp 1.250.000');
     assert.equal(formatRupiah(-1250.5), 'Rp -1.250');
     assert.equal(formatRupiah(1250000, false), '1.250.000');
+    assert.equal(formatRupiah(1250.5, true, 2), 'Rp 1.250,50');
   });
 
   it('uses zero for nullish and non-finite amounts', () => {
@@ -15,6 +16,11 @@ describe('formatRupiah', () => {
     assert.equal(formatRupiah(undefined, false), '0');
     assert.equal(formatRupiah(Number.NaN), 'Rp 0');
     assert.equal(formatRupiah(Number.POSITIVE_INFINITY), 'Rp 0');
+  });
+
+  it('supports exact cent display and rejects an invalid precision', () => {
+    assert.equal(formatRupiah(1250.5, true, 2), 'Rp 1.250,50');
+    assert.throws(() => formatRupiah(100, true, 1.5), RangeError);
   });
 });
 
