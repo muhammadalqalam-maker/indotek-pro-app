@@ -13,7 +13,7 @@ type DailyReportListPanelProps = {
   projectOptions: ProjectOption[];
   projectId: string;
   selectedReportId: string | null;
-  reports: DailyReportRecord[] | undefined;
+  reports: Array<Pick<DailyReportRecord, 'id' | 'report_date' | 'status' | 'work_summary'>> | undefined;
   isLoading: boolean;
   isError: boolean;
   isOnline: boolean;
@@ -89,7 +89,7 @@ export function DailyReportListPanel({
           <Button
             className="w-full"
             onClick={onCreateDraft}
-            disabled={todayExists || !isOnline || isLoading || isCreating || isSaving}
+            disabled={todayExists || isLoading || isCreating || isSaving}
           >
             <FilePlus2 className="h-4 w-4" aria-hidden="true" />
             {isCreating ? messages.saving : messages.createDraft}

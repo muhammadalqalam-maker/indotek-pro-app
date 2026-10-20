@@ -10,8 +10,16 @@ import {
   saveDailyReportDraft,
 } from './services/dailyReport.service';
 import { DailyReportEditorPanel } from './components/DailyReportEditorPanel';
+import { DailyReportConflictPanel } from './components/DailyReportConflictPanel';
 import { DailyReportListPanel } from './components/DailyReportListPanel';
 import { useDailyReportEditor } from './hooks/useDailyReportEditor';
+import { useDailyReportConflicts } from './hooks/useDailyReportConflicts';
+import { useOfflineSync } from '../../hooks/useOfflineSync';
+import { SyncIndicator } from './components/SyncIndicator';
+import { enqueueDraft } from '../../lib/offlineDb';
+import { useOfflineQueueStore } from '../../stores/offlineQueue.store';
+import type { DailyReportRecord } from './services/dailyReport.service';
+import { useOfflineDailyReportDrafts } from './hooks/useOfflineDailyReportDrafts';
 
 const messages = getMessages().fieldReports;
 
@@ -27,12 +35,14 @@ function todayInJakarta(): string {
 }
 
 export function DailyReportsWorkspace() {
+  const { flush, retry } = useOfflineSync();
   const {
     currentOrg,
     projects,
     selectedProjectId,
     isSupabaseLive,
     currentMemberRole,
+    authSession,
   } = useApp();
   const queryClient = useQueryClient();
   const organizationId = currentOrg?.id ?? '';
@@ -40,10 +50,13 @@ export function DailyReportsWorkspace() {
     () => projects.filter((project) => project.organization_id === organizationId),
     [organizationId, projects],
   );
+  const refreshOfflineQueue = useOfflineQueueStore((state) => state.refreshCounts);
   const [projectId, setProjectId] = useState('');
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [creationError, setCreationError] = useState('');
+  const syncStatus = useOfflineQueueStore((state) => state.syncStatus);
+  const queueRevision = useOfflineQueueStore((state) => state.revision);
   const today = useMemo(todayInJakarta, []);
   const defaultValues = useMemo(() => createEmptyDailyReportValues(today), [today]);
   const canView = useCan('field_reports', 'view');
@@ -51,7 +64,7 @@ export function DailyReportsWorkspace() {
   const hasEditPermission = useCan('field_reports', 'edit');
   const hasApprovalPermission = useCan('field_reports', 'approve');
   const canCreate = Boolean(
-    isSupabaseLive && currentMemberRole === 'site_manager' && hasCreatePermission,
+    isSupabaseLive && authSession?.user.id && currentMemberRole === 'site_manager' && hasCreatePermission,
   );
   const canEdit = Boolean(
     isSupabaseLive && currentMemberRole === 'site_manager' && hasEditPermission,
@@ -78,6 +91,12 @@ export function DailyReportsWorkspace() {
     () => ['daily-reports', organizationId, projectId],
     [organizationId, projectId],
   );
+  const conflictActions = useDailyReportConflicts({
+    organizationId,
+    projectId,
+    reportsKey,
+    flush,
+  });
   const reportsQuery = useQuery({
     queryKey: reportsKey,
     queryFn: () => fetchDailyReports(organizationId, projectId),
@@ -91,7 +110,18 @@ export function DailyReportsWorkspace() {
     },
     enabled: Boolean(isSupabaseLive && organizationId && projectId && selectedReportId),
   });
-  const selectedReport = detailsQuery.data?.report
+  const {
+    drafts: visibleOfflineDrafts,
+    details: offlineDetails,
+  } = useOfflineDailyReportDrafts({
+    organizationId,
+    projectId,
+    userId: authSession?.user.id ?? '',
+    reportId: selectedReportId,
+    queueRevision,
+  });
+  const activeDetails = offlineDetails ?? detailsQuery.data;
+  const selectedReport = activeDetails?.report
     ?? reportsQuery.data?.find((report) => report.id === selectedReportId)
     ?? null;
   const editor = useDailyReportEditor({
@@ -99,7 +129,7 @@ export function DailyReportsWorkspace() {
     projectId,
     reportId: selectedReportId,
     report: selectedReport,
-    details: detailsQuery.data,
+    details: activeDetails,
     defaultValues,
     canEdit,
     canApprove,
@@ -119,20 +149,41 @@ export function DailyReportsWorkspace() {
   };
 
   const createDraft = async () => {
-    if (!canCreate || !organizationId || !projectId || !editor.isOnline || isCreating || editor.isSaving) return;
+    if (!canCreate || !organizationId || !projectId || isCreating || editor.isSaving) return;
     if (editor.editable && editor.hasUnsavedChanges && !(await editor.persistDraft(true))) return;
-    const todaysReport = reportsQuery.data?.find((report) => report.report_date === today);
+    const todaysReport = reportsQuery.data?.find((report) => report.report_date === today)
+      ?? visibleOfflineDrafts.find((draft) => draft.payload.report_date === today);
     if (todaysReport) {
-      setSelectedReportId(todaysReport.id);
+      setSelectedReportId('id' in todaysReport ? todaysReport.id : todaysReport.reportId);
       return;
     }
     const reportId = crypto.randomUUID();
     setIsCreating(true);
     setCreationError('');
     try {
-      await saveDailyReportDraft(organizationId, projectId, reportId, defaultValues);
+      if (editor.isOnline) {
+        await saveDailyReportDraft(organizationId, projectId, reportId, defaultValues);
+        await queryClient.invalidateQueries({ queryKey: reportsKey });
+      } else {
+        await enqueueDraft({
+          reportId,
+          organizationId,
+          projectId,
+          userId: authSession?.user.id ?? '',
+          payload: {
+            ...defaultValues,
+            manpower: [],
+            equipment: [],
+            materials: [],
+          },
+          queuedAt: new Date().toISOString(),
+          serverUpdatedAt: null,
+          attempts: 0,
+          lastError: null,
+        });
+        await refreshOfflineQueue(organizationId, authSession?.user.id);
+      }
       setSelectedReportId(reportId);
-      await queryClient.invalidateQueries({ queryKey: reportsKey });
     } catch (error: unknown) {
       const detail = error instanceof Error ? error.message : 'Unknown error';
       setCreationError(`${messages.autosaveError}: ${detail}`);
@@ -150,14 +201,36 @@ export function DailyReportsWorkspace() {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(16rem,0.85fr)_minmax(0,2fr)]">
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <SyncIndicator isOnline={editor.isOnline} onRetry={() => void retry()} />
+      </div>
+      <DailyReportConflictPanel
+        conflicts={conflictActions.conflicts}
+        isOnline={editor.isOnline}
+        actionError={conflictActions.actionError}
+        resolvingId={conflictActions.resolvingId}
+        onKeepServer={(reportId) => void conflictActions.keepServerVersion(reportId)}
+        onKeepLocal={(reportId) => void conflictActions.keepOfflineVersion(reportId)}
+      />
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(16rem,0.85fr)_minmax(0,2fr)]">
       <DailyReportListPanel
         projectOptions={projectOptions}
         projectId={projectId}
         selectedReportId={selectedReportId}
-        reports={reportsQuery.data}
-        isLoading={reportsQuery.isPending}
-        isError={reportsQuery.isError}
+        reports={[
+          ...(reportsQuery.data ?? []),
+          ...visibleOfflineDrafts
+            .filter((draft) => !reportsQuery.data?.some((report) => report.id === draft.reportId))
+            .map((draft) => ({
+              id: draft.reportId,
+              report_date: draft.payload.report_date,
+              work_summary: draft.payload.work_summary,
+              status: 'draft',
+            })),
+        ]}
+        isLoading={reportsQuery.isPending && visibleOfflineDrafts.length === 0}
+        isError={reportsQuery.isError && visibleOfflineDrafts.length === 0}
         isOnline={editor.isOnline}
         canCreate={canCreate}
         isCreating={isCreating}
@@ -174,9 +247,9 @@ export function DailyReportsWorkspace() {
         projectId={projectId}
         reportId={selectedReportId}
         report={selectedReport}
-        details={detailsQuery.data}
-        isLoading={detailsQuery.isPending}
-        isError={detailsQuery.isError}
+        details={activeDetails}
+        isLoading={detailsQuery.isPending && !offlineDetails}
+        isError={detailsQuery.isError && !offlineDetails}
         error={detailsQuery.error}
         timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
         canApprove={canApprove}
@@ -184,6 +257,7 @@ export function DailyReportsWorkspace() {
         onRetry={() => void detailsQuery.refetch()}
       />
       {isCreating && <span className="sr-only" role="status">{messages.saving}</span>}
+      </div>
     </div>
   );
 }

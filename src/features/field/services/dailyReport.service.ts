@@ -14,7 +14,27 @@ export type DailyReportDetails = {
   photoPreviewUrls: Record<string, string>;
   siteSignatureUrl: string | null;
   approverSignatureUrl: string | null;
+  syncVersion: string;
 };
+
+export type DailyReportSyncVersion = {
+  status: string;
+  version: string;
+};
+
+function buildSyncVersion(
+  reportUpdatedAt: string,
+  manpower: Array<{ id: string; updated_at: string }>,
+  equipment: Array<{ id: string; updated_at: string }>,
+  materials: Array<{ id: string; updated_at: string }>,
+): string {
+  return JSON.stringify({
+    report: reportUpdatedAt,
+    manpower: manpower.map(({ id, updated_at }) => [id, updated_at]).sort(),
+    equipment: equipment.map(({ id, updated_at }) => [id, updated_at]).sort(),
+    materials: materials.map(({ id, updated_at }) => [id, updated_at]).sort(),
+  });
+}
 
 function getClient() {
   const supabase = getSupabase();
@@ -36,6 +56,54 @@ export async function fetchDailyReports(
 
   if (error) throw error;
   return data;
+}
+
+export async function fetchDailyReportSyncVersion(
+  organizationId: string,
+  projectId: string,
+  reportId: string,
+): Promise<DailyReportSyncVersion | null> {
+  const client = getClient();
+  const [reportResult, manpowerResult, equipmentResult, materialsResult] = await Promise.all([
+    client.from('daily_reports')
+      .select('status, updated_at')
+      .eq('organization_id', organizationId)
+      .eq('project_id', projectId)
+      .eq('id', reportId)
+      .is('deleted_at', null)
+      .maybeSingle(),
+    client.from('daily_report_manpower_entries')
+      .select('id, updated_at')
+      .eq('organization_id', organizationId)
+      .eq('project_id', projectId)
+      .eq('report_id', reportId)
+      .is('deleted_at', null),
+    client.from('daily_report_equipment_entries')
+      .select('id, updated_at')
+      .eq('organization_id', organizationId)
+      .eq('project_id', projectId)
+      .eq('report_id', reportId)
+      .is('deleted_at', null),
+    client.from('daily_report_material_entries')
+      .select('id, updated_at')
+      .eq('organization_id', organizationId)
+      .eq('project_id', projectId)
+      .eq('report_id', reportId)
+      .is('deleted_at', null),
+  ]);
+  if (reportResult.error) throw reportResult.error;
+  if (manpowerResult.error) throw manpowerResult.error;
+  if (equipmentResult.error) throw equipmentResult.error;
+  if (materialsResult.error) throw materialsResult.error;
+  if (!reportResult.data) return null;
+
+  const version = buildSyncVersion(
+    reportResult.data.updated_at,
+    manpowerResult.data,
+    equipmentResult.data,
+    materialsResult.data,
+  );
+  return { status: reportResult.data.status, version };
 }
 
 export async function fetchDailyReportDetails(
@@ -147,6 +215,12 @@ export async function fetchDailyReportDetails(
     photoPreviewUrls,
     siteSignatureUrl: signedPaths.find(([key]) => key === 'site-manager-signature')?.[1] ?? null,
     approverSignatureUrl: signedPaths.find(([key]) => key === 'approver-signature')?.[1] ?? null,
+    syncVersion: buildSyncVersion(
+      reportResult.data.updated_at,
+      manpowerResult.data,
+      equipmentResult.data,
+      materialsResult.data,
+    ),
   };
 }
 

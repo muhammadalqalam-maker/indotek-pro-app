@@ -173,7 +173,7 @@ export function DailyReportEditorPanel({
                 type="button"
                 variant="outline"
                 onClick={() => void editor.persistDraft(true)}
-                disabled={!editor.isOnline || editor.isSaving}
+                disabled={editor.isSaving}
               >
                 {messages.saveNow}
               </Button>

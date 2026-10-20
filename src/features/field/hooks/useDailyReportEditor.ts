@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm, useWatch, type UseFormReturn } from 'react-hook-form';
+import { useApp } from '../../../context/AppContext';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
 import { getMessages } from '../../../i18n';
 import {
@@ -16,6 +17,13 @@ import {
 } from '../services/dailyReport.service';
 import { applyDailyReportValidationIssues } from '../utils/dailyReportValidation';
 import { useDailyReportWorkflowActions } from './useDailyReportWorkflowActions';
+import {
+  enqueueDraftWithPhotos,
+  removePhotoFromQueue,
+  type OfflineDraftPayload,
+  type OfflinePhotoQueueItem,
+} from '../../../lib/offlineDb';
+import { useOfflineQueueStore } from '../../../stores/offlineQueue.store';
 
 const messages = getMessages().fieldReports;
 type SaveState = 'saved' | 'pending' | 'saving' | 'error' | 'offline' | 'invalid';
@@ -72,6 +80,8 @@ export function useDailyReportEditor({
   canApprove,
   reportsKey,
 }: UseDailyReportEditorOptions): DailyReportEditorState {
+  const { authSession } = useApp();
+  const authUserId = authSession?.user.id ?? '';
   const queryClient = useQueryClient();
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [pendingPhotoIds, setPendingPhotoIds] = useState<Map<File, string>>(() => new Map());
@@ -127,8 +137,79 @@ export function useDailyReportEditor({
       return false;
     }
     if (!isOnline) {
+      if (!authUserId) {
+        setSaveState('error');
+        setSaveError(messages.autosaveError);
+        setSaveErrorDetail('Sesi pengguna tidak tersedia. Masuk kembali sebelum menyimpan secara offline.');
+        return false;
+      }
+
+      const payload: OfflineDraftPayload = {
+        report_date: parsed.data.report_date,
+        site_manager_name: parsed.data.site_manager_name,
+        weather_conditions: parsed.data.weather_conditions,
+        work_summary: parsed.data.work_summary,
+        obstacles: parsed.data.obstacles,
+        solutions: parsed.data.solutions,
+        site_manager_signature_path: parsed.data.site_manager_signature_path ?? null,
+        photo_paths: [...parsed.data.photo_paths],
+        manpower: parsed.data.manpower,
+        equipment: parsed.data.equipment,
+        materials: parsed.data.materials,
+      };
+      const queuedAt = new Date().toISOString();
+      const photos: OfflinePhotoQueueItem[] = pendingPhotos.map((file) => {
+        const photoId = pendingPhotoIds.get(file) ?? crypto.randomUUID();
+        payload.photo_paths.push({ path: `offline:${photoId}`, caption: file.name });
+        return {
+          id: `${reportId}-${photoId}`,
+          reportId,
+          organizationId,
+          projectId,
+          userId: authUserId,
+          photoId,
+          fileName: file.name,
+          blob: file,
+          purpose: 'photo',
+          queuedAt,
+          attempts: 0,
+          lastError: null,
+        };
+      });
+      if (siteSignatureFile) {
+        photos.push({
+          id: `${reportId}-site-signature`,
+          reportId,
+          organizationId,
+          projectId,
+          userId: authUserId,
+          photoId: 'site-manager',
+          fileName: 'site-manager.png',
+          blob: siteSignatureFile,
+          purpose: 'site-signature',
+          queuedAt,
+          attempts: 0,
+          lastError: null,
+        });
+      }
+      await enqueueDraftWithPhotos({
+        reportId,
+        organizationId,
+        projectId,
+        userId: authUserId,
+        payload,
+        queuedAt,
+        serverUpdatedAt: details?.report.id === reportId ? details.syncVersion : null,
+        attempts: 0,
+        lastError: null,
+      }, photos);
+      await useOfflineQueueStore.getState().refreshCounts(organizationId, authUserId);
+      form.reset({ ...parsed.data, photo_paths: payload.photo_paths });
+      setPendingPhotos([]);
+      setPendingPhotoIds(new Map());
+      setSiteSignatureFile(null);
       setSaveState('offline');
-      return false;
+      return true;
     }
 
     saveLock.current = true;
@@ -198,6 +279,7 @@ export function useDailyReportEditor({
     reportId,
     reportsKey,
     siteSignatureFile,
+    details,
   ]);
 
   const workflow = useDailyReportWorkflowActions({
@@ -223,7 +305,10 @@ export function useDailyReportEditor({
     if (!editable || !hasUnsavedChanges) return;
     if (!isOnline) {
       setSaveState('offline');
-      return;
+      const timer = window.setTimeout(() => {
+        void persistDraft();
+      }, 900);
+      return () => window.clearTimeout(timer);
     }
     if (!dailyReportDraftSchema.safeParse(watchedValues).success) {
       setSaveState('pending');
@@ -245,12 +330,30 @@ export function useDailyReportEditor({
     setPendingPhotos(files);
   };
 
+  const removeQueuedPhoto = async (id: string) => {
+    try {
+      await removePhotoFromQueue(id);
+      await useOfflineQueueStore.getState().refreshCounts(organizationId, authUserId);
+    } catch (error: unknown) {
+      setSaveError(messages.autosaveError);
+      setSaveErrorDetail(technicalError(error));
+      setSaveState('error');
+    }
+  };
+
   const onSiteSignatureChange = (file: File | null) => {
     setSiteSignatureFile(file);
     if (!file) form.setValue('site_manager_signature_path', null, { shouldDirty: true });
+    if (!file && reportId) {
+      void removeQueuedPhoto(`${reportId}-site-signature`);
+    }
   };
 
   const removePhoto = (path: string) => {
+    if (path.startsWith('offline:') && reportId) {
+      const photoId = path.slice('offline:'.length);
+      void removeQueuedPhoto(`${reportId}-${photoId}`);
+    }
     form.setValue(
       'photo_paths',
       form.getValues('photo_paths').filter((photo) => photo.path !== path),
