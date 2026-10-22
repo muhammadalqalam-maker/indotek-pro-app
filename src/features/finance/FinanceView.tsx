@@ -8,6 +8,7 @@ import {
   type CashAdvanceDecision,
   type ClientInvoice,
   type KasbonReimbursement,
+  type ProjectPayable,
   type ProjectCashTransaction,
 } from '../../types/database';
 import { getMessages } from '../../i18n';
@@ -16,7 +17,13 @@ import { ClientInvoicePaymentDialog } from './components/ClientInvoicePaymentDia
 import { CashTransactionDialog } from './components/CashTransactionDialog';
 import { CashAdvanceRequestDialog } from './components/CashAdvanceRequestDialog';
 import { CashAdvanceActionDialog } from './components/CashAdvanceActionDialog';
+import { ProjectPayableDialog } from './components/ProjectPayableDialog';
+import { ProjectPayablePaymentDialog } from './components/ProjectPayablePaymentDialog';
+import { PayablesPanel } from './components/PayablesPanel';
+import { AgingSummary } from './components/AgingSummary';
 import type { CashAdvanceActionFormValues } from './schemas/cashbook.schema';
+import type { ProjectPayablePaymentValues } from './schemas/payable.schema';
+import { calculateAgingTotals } from './utils/payableAging';
 import {
   TrendingUp,
   Receipt,
@@ -38,12 +45,17 @@ export const FinanceView: React.FC = () => {
   const {
     currentOrg,
     clientInvoices,
+    projectPayables,
+    payableSubcontractors,
+    vendors,
     cashTransactions,
     kasbonList,
     projects,
     selectedProjectId,
     handleCreateInvoice,
     handleMarkInvoicePaid,
+    handleCreateProjectPayable,
+    handlePayProjectPayable,
     handleCreateCashTransaction,
     handleVerifyCashTransaction,
     handleCreateKasbon,
@@ -60,10 +72,12 @@ export const FinanceView: React.FC = () => {
   const canRecordFinance = ['owner', 'admin', 'project_manager', 'finance'].includes(currentRole);
   const canProcessFinance = ['owner', 'admin', 'finance'].includes(currentRole);
 
-  const [activeTab, setActiveTab] = useState<'invoices' | 'cashbook' | 'kasbon' | 'profit_loss'>('invoices');
+  const [activeTab, setActiveTab] = useState<'invoices' | 'payables' | 'cashbook' | 'kasbon' | 'profit_loss'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [invoiceForPayment, setInvoiceForPayment] = useState<ClientInvoice | null>(null);
+  const [isPayableModalOpen, setIsPayableModalOpen] = useState(false);
+  const [payableForPayment, setPayableForPayment] = useState<ProjectPayable | null>(null);
   const [isCashTransactionModalOpen, setIsCashTransactionModalOpen] = useState(false);
   const [isKasbonModalOpen, setIsKasbonModalOpen] = useState(false);
   const [cashAdvanceAction, setCashAdvanceAction] = useState<{
@@ -82,6 +96,17 @@ export const FinanceView: React.FC = () => {
       inv.project_name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchProject = selectedProjectId === 'all' || inv.project_id === selectedProjectId;
     return matchSearch && matchProject;
+  });
+  const filteredPayables = projectPayables.filter((payable) => {
+    const search = searchTerm.toLocaleLowerCase('id-ID');
+    const matchesSearch = [
+      payable.payable_number,
+      payable.supplier_invoice_number,
+      payable.counterparty_name,
+      payable.project_name,
+    ].some((value) => value.toLocaleLowerCase('id-ID').includes(search));
+    const matchesProject = selectedProjectId === 'all' || payable.project_id === selectedProjectId;
+    return matchesSearch && matchesProject;
   });
 
   const filteredCashTransactions = cashTransactions.filter((ctx) => {
@@ -103,7 +128,15 @@ export const FinanceView: React.FC = () => {
   const totalBilled = clientInvoices.reduce((acc, i) => acc + i.net_receivable, 0);
   const totalReceived = clientInvoices
     .reduce((acc, i) => acc + (i.paid_amount ?? (i.status === 'paid' ? i.net_receivable : 0)), 0);
-  const totalOutstanding = totalBilled - totalReceived;
+  const totalOutstanding = clientInvoices
+    .filter((invoice) => invoice.status === 'sent' || invoice.status === 'partially_paid' || invoice.status === 'overdue')
+    .reduce((total, invoice) => total + Math.max(0, invoice.net_receivable - (invoice.paid_amount ?? 0)), 0);
+  const receivableAging = calculateAgingTotals(clientInvoices.map((invoice) => ({
+    amount: invoice.net_receivable,
+    paidAmount: invoice.paid_amount ?? 0,
+    dueDate: invoice.due_date,
+    status: invoice.status,
+  })), new Date().toISOString().slice(0, 10));
 
   const verifiedTransactions = cashTransactions.filter((transaction) => transaction.status === CASH_TRANSACTION_STATUSES.verified);
   const totalInflow = verifiedTransactions
@@ -143,6 +176,20 @@ export const FinanceView: React.FC = () => {
     setFinanceFeedback(messages.requestSaved);
     setFinanceActionError('');
     setActiveTab('kasbon');
+  };
+
+  const saveProjectPayable = async (data: Parameters<typeof handleCreateProjectPayable>[0]) => {
+    await handleCreateProjectPayable(data);
+    setFinanceFeedback(messages.payableSaved);
+    setFinanceActionError('');
+    setActiveTab('payables');
+  };
+
+  const saveProjectPayablePayment = async (values: ProjectPayablePaymentValues) => {
+    if (!payableForPayment) return;
+    await handlePayProjectPayable(payableForPayment, values);
+    setFinanceFeedback(messages.payablePaymentSaved);
+    setFinanceActionError('');
   };
 
   const verifyTransaction = async (transactionId: string) => {
@@ -264,6 +311,21 @@ export const FinanceView: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setActiveTab('payables')}
+          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
+            activeTab === 'payables'
+              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <CreditCard aria-hidden="true" className="w-4 h-4" />
+          <span>{messages.payablesTab}</span>
+          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+            {filteredPayables.length}
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('kasbon')}
           className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
             activeTab === 'kasbon'
@@ -293,7 +355,9 @@ export const FinanceView: React.FC = () => {
 
       {/* Tab: Invoices */}
       {activeTab === 'invoices' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+        <div className="space-y-4">
+          <AgingSummary title={messages.agingTitleReceivable} totals={receivableAging} />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
@@ -387,7 +451,21 @@ export const FinanceView: React.FC = () => {
               </tbody>
             </table>
           </div>
+          </div>
         </div>
+      )}
+
+      {activeTab === 'payables' && (
+        <PayablesPanel
+          canPay={canProcessFinance}
+          error={organizationDataError}
+          isLoading={isLoading}
+          onAdd={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsPayableModalOpen(true); }}
+          onPay={setPayableForPayment}
+          onReload={() => void reloadAllData()}
+          agingPayables={projectPayables}
+          payables={filteredPayables}
+        />
       )}
 
       {/* Tab: Cashbook */}
@@ -693,6 +771,25 @@ export const FinanceView: React.FC = () => {
           onSubmit={async (amount, reference, paymentMethod) => {
             await handleMarkInvoicePaid(invoiceForPayment.id, reference, amount, paymentMethod);
           }}
+        />
+      )}
+
+      {isPayableModalOpen && currentOrg && (
+        <ProjectPayableDialog
+          onClose={() => setIsPayableModalOpen(false)}
+          onSubmit={saveProjectPayable}
+          organizationId={currentOrg.id}
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          subcontractors={payableSubcontractors}
+          vendors={vendors}
+        />
+      )}
+      {payableForPayment && (
+        <ProjectPayablePaymentDialog
+          onClose={() => setPayableForPayment(null)}
+          onSubmit={saveProjectPayablePayment}
+          payable={payableForPayment}
         />
       )}
 

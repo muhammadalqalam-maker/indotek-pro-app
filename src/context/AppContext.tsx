@@ -15,6 +15,8 @@ import {
   SubcontractorContract,
   SubcontractorOpname,
   ClientInvoice,
+  ProjectPayable,
+  CreateProjectPayableInput,
   ProjectCashTransaction,
   KasbonReimbursement,
   CashAdvanceDecision,
@@ -29,6 +31,14 @@ import {
   PunchListItem,
   ProjectDocument,
 } from '../types/database';
+import type { ProjectPayablePaymentValues } from '../features/finance/schemas/payable.schema';
+import {
+  createProjectPayable as createProjectPayableRecord,
+  fetchPayableSubcontractors,
+  fetchProjectPayables,
+  recordProjectPayablePayment,
+} from '../features/finance/services/payables.service';
+import type { PayableSubcontractorOption } from '../features/finance/services/payables.service';
 import {
   hasPermission,
   type AppAction,
@@ -241,6 +251,8 @@ interface AppContextType {
   subconContracts: SubcontractorContract[];
   subconOpnames: SubcontractorOpname[];
   clientInvoices: ClientInvoice[];
+  projectPayables: ProjectPayable[];
+  payableSubcontractors: PayableSubcontractorOption[];
   cashTransactions: ProjectCashTransaction[];
   kasbonList: KasbonReimbursement[];
   fieldWorkers: FieldWorker[];
@@ -266,6 +278,8 @@ interface AppContextType {
     amount?: number,
     paymentMethod?: CashPaymentMethod,
   ) => Promise<ClientInvoice>;
+  handleCreateProjectPayable: (data: CreateProjectPayableInput) => Promise<ProjectPayable>;
+  handlePayProjectPayable: (payable: ProjectPayable, values: ProjectPayablePaymentValues) => Promise<ProjectPayable>;
   handleCreateCashTransaction: (data: CreateProjectCashTransactionInput) => Promise<ProjectCashTransaction>;
   handleVerifyCashTransaction: (id: string) => Promise<ProjectCashTransaction>;
   handleCreateKasbon: (data: CreateCashAdvanceRequestInput) => Promise<KasbonReimbursement>;
@@ -393,6 +407,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [subconContracts, setSubconContracts] = useState<SubcontractorContract[]>([]);
   const [subconOpnames, setSubconOpnames] = useState<SubcontractorOpname[]>([]);
   const [clientInvoices, setClientInvoices] = useState<ClientInvoice[]>([]);
+  const [projectPayables, setProjectPayables] = useState<ProjectPayable[]>([]);
+  const [payableSubcontractors, setPayableSubcontractors] = useState<PayableSubcontractorOption[]>([]);
   const [cashTransactions, setCashTransactions] = useState<ProjectCashTransaction[]>([]);
   const [kasbonList, setKasbonList] = useState<KasbonReimbursement[]>([]);
   const [fieldWorkers, setFieldWorkers] = useState<FieldWorker[]>([]);
@@ -430,6 +446,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSubconContracts([]);
     setSubconOpnames([]);
     setClientInvoices([]);
+    setProjectPayables([]);
+    setPayableSubcontractors([]);
     setCashTransactions([]);
     setKasbonList([]);
     setFieldWorkers([]);
@@ -827,6 +845,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         scContracts,
         scOpnames,
         invs,
+        pbls,
+        payableSubs,
         ctxs,
         ksb,
         wrks,
@@ -849,6 +869,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchSubconContracts(currentOrg.id, selectedProjectId),
         fetchSubconOpnames(currentOrg.id, selectedProjectId),
         fetchClientInvoices(currentOrg.id, selectedProjectId),
+        fetchProjectPayables(currentOrg.id, selectedProjectId),
+        fetchPayableSubcontractors(currentOrg.id),
         fetchCashTransactions(currentOrg.id, selectedProjectId),
         fetchKasbonList(currentOrg.id, selectedProjectId),
         fetchFieldWorkers(currentOrg.id, selectedProjectId),
@@ -887,6 +909,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSubconContracts(scContracts);
       setSubconOpnames(scOpnames);
       setClientInvoices(invs);
+      setProjectPayables(pbls);
+      setPayableSubcontractors(payableSubs);
       setCashTransactions(ctxs);
       setKasbonList(ksb);
       setFieldWorkers(wrks);
@@ -1093,6 +1117,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handleMarkInvoicePaid = async (id: string, ref: string, amount?: number, paymentMethod?: CashPaymentMethod) => {
     const updated = await markInvoicePaid(id, ref, amount, paymentMethod);
     setClientInvoices((prev) => prev.map((i) => (i.id === id ? updated : i)));
+    await reloadAllData();
+    return updated;
+  };
+
+  const handleCreateProjectPayable = async (data: CreateProjectPayableInput) => {
+    const created = await createProjectPayableRecord(data);
+    setProjectPayables((previous) => [created, ...previous]);
+    return created;
+  };
+
+  const handlePayProjectPayable = async (
+    payable: ProjectPayable,
+    values: ProjectPayablePaymentValues,
+  ) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk mencatat pembayaran hutang.');
+    const updated = await recordProjectPayablePayment(currentOrg.id, payable, values);
+    setProjectPayables((previous) => previous.map((item) => item.id === updated.id ? updated : item));
     await reloadAllData();
     return updated;
   };
@@ -1387,6 +1428,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         subconContracts,
         subconOpnames,
         clientInvoices,
+        projectPayables,
+        payableSubcontractors,
         cashTransactions,
         kasbonList,
         fieldWorkers,
@@ -1405,6 +1448,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleCreateSubconOpname,
         handleCreateInvoice,
         handleMarkInvoicePaid,
+        handleCreateProjectPayable,
+        handlePayProjectPayable,
         handleCreateCashTransaction,
         handleVerifyCashTransaction,
         handleCreateKasbon,

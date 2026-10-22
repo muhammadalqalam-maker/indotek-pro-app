@@ -526,6 +526,38 @@ export interface ClientInvoice {
   created_at: string;
 }
 
+export interface ProjectPayable {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  project_name: string;
+  vendor_id: string | null;
+  subcontractor_id: string | null;
+  counterparty_type: 'vendor' | 'subcontractor';
+  counterparty_name: string;
+  payable_number: string;
+  supplier_invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  amount: number;
+  paid_amount: number;
+  status: 'sent' | 'partially_paid' | 'paid' | 'overdue';
+  notes: string;
+  created_at: string;
+}
+
+export interface CreateProjectPayableInput {
+  organization_id: string;
+  project_id: string;
+  vendor_id: string | null;
+  subcontractor_id: string | null;
+  supplier_invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  amount: number;
+  notes: string;
+}
+
 export const CASH_TRANSACTION_TYPES = {
   inflow: 'inflow',
   outflow: 'outflow',

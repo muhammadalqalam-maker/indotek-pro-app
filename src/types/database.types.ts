@@ -3011,6 +3011,7 @@ export type Database = {
           id: string
           invoice_id: string | null
           organization_id: string
+          payable_id: string | null
           payment_method: string
           project_id: string
           recipient_or_payer: string
@@ -3034,6 +3035,7 @@ export type Database = {
           id?: string
           invoice_id?: string | null
           organization_id: string
+          payable_id?: string | null
           payment_method: string
           project_id: string
           recipient_or_payer: string
@@ -3057,6 +3059,7 @@ export type Database = {
           id?: string
           invoice_id?: string | null
           organization_id?: string
+          payable_id?: string | null
           payment_method?: string
           project_id?: string
           recipient_or_payer?: string
@@ -3103,6 +3106,13 @@ export type Database = {
             columns: ["organization_id", "project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_payable_fk"
+            columns: ["organization_id", "payable_id"]
+            isOneToOne: false
+            referencedRelation: "project_payables"
             referencedColumns: ["organization_id", "id"]
           },
           {
@@ -3166,6 +3176,102 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_payables: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          due_date: string
+          id: string
+          invoice_date: string
+          notes: string
+          organization_id: string
+          paid_amount: number
+          payable_number: string
+          project_id: string
+          status: string
+          subcontractor_id: string | null
+          supplier_invoice_number: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          due_date: string
+          id?: string
+          invoice_date: string
+          notes?: string
+          organization_id: string
+          paid_amount?: number
+          payable_number: string
+          project_id: string
+          status?: string
+          subcontractor_id?: string | null
+          supplier_invoice_number: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          due_date?: string
+          id?: string
+          invoice_date?: string
+          notes?: string
+          organization_id?: string
+          paid_amount?: number
+          payable_number?: string
+          project_id?: string
+          status?: string
+          subcontractor_id?: string | null
+          supplier_invoice_number?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_payables_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_payables_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_payables_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_payables_organization_id_subcontractor_id_fkey"
+            columns: ["organization_id", "subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_payables_organization_id_vendor_id_fkey"
+            columns: ["organization_id", "vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -4947,6 +5053,20 @@ export type Database = {
         }
         Returns: string
       }
+      create_project_payable: {
+        Args: {
+          p_amount: number
+          p_due_date: string
+          p_invoice_date: string
+          p_notes?: string
+          p_organization_id: string
+          p_project_id: string
+          p_subcontractor_id: string
+          p_supplier_invoice_number: string
+          p_vendor_id: string
+        }
+        Returns: string
+      }
       create_purchase_order_from_quote: {
         Args: {
           p_delivery_address: string
@@ -5104,6 +5224,17 @@ export type Database = {
           p_project_id: string
         }
         Returns: string
+      }
+      record_project_payable_payment: {
+        Args: {
+          p_amount: number
+          p_organization_id: string
+          p_payable_id: string
+          p_payment_date: string
+          p_payment_method: string
+          p_reference?: string
+        }
+        Returns: undefined
       }
       record_stock_movement: {
         Args: {
