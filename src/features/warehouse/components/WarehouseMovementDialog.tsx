@@ -142,7 +142,7 @@ export function WarehouseMovementDialog({
                 </select>
               </label>
             )}
-            {(movementType === 'out' || (movementType === 'adjustment' && adjustmentDirection === 'decrease'))
+            {(movementType === 'out' || movementType === 'transfer' || (movementType === 'adjustment' && adjustmentDirection === 'decrease'))
               && renderItemSelect('sourceInventoryItemId', messages.sourceItem)}
             {(movementType === 'in' || (movementType === 'adjustment' && adjustmentDirection === 'increase'))
               && renderItemSelect('destinationInventoryItemId', messages.destinationItem)}
