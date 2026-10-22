@@ -1563,6 +1563,7 @@ export type Database = {
           project_id: string
           purchase_order_id: string
           received_date: string
+          receiving_location: string | null
           receiver_name: string
           status: string
           updated_at: string
@@ -1582,6 +1583,7 @@ export type Database = {
           project_id: string
           purchase_order_id: string
           received_date: string
+          receiving_location?: string | null
           receiver_name: string
           status?: string
           updated_at?: string
@@ -1601,6 +1603,7 @@ export type Database = {
           project_id?: string
           purchase_order_id?: string
           received_date?: string
+          receiving_location?: string | null
           receiver_name?: string
           status?: string
           updated_at?: string
@@ -1641,6 +1644,195 @@ export type Database = {
             columns: ["organization_id", "vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      inventory_items: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          current_stock: number
+          deleted_at: string | null
+          id: string
+          item_code: string
+          item_name: string
+          last_movement_date: string | null
+          location_name: string
+          minimum_stock: number
+          organization_id: string
+          project_id: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string
+          current_stock?: number
+          deleted_at?: string | null
+          id?: string
+          item_code: string
+          item_name: string
+          last_movement_date?: string | null
+          location_name: string
+          minimum_stock?: number
+          organization_id: string
+          project_id: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          current_stock?: number
+          deleted_at?: string | null
+          id?: string
+          item_code?: string
+          item_name?: string
+          last_movement_date?: string | null
+          location_name?: string
+          minimum_stock?: number
+          organization_id?: string
+          project_id?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          destination_inventory_item_id: string | null
+          destination_project_id: string | null
+          goods_receipt_item_id: string | null
+          id: string
+          movement_date: string
+          movement_number: string
+          movement_type: string
+          notes: string
+          organization_id: string
+          quantity: number
+          recipient_or_supplier: string
+          reference_doc: string
+          source_inventory_item_id: string | null
+          source_project_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          destination_inventory_item_id?: string | null
+          destination_project_id?: string | null
+          goods_receipt_item_id?: string | null
+          id?: string
+          movement_date?: string
+          movement_number: string
+          movement_type: string
+          notes?: string
+          organization_id: string
+          quantity: number
+          recipient_or_supplier?: string
+          reference_doc?: string
+          source_inventory_item_id?: string | null
+          source_project_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          destination_inventory_item_id?: string | null
+          destination_project_id?: string | null
+          goods_receipt_item_id?: string | null
+          id?: string
+          movement_date?: string
+          movement_number?: string
+          movement_type?: string
+          notes?: string
+          organization_id?: string
+          quantity?: number
+          recipient_or_supplier?: string
+          reference_doc?: string
+          source_inventory_item_id?: string | null
+          source_project_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_source_inventory_item_id_fkey"
+            columns: ["organization_id", "source_inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_destination_inventory_item_id_fkey"
+            columns: ["organization_id", "destination_inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_source_project_id_fkey"
+            columns: ["organization_id", "source_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_destination_project_id_fkey"
+            columns: ["organization_id", "destination_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_goods_receipt_item_id_fkey"
+            columns: ["organization_id", "goods_receipt_item_id"]
+            isOneToOne: false
+            referencedRelation: "goods_receipt_items"
             referencedColumns: ["organization_id", "id"]
           },
         ]
@@ -3772,6 +3964,21 @@ export type Database = {
         }
         Returns: string
       }
+      create_goods_receipt_at_location: {
+        Args: {
+          p_delivery_note_number: string
+          p_driver_name: string
+          p_items: Json
+          p_notes: string
+          p_organization_id: string
+          p_purchase_order_id: string
+          p_received_date: string
+          p_receiving_location: string
+          p_receiver_name: string
+          p_vehicle_number: string
+        }
+        Returns: string
+      }
       create_organization_invitation: {
         Args: {
           p_department: string
@@ -3916,6 +4123,41 @@ export type Database = {
           p_entity_type: string
           p_organization_id: string
           p_prefix?: string
+        }
+        Returns: string
+      }
+      register_inventory_item: {
+        Args: {
+          p_category: string
+          p_item_code: string
+          p_item_name: string
+          p_location_name: string
+          p_minimum_stock: number
+          p_organization_id: string
+          p_project_id: string
+          p_unit: string
+        }
+        Returns: string
+      }
+      record_stock_movement: {
+        Args: {
+          p_destination_inventory_item_id: string | null
+          p_movement_date: string
+          p_movement_type: string
+          p_notes: string
+          p_organization_id: string
+          p_quantity: number
+          p_recipient_or_supplier: string
+          p_reference_doc: string
+          p_source_inventory_item_id: string | null
+        }
+        Returns: string
+      }
+      update_inventory_minimum: {
+        Args: {
+          p_inventory_item_id: string
+          p_minimum_stock: number
+          p_organization_id: string
         }
         Returns: string
       }

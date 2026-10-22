@@ -389,6 +389,7 @@ export async function fetchProcurementGoodsReceipts(
       po_number: poNumber,
       vendor_name: vendorName,
       delivery_note_number: receipt.delivery_note_number,
+      receiving_location: receipt.receiving_location,
       received_date: receipt.received_date,
       receiver_name: receipt.receiver_name,
       driver_name: receipt.driver_name,
@@ -402,10 +403,11 @@ export async function fetchProcurementGoodsReceipts(
 }
 
 export async function createProcurementGoodsReceipt(input: CreateGoodsReceiptInput): Promise<string> {
-  const { data, error } = await getClient().rpc('create_goods_receipt', {
+  const { data, error } = await getClient().rpc('create_goods_receipt_at_location', {
     p_organization_id: input.organizationId,
     p_purchase_order_id: input.purchaseOrderId,
     p_delivery_note_number: input.deliveryNoteNumber,
+    p_receiving_location: input.receivingLocation,
     p_received_date: input.receivedDate,
     p_receiver_name: input.receiverName,
     p_driver_name: input.driverName,

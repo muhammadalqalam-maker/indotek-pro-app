@@ -9,6 +9,7 @@ const messages = getMessages().procurementWorkflow;
 
 type FormValues = {
   deliveryNoteNumber: string;
+  receivingLocation: string;
   receivedDate: string;
   receiverName: string;
   driverName: string;
@@ -36,6 +37,7 @@ export function GoodsReceiptDialog({
   const form = useForm<FormValues>({
     defaultValues: {
       deliveryNoteNumber: '',
+      receivingLocation: '',
       receivedDate: new Date().toISOString().slice(0, 10),
       receiverName: '',
       driverName: '',
@@ -106,6 +108,18 @@ export function GoodsReceiptDialog({
                 className="min-h-11 rounded-md border border-border bg-surface px-3 text-base"
                 {...form.register('deliveryNoteNumber')}
               />
+            </label>
+            <label className="grid gap-1 text-sm text-text">
+              {messages.receivingLocation}
+              <input
+                required
+                maxLength={180}
+                className="min-h-11 rounded-md border border-border bg-surface px-3 text-base"
+                {...form.register('receivingLocation')}
+              />
+              {form.formState.errors.receivingLocation?.message && (
+                <span className="text-xs text-danger">{form.formState.errors.receivingLocation.message}</span>
+              )}
             </label>
             <label className="grid gap-1 text-sm text-text">
               {messages.receivedOn}

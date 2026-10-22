@@ -27,8 +27,6 @@ import {
   PurchaseOrder,
   PurchaseRequest,
   GoodsReceiptNote,
-  MaterialStockItem,
-  StockMovement,
   Subcontractor,
   SubcontractorContract,
   SubcontractorOpname,
@@ -56,8 +54,6 @@ import {
   INITIAL_PURCHASE_ORDERS,
   INITIAL_PURCHASE_REQUESTS,
   INITIAL_GOODS_RECEIPTS,
-  INITIAL_MATERIAL_STOCKS,
-  INITIAL_STOCK_MOVEMENTS,
   INITIAL_SUBCONTRACTORS,
   INITIAL_SUBCON_CONTRACTS,
   INITIAL_SUBCON_OPNAMES,
@@ -106,8 +102,6 @@ const KEY_VENDORS = `${STORAGE_PREFIX}vendors`;
 const KEY_POS = `${STORAGE_PREFIX}pos`;
 const KEY_PRS = `${STORAGE_PREFIX}prs`;
 const KEY_GRNS = `${STORAGE_PREFIX}grns`;
-const KEY_STOCKS = `${STORAGE_PREFIX}stocks`;
-const KEY_STOCK_MOVEMENTS = `${STORAGE_PREFIX}stock_movements`;
 const KEY_SUBCONS = `${STORAGE_PREFIX}subcons`;
 const KEY_SUBCON_CONTRACTS = `${STORAGE_PREFIX}subcon_contracts`;
 const KEY_SUBCON_OPNAMES = `${STORAGE_PREFIX}subcon_opnames`;
@@ -150,8 +144,6 @@ export function initLocalStorage(): void {
     [KEY_POS, INITIAL_PURCHASE_ORDERS],
     [KEY_PRS, INITIAL_PURCHASE_REQUESTS],
     [KEY_GRNS, INITIAL_GOODS_RECEIPTS],
-    [KEY_STOCKS, INITIAL_MATERIAL_STOCKS],
-    [KEY_STOCK_MOVEMENTS, INITIAL_STOCK_MOVEMENTS],
     [KEY_SUBCONS, INITIAL_SUBCONTRACTORS],
     [KEY_SUBCON_CONTRACTS, INITIAL_SUBCON_CONTRACTS],
     [KEY_SUBCON_OPNAMES, INITIAL_SUBCON_OPNAMES],
@@ -191,8 +183,6 @@ export function resetDemoData(): void {
   setLocal(KEY_POS, INITIAL_PURCHASE_ORDERS);
   setLocal(KEY_PRS, INITIAL_PURCHASE_REQUESTS);
   setLocal(KEY_GRNS, INITIAL_GOODS_RECEIPTS);
-  setLocal(KEY_STOCKS, INITIAL_MATERIAL_STOCKS);
-  setLocal(KEY_STOCK_MOVEMENTS, INITIAL_STOCK_MOVEMENTS);
   setLocal(KEY_SUBCONS, INITIAL_SUBCONTRACTORS);
   setLocal(KEY_SUBCON_CONTRACTS, INITIAL_SUBCON_CONTRACTS);
   setLocal(KEY_SUBCON_OPNAMES, INITIAL_SUBCON_OPNAMES);
@@ -1001,47 +991,6 @@ export async function createGoodsReceipt(input: CreateGoodsReceiptInput): Promis
   const receipt = receipts.find(({ id }) => id === receiptId);
   if (!receipt) throw new Error('GRN berhasil disimpan tetapi tidak dapat dimuat kembali.');
   return receipt;
-}
-
-// -------------------------------------------------------------
-// GUDANG & MATERIAL
-// -------------------------------------------------------------
-export async function fetchMaterialStocks(orgId: string, projectId?: string): Promise<MaterialStockItem[]> {
-  initLocalStorage();
-  const list = getLocal<MaterialStockItem[]>(KEY_STOCKS, INITIAL_MATERIAL_STOCKS);
-  return list.filter((s) => s.organization_id === orgId && (!projectId || projectId === 'all' || s.project_id === projectId));
-}
-
-export async function fetchStockMovements(orgId: string, projectId?: string): Promise<StockMovement[]> {
-  initLocalStorage();
-  const list = getLocal<StockMovement[]>(KEY_STOCK_MOVEMENTS, INITIAL_STOCK_MOVEMENTS);
-  return list.filter((m) => m.organization_id === orgId && (!projectId || projectId === 'all' || m.project_id === projectId));
-}
-
-export async function addStockMovement(data: Omit<StockMovement, 'id'>): Promise<StockMovement> {
-  const newMovement: StockMovement = {
-    ...data,
-    id: `mv-${Date.now()}`,
-  };
-  const list = getLocal<StockMovement[]>(KEY_STOCK_MOVEMENTS, INITIAL_STOCK_MOVEMENTS);
-  list.unshift(newMovement);
-  setLocal(KEY_STOCK_MOVEMENTS, list);
-
-  // Update current stock
-  const stocks = getLocal<MaterialStockItem[]>(KEY_STOCKS, INITIAL_MATERIAL_STOCKS);
-  const targetStock = stocks.find((s) => s.project_id === data.project_id && s.item_name.toLowerCase().includes(data.item_name.toLowerCase().slice(0, 10)));
-  if (targetStock) {
-    if (data.type === 'in' || data.type === 'transfer_in') {
-      targetStock.current_stock += data.quantity;
-    } else {
-      targetStock.current_stock = Math.max(0, targetStock.current_stock - data.quantity);
-    }
-    targetStock.status = targetStock.current_stock <= 0 ? 'out_of_stock' : targetStock.current_stock <= targetStock.minimum_stock ? 'low' : 'safe';
-    targetStock.last_movement_date = new Date().toISOString().split('T')[0];
-    setLocal(KEY_STOCKS, stocks);
-  }
-
-  return newMovement;
 }
 
 // -------------------------------------------------------------

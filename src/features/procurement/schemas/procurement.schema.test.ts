@@ -79,6 +79,7 @@ test('purchase order from quote requires a selected quote and delivery data', ()
 test('goods receipt accepts inspected quantities within delivery quantity', () => {
   const receipt = {
     deliveryNoteNumber: 'SJ-001',
+    receivingLocation: 'Gudang Utama',
     receivedDate: '2026-10-22',
     receiverName: 'Budi Site',
     driverName: '',
@@ -92,6 +93,10 @@ test('goods receipt accepts inspected quantities within delivery quantity', () =
     }],
   };
   assert.equal(goodsReceiptSchema.safeParse(receipt).success, true);
+  assert.equal(goodsReceiptSchema.safeParse({
+    ...receipt,
+    receivingLocation: '',
+  }).success, false);
   assert.equal(goodsReceiptSchema.safeParse({
     ...receipt,
     items: [{ ...receipt.items[0], acceptedQuantity: 11 }],

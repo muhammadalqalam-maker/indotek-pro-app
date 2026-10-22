@@ -11,8 +11,6 @@ import {
   PurchaseOrder,
   PurchaseRequest,
   GoodsReceiptNote,
-  MaterialStockItem,
-  StockMovement,
   Subcontractor,
   SubcontractorContract,
   SubcontractorOpname,
@@ -62,9 +60,6 @@ import {
   fetchPurchaseRequests,
   fetchGoodsReceipts,
   createGoodsReceipt,
-  fetchMaterialStocks,
-  fetchStockMovements,
-  addStockMovement,
   fetchSubcontractors,
   fetchSubconContracts,
   fetchSubconOpnames,
@@ -234,8 +229,6 @@ interface AppContextType {
   purchaseOrders: PurchaseOrder[];
   purchaseRequests: PurchaseRequest[];
   goodsReceipts: GoodsReceiptNote[];
-  materialStocks: MaterialStockItem[];
-  stockMovements: StockMovement[];
   subcontractors: Subcontractor[];
   subconContracts: SubcontractorContract[];
   subconOpnames: SubcontractorOpname[];
@@ -257,7 +250,6 @@ interface AppContextType {
   handleCreatePO: (data: Omit<PurchaseOrder, 'id' | 'created_at'>) => Promise<PurchaseOrder>;
   handleUpdatePOStatus: (id: string, status: PurchaseOrder['status'], approverName?: string, notes?: string) => Promise<PurchaseOrder>;
   handleCreateGRN: (data: CreateGoodsReceiptInput) => Promise<GoodsReceiptNote>;
-  handleAddStockMovement: (data: Omit<StockMovement, 'id'>) => Promise<StockMovement>;
   handleCreateSubconOpname: (data: Omit<SubcontractorOpname, 'id' | 'created_at'>) => Promise<SubcontractorOpname>;
   handleCreateInvoice: (data: Omit<ClientInvoice, 'id' | 'created_at'>) => Promise<ClientInvoice>;
   handleMarkInvoicePaid: (id: string, ref: string) => Promise<ClientInvoice>;
@@ -380,8 +372,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>([]);
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceiptNote[]>([]);
-  const [materialStocks, setMaterialStocks] = useState<MaterialStockItem[]>([]);
-  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
   const [subconContracts, setSubconContracts] = useState<SubcontractorContract[]>([]);
   const [subconOpnames, setSubconOpnames] = useState<SubcontractorOpname[]>([]);
@@ -419,8 +409,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPurchaseOrders([]);
     setPurchaseRequests([]);
     setGoodsReceipts([]);
-    setMaterialStocks([]);
-    setStockMovements([]);
     setSubcontractors([]);
     setSubconContracts([]);
     setSubconOpnames([]);
@@ -818,8 +806,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         pos,
         prs,
         grns,
-        stks,
-        mvms,
         subcons,
         scContracts,
         scOpnames,
@@ -842,8 +828,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchPurchaseOrders(currentOrg.id, selectedProjectId),
         fetchPurchaseRequests(currentOrg.id, selectedProjectId),
         fetchGoodsReceipts(currentOrg.id, selectedProjectId),
-        fetchMaterialStocks(currentOrg.id, selectedProjectId),
-        fetchStockMovements(currentOrg.id, selectedProjectId),
         fetchSubcontractors(currentOrg.id),
         fetchSubconContracts(currentOrg.id, selectedProjectId),
         fetchSubconOpnames(currentOrg.id, selectedProjectId),
@@ -882,8 +866,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setPurchaseOrders(pos);
       setPurchaseRequests(prs);
       setGoodsReceipts(grns);
-      setMaterialStocks(stks);
-      setStockMovements(mvms);
       setSubcontractors(subcons);
       setSubconContracts(scContracts);
       setSubconOpnames(scOpnames);
@@ -1075,13 +1057,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleCreateGRN = async (data: CreateGoodsReceiptInput) => {
     const created = await createGoodsReceipt(data);
-    await reloadAllData();
-    return created;
-  };
-
-  const handleAddStockMovement = async (data: Omit<StockMovement, 'id'>) => {
-    const created = await addStockMovement(data);
-    setStockMovements((prev) => [created, ...prev]);
     await reloadAllData();
     return created;
   };
@@ -1360,8 +1335,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         purchaseOrders,
         purchaseRequests,
         goodsReceipts,
-        materialStocks,
-        stockMovements,
         subcontractors,
         subconContracts,
         subconOpnames,
@@ -1381,7 +1354,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleCreatePO,
         handleUpdatePOStatus,
         handleCreateGRN,
-        handleAddStockMovement,
         handleCreateSubconOpname,
         handleCreateInvoice,
         handleMarkInvoicePaid,

@@ -45,6 +45,7 @@ export const purchaseOrderFromQuoteSchema = z.object({
 
 export const goodsReceiptSchema = z.object({
   deliveryNoteNumber: z.string().trim().min(1).max(100),
+  receivingLocation: z.string().trim().min(1, 'Lokasi tujuan penerimaan wajib diisi.').max(180),
   receivedDate: z.string().date(),
   receiverName: z.string().trim().min(2).max(120),
   driverName: z.string().trim().max(120),

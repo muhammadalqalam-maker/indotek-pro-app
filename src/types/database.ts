@@ -361,6 +361,7 @@ export interface GoodsReceiptNote {
   po_number: string;
   vendor_name: string;
   delivery_note_number: string; // Nomor Surat Jalan dari vendor
+  receiving_location?: string | null;
   received_date: string;
   receiver_name: string;
   driver_name?: string;

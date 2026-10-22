@@ -88,6 +88,7 @@ export interface CreateGoodsReceiptInput {
   organizationId: string;
   purchaseOrderId: string;
   deliveryNoteNumber: string;
+  receivingLocation: string;
   receivedDate: string;
   receiverName: string;
   driverName: string;

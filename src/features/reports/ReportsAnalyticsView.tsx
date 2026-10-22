@@ -22,7 +22,6 @@ export const ReportsAnalyticsView: React.FC = () => {
     currentOrg,
     projects,
     purchaseOrders,
-    materialStocks,
     clientInvoices,
     safetyIncidents,
     fieldWorkers,

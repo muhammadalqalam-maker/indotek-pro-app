@@ -169,6 +169,9 @@ export function GoodsReceiptWorkspace({
                     <p className="text-sm text-muted">
                       {receipt.project_name} · {formatDateIndo(receipt.received_date)} · {receipt.receiver_name}
                     </p>
+                    {receipt.receiving_location && (
+                      <p className="mt-1 text-sm text-muted">{messages.receivingLocation}: {receipt.receiving_location}</p>
+                    )}
                   </div>
                   <span className="inline-flex min-h-8 items-center gap-1 self-start rounded-full bg-surface-2 px-3 text-xs font-semibold text-text">
                     <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
