@@ -31,5 +31,17 @@ export const subcontractSchema = z.object({
   notes: optionalText(2000, 'Catatan terlalu panjang.'),
 }).refine((value) => value.endDate >= value.startDate, { path: ['endDate'], message: 'Tanggal selesai harus sama atau setelah tanggal mulai.' });
 
+export const subcontractOpnameSchema = z.object({
+  subcontractId: z.string().uuid('Pilih SPK yang valid.'),
+  opnameNumber: text(1, 80, 'Nomor opname wajib diisi.'),
+  periodStart: z.string().date('Tanggal awal periode tidak valid.'),
+  periodEnd: z.string().date('Tanggal akhir periode tidak valid.'),
+  grossAmount: z.number().positive('Nilai bruto harus lebih dari nol.').max(9_999_999_999_999_999.99, 'Nilai bruto terlalu besar.'),
+  notes: optionalText(2000, 'Catatan terlalu panjang.'),
+  deductions: z.array(z.object({ description: text(2, 500, 'Uraian potongan wajib diisi.'), amount: z.number().positive('Nilai potongan harus lebih dari nol.') })).max(50, 'Maksimal 50 potongan.'),
+}).refine((value) => value.periodEnd >= value.periodStart, { path: ['periodEnd'], message: 'Tanggal akhir harus sama atau setelah tanggal awal.' })
+  .refine((value) => value.deductions.reduce((sum, item) => sum + item.amount, 0) <= value.grossAmount, { path: ['deductions'], message: 'Total potongan tidak boleh melebihi nilai bruto.' });
+
 export type SubcontractorFormValues = z.infer<typeof subcontractorSchema>;
 export type SubcontractFormValues = z.infer<typeof subcontractSchema>;
+export type SubcontractOpnameFormValues = z.infer<typeof subcontractOpnameSchema>;

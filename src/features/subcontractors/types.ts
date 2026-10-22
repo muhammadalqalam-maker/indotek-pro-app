@@ -31,3 +31,30 @@ export interface SubcontractRecord {
   notes: string;
   subcontractor: SubcontractorRecord;
 }
+
+export type SubcontractOpnameStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+
+export interface SubcontractOpnameDeduction {
+  id: string;
+  description: string;
+  amount: number;
+}
+
+export interface SubcontractOpnameRecord {
+  id: string;
+  project_id: string;
+  subcontract_id: string;
+  opname_number: string;
+  period_start: string;
+  period_end: string;
+  gross_amount: number;
+  retention_percent: number;
+  retention_amount: number;
+  deduction_amount: number;
+  net_amount: number;
+  status: SubcontractOpnameStatus;
+  notes: string;
+  rejection_comment: string;
+  subcontract: Pick<SubcontractRecord, 'spk_number' | 'work_description' | 'subcontractor'>;
+  deductions: SubcontractOpnameDeduction[];
+}

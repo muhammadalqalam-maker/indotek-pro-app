@@ -3191,6 +3191,18 @@ export type Database = {
         Update: { id?: string; organization_id?: string; code?: string; company_name?: string; trade_specialty?: string; pic_name?: string; phone?: string; email?: string; address?: string; npwp?: string; bank_name?: string; bank_account_no?: string; bank_account_name?: string; is_active?: boolean; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
         Relationships: []
       }
+      subcontract_opname_deductions: {
+        Row: { id: string; organization_id: string; subcontract_opname_id: string; description: string; amount: number; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; subcontract_opname_id: string; description: string; amount: number; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; subcontract_opname_id?: string; description?: string; amount?: number; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
+      subcontract_opnames: {
+        Row: { id: string; organization_id: string; project_id: string; subcontract_id: string; opname_number: string; period_start: string; period_end: string; gross_amount: number; retention_percent: number; retention_amount: number; deduction_amount: number; net_amount: number; status: string; notes: string; approved_by: string | null; approved_at: string | null; rejection_comment: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; project_id: string; subcontract_id: string; opname_number: string; period_start: string; period_end: string; gross_amount: number; retention_percent: number; retention_amount: number; deduction_amount?: number; net_amount: number; status?: string; notes?: string; approved_by?: string | null; approved_at?: string | null; rejection_comment?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; project_id?: string; subcontract_id?: string; opname_number?: string; period_start?: string; period_end?: string; gross_amount?: number; retention_percent?: number; retention_amount?: number; deduction_amount?: number; net_amount?: number; status?: string; notes?: string; approved_by?: string | null; approved_at?: string | null; rejection_comment?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
       subcontracts: {
         Row: { id: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent: number; status: string; notes: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
         Insert: { id?: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent?: number; status?: string; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
@@ -4281,6 +4293,18 @@ export type Database = {
           p_project_id: string
         }
         Returns: string
+      }
+      decide_subcontract_opname: {
+        Args: { p_opname_id: string; p_decision: string; p_comment: string }
+        Returns: undefined
+      }
+      save_subcontract_opname: {
+        Args: { p_organization_id: string; p_opname_id: string | null; p_subcontract_id: string; p_opname_number: string; p_period_start: string; p_period_end: string; p_gross_amount: number; p_notes: string; p_deductions: Json }
+        Returns: string
+      }
+      submit_subcontract_opname: {
+        Args: { p_opname_id: string }
+        Returns: undefined
       }
       save_subcontractor: {
         Args: { p_organization_id: string; p_subcontractor_id: string | null; p_code: string; p_company_name: string; p_trade_specialty: string; p_pic_name: string; p_phone: string; p_email: string; p_address: string; p_npwp: string; p_bank_name: string; p_bank_account_no: string; p_bank_account_name: string }
