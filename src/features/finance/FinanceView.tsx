@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, formatPercent } from '../../utils/format';
+import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { ClientInvoice, ProjectCashTransaction, KasbonReimbursement } from '../../types/database';
 import {
   DollarSign,
@@ -490,7 +491,7 @@ export const FinanceView: React.FC = () => {
       {activeTab === 'profit_loss' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {projects.map((p) => {
-            const contractVal = p.contract_value;
+            const contractVal = calculateEffectiveProjectContractValue(p);
             const realizedCost = p.realized_cost;
             const grossProfit = contractVal - realizedCost;
             const grossMargin = contractVal > 0 ? (grossProfit / contractVal) * 100 : 0;

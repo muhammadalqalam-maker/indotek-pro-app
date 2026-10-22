@@ -64,13 +64,37 @@ function formatDateParts(
 export function formatRupiah(
   amount: number | null | undefined,
   includeSymbol = true,
+  maximumFractionDigits = 0,
 ): string {
-  const value = isFiniteNumber(amount) ? Math.round(amount) : 0;
+  if (!Number.isInteger(maximumFractionDigits) || maximumFractionDigits < 0 || maximumFractionDigits > 20) {
+    throw new RangeError('Jumlah desimal Rupiah harus berupa bilangan bulat 0–20.');
+  }
+
+  const value = isFiniteNumber(amount)
+    ? Math.round(amount * (10 ** maximumFractionDigits)) / (10 ** maximumFractionDigits)
+    : 0;
   const formatted = new Intl.NumberFormat('id-ID', {
-    maximumFractionDigits: 0,
+    minimumFractionDigits: maximumFractionDigits,
+    maximumFractionDigits,
   }).format(value);
 
   return includeSymbol ? `Rp ${formatted}` : formatted;
+}
+
+export function formatVolume(
+  value: number | null | undefined,
+  maximumFractionDigits = 4,
+): string {
+  if (!Number.isInteger(maximumFractionDigits) || maximumFractionDigits < 0 || maximumFractionDigits > 4) {
+    throw new RangeError('Jumlah desimal volume harus berupa bilangan bulat 0–4.');
+  }
+
+  const formatted = new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits,
+  }).format(isFiniteNumber(value) ? value : 0);
+
+  return formatted;
 }
 
 export function parseRupiah(input: string): number {

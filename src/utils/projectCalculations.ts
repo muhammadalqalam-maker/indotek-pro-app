@@ -1,3 +1,5 @@
+import type { Project } from '../types/database';
+
 /**
  * Calculation rules for construction project metrics
  */
@@ -70,9 +72,40 @@ export function calculateBudgetMetrics(contractValue: number, realizedCost: numb
 /**
  * Calculate contract value with addendums/variation orders (VO)
  */
-export function calculateTotalContractWithAddendums(baseContract: number, addendums: { amount: number }[]): number {
-  const addendumTotal = addendums.reduce((sum, item) => sum + (item.amount || 0), 0);
+export function calculateTotalContractWithAddendums(
+  baseContract: number,
+  addendums: { amount: number; approved_at?: string | null }[],
+): number {
+  const addendumTotal = addendums.reduce(
+    (sum, item) => sum + (item.approved_at ? item.amount || 0 : 0),
+    0,
+  );
   return baseContract + addendumTotal;
+}
+
+export function calculateEffectiveProjectContractValue(
+  project: Pick<Project, 'contract_value' | 'addendums'>,
+): number {
+  return calculateTotalContractWithAddendums(project.contract_value, project.addendums ?? []);
+}
+
+export function calculateApprovedTimeExtensionDays(
+  addendums: { time_extension_days: number; approved_at?: string | null }[],
+): number {
+  return addendums.reduce(
+    (total, item) => total + (item.approved_at ? item.time_extension_days || 0 : 0),
+    0,
+  );
+}
+
+export function calculateEffectiveContractEndDate(
+  endDate: string,
+  approvedExtensionDays: number,
+): string {
+  const date = new Date(`${endDate}T00:00:00.000Z`);
+  if (Number.isNaN(date.getTime()) || !Number.isInteger(approvedExtensionDays)) return endDate;
+  date.setUTCDate(date.getUTCDate() + approvedExtensionDays);
+  return date.toISOString().slice(0, 10);
 }
 
 /**

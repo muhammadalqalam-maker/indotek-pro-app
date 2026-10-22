@@ -40,7 +40,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   setIsMobileOpen,
 }) => {
-  const { activeTab, setActiveTab, projects, currentOrg, closeProjectDetail, approvals } = useApp();
+  const { activeTab, setActiveTab, projects, currentOrg, closeProjectDetail } = useApp();
   const isNavigationCollapsed = isCollapsed && !isMobileOpen;
 
   const handleNav = (tab: NavigationTab) => {
@@ -48,8 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     closeProjectDetail();
     setIsMobileOpen(false);
   };
-
-  const pendingApprovalsCount = approvals.filter((a) => a.status === 'pending').length;
 
   const navGroups = [
     {
@@ -166,7 +164,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: 'Pusat Approval Berjenjang',
           icon: CheckCircle,
           active: activeTab === 'approvals',
-          badge: pendingApprovalsCount > 0 ? `${pendingApprovalsCount} Pending` : null,
+          badge: null,
           onClick: () => handleNav('approvals'),
         },
         {

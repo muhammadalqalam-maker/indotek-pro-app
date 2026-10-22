@@ -6,7 +6,9 @@ import {
   AuditLog,
   NotificationItem,
   ProjectAddendum,
+  ProjectAddendumInput,
 } from '../types/database';
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database';
 import {
   INITIAL_ORGANIZATION,
   INITIAL_MEMBERS,
@@ -21,7 +23,6 @@ import {
   ProjectBOQ,
   ProjectBOQItem,
   DailySiteReport,
-  WeeklyProgressCurve,
   Vendor,
   PurchaseOrder,
   PurchaseRequest,
@@ -49,7 +50,6 @@ import {
   INITIAL_BOQ,
   INITIAL_BOQ_ITEMS,
   INITIAL_DAILY_REPORTS,
-  INITIAL_SCURVE_WEEKS,
 } from './mockDataFase2';
 import {
   INITIAL_VENDORS,
@@ -73,6 +73,21 @@ import {
   INITIAL_DOCUMENTS,
   INITIAL_APPROVALS,
 } from './mockDataModules';
+import {
+  archiveVendorRecord,
+  createVendorRecord,
+  fetchVendors as fetchPersistedVendors,
+  updateVendorRecord,
+} from '../features/procurement/services/vendor.service';
+import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
+import {
+  fetchProcurementPurchaseOrders,
+  fetchProcurementPurchaseRequests,
+  fetchProcurementGoodsReceipts,
+  createProcurementGoodsReceipt,
+  toLegacyPurchaseRequest,
+} from '../features/procurement/services/procurement.service';
+import type { CreateGoodsReceiptInput } from '../features/procurement/types';
 
 // Local storage keys
 const STORAGE_PREFIX = 'indotek_';
@@ -86,7 +101,6 @@ const KEY_AHSP = `${STORAGE_PREFIX}ahsp_templates`;
 const KEY_BOQS = `${STORAGE_PREFIX}boqs`;
 const KEY_BOQ_ITEMS = `${STORAGE_PREFIX}boq_items`;
 const KEY_DAILY_REPORTS = `${STORAGE_PREFIX}daily_reports`;
-const KEY_SCURVES = `${STORAGE_PREFIX}scurves`;
 
 const KEY_VENDORS = `${STORAGE_PREFIX}vendors`;
 const KEY_POS = `${STORAGE_PREFIX}pos`;
@@ -132,7 +146,6 @@ export function initLocalStorage(): void {
     [KEY_BOQS, [INITIAL_BOQ]],
     [KEY_BOQ_ITEMS, INITIAL_BOQ_ITEMS],
     [KEY_DAILY_REPORTS, INITIAL_DAILY_REPORTS],
-    [KEY_SCURVES, INITIAL_SCURVE_WEEKS],
     [KEY_VENDORS, INITIAL_VENDORS],
     [KEY_POS, INITIAL_PURCHASE_ORDERS],
     [KEY_PRS, INITIAL_PURCHASE_REQUESTS],
@@ -174,7 +187,6 @@ export function resetDemoData(): void {
   setLocal(KEY_BOQS, [INITIAL_BOQ]);
   setLocal(KEY_BOQ_ITEMS, INITIAL_BOQ_ITEMS);
   setLocal(KEY_DAILY_REPORTS, INITIAL_DAILY_REPORTS);
-  setLocal(KEY_SCURVES, INITIAL_SCURVE_WEEKS);
   setLocal(KEY_VENDORS, INITIAL_VENDORS);
   setLocal(KEY_POS, INITIAL_PURCHASE_ORDERS);
   setLocal(KEY_PRS, INITIAL_PURCHASE_REQUESTS);
@@ -241,17 +253,14 @@ export async function createOrganization(org: Omit<Organization, 'id' | 'created
 export async function updateOrganization(id: string, updates: Partial<Organization>): Promise<Organization> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('organizations')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Organization;
-    } catch (e) {
-      console.warn('Supabase update failed, saving locally:', e);
-    }
+    const { data, error } = await supabase
+      .from('organizations')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Organization;
   }
 
   const list = getLocal<Organization[]>(KEY_ORGS, [INITIAL_ORGANIZATION]);
@@ -278,7 +287,31 @@ export async function fetchProjects(organizationId: string): Promise<Project[]> 
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Project[];
+  const projects = (data ?? []) as Project[];
+  const addendumIds = projects.flatMap((project) => project.addendums ?? []).map(({ id }) => id);
+  if (addendumIds.length === 0) return projects;
+
+  const { data: approvalRequests, error: approvalError } = await supabase
+    .from('approval_requests')
+    .select('resource_id, status')
+    .eq('organization_id', organizationId)
+    .eq('resource_type', 'project_addendum')
+    .in('resource_id', addendumIds)
+    .is('deleted_at', null);
+  if (approvalError) throw approvalError;
+  const approvalStatuses = new Map(
+    approvalRequests.map((request) => [request.resource_id, request.status]),
+  );
+
+  return projects.map((project) => ({
+    ...project,
+    addendums: (project.addendums ?? []).map((addendum) => ({
+      ...addendum,
+      approval_status: addendum.approved_at
+        ? 'approved'
+        : approvalStatuses.get(addendum.id) ?? 'pending',
+    })),
+  }));
 }
 
 export async function createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
@@ -292,16 +325,49 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
 
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([project])
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase createProject failed, saving locally:', e);
-    }
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    const prefixMatch = /^(.+)-\d{4}-\d+$/.exec(project.code);
+    const { data: generatedCode, error: numberingError } = await supabase.rpc('generate_document_number', {
+      p_entity_type: 'project',
+      p_organization_id: project.organization_id,
+      p_prefix: prefixMatch?.[1] ?? '',
+    });
+    if (numberingError) throw numberingError;
+    const projectRecord: TablesInsert<'projects'> = {
+      organization_id: project.organization_id,
+      code: generatedCode,
+      name: project.name,
+      client_name: project.client_name,
+      client_contact: project.client_contact || null,
+      contract_number: project.contract_number || null,
+      category: project.category,
+      location_address: project.location_address,
+      location_city: project.location_city,
+      location_province: project.location_province,
+      latitude: project.latitude ?? null,
+      longitude: project.longitude ?? null,
+      contract_value: project.contract_value,
+      realized_cost: project.realized_cost,
+      start_date: project.start_date,
+      end_date: project.end_date,
+      maintenance_days: project.maintenance_days,
+      retention_percent: project.retention_percent,
+      planned_progress: project.planned_progress,
+      actual_progress: project.actual_progress,
+      status: project.status,
+      project_manager_id: project.project_manager_id ?? null,
+      site_manager_id: project.site_manager_id ?? null,
+      notes: project.notes || null,
+      created_by: authData.user?.id ?? null,
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .insert(projectRecord)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
@@ -324,24 +390,52 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   return newProject;
 }
 
-export async function updateProject(id: string, updates: Partial<Project>): Promise<Project> {
+export async function updateProject(
+  id: string,
+  organizationId: string,
+  updates: Partial<Project>,
+): Promise<Project> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
-      if (!error && data) return data as Project;
-    } catch (e) {
-      console.warn('Supabase updateProject failed, saving locally:', e);
-    }
+    const projectUpdates: TablesUpdate<'projects'> = {
+      ...(updates.code !== undefined && { code: updates.code }),
+      ...(updates.name !== undefined && { name: updates.name }),
+      ...(updates.client_name !== undefined && { client_name: updates.client_name }),
+      ...(updates.client_contact !== undefined && { client_contact: updates.client_contact || null }),
+      ...(updates.contract_number !== undefined && { contract_number: updates.contract_number || null }),
+      ...(updates.category !== undefined && { category: updates.category }),
+      ...(updates.location_address !== undefined && { location_address: updates.location_address }),
+      ...(updates.location_city !== undefined && { location_city: updates.location_city }),
+      ...(updates.location_province !== undefined && { location_province: updates.location_province }),
+      ...(updates.latitude !== undefined && { latitude: updates.latitude }),
+      ...(updates.longitude !== undefined && { longitude: updates.longitude }),
+      ...(updates.contract_value !== undefined && { contract_value: updates.contract_value }),
+      ...(updates.realized_cost !== undefined && { realized_cost: updates.realized_cost }),
+      ...(updates.start_date !== undefined && { start_date: updates.start_date }),
+      ...(updates.end_date !== undefined && { end_date: updates.end_date }),
+      ...(updates.maintenance_days !== undefined && { maintenance_days: updates.maintenance_days }),
+      ...(updates.retention_percent !== undefined && { retention_percent: updates.retention_percent }),
+      ...(updates.planned_progress !== undefined && { planned_progress: updates.planned_progress }),
+      ...(updates.actual_progress !== undefined && { actual_progress: updates.actual_progress }),
+      ...(updates.status !== undefined && { status: updates.status }),
+      ...(updates.project_manager_id !== undefined && { project_manager_id: updates.project_manager_id }),
+      ...(updates.site_manager_id !== undefined && { site_manager_id: updates.site_manager_id }),
+      ...(updates.notes !== undefined && { notes: updates.notes || null }),
+    };
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ ...projectUpdates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null)
+      .select()
+      .single();
+    if (error) throw error;
+    return data as Project;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === id);
+  const index = list.findIndex((p) => p.id === id && p.organization_id === organizationId);
   if (index !== -1) {
     list[index] = { ...list[index], ...updates, updated_at: new Date().toISOString() };
     setLocal(KEY_PROJECTS, list);
@@ -353,19 +447,24 @@ export async function updateProject(id: string, updates: Partial<Project>): Prom
 export async function deleteProject(id: string, organizationId: string): Promise<void> {
   const supabase = getSupabase();
   if (supabase) {
-    try {
-      await supabase
-        .from('projects')
-        .update({ deleted_at: new Date().toISOString() })
-        .eq('id', id);
-    } catch (e) {
-      console.warn('Supabase deleteProject failed:', e);
-    }
+    const { error } = await supabase
+      .from('projects')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .is('deleted_at', null);
+    if (error) throw error;
+    return;
   }
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const target = list.find((p) => p.id === id);
-  const filtered = list.filter((p) => p.id !== id);
+  const target = list.find((project) => (
+    project.id === id && project.organization_id === organizationId
+  ));
+  if (!target) throw new Error('Proyek tidak ditemukan.');
+  const filtered = list.filter((project) => (
+    project.id !== id || project.organization_id !== organizationId
+  ));
   setLocal(KEY_PROJECTS, filtered);
 
   if (target) {
@@ -385,34 +484,64 @@ export async function deleteProject(id: string, organizationId: string): Promise
 
 export async function addProjectAddendum(
   projectId: string,
-  addendum: Omit<ProjectAddendum, 'id' | 'created_at' | 'project_id'>
+  organizationId: string,
+  addendum: ProjectAddendumInput,
 ): Promise<ProjectAddendum> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: addendumId, error } = await supabase.rpc('create_project_addendum_with_approval', {
+      p_organization_id: organizationId,
+      p_project_id: projectId,
+      p_addendum_number: addendum.addendum_number,
+      p_title: addendum.title,
+      p_description: addendum.description ?? '',
+      p_amount: addendum.amount,
+      p_time_extension_days: addendum.time_extension_days,
+      p_comment: '',
+    });
+    if (error) throw error;
+
+    const { data, error: fetchError } = await supabase
+      .from('project_addendums')
+      .select()
+      .eq('id', addendumId)
+      .eq('organization_id', organizationId)
+      .eq('project_id', projectId)
+      .single();
+    if (fetchError) throw fetchError;
+    return { ...data, approval_status: 'pending' } as ProjectAddendum;
+  }
+
+  initLocalStorage();
   const newAdd: ProjectAddendum = {
     ...addendum,
     id: `add-${Date.now()}`,
+    organization_id: organizationId,
     project_id: projectId,
+    approved_at: null,
+    approved_by: null,
+    created_by: null,
     created_at: new Date().toISOString(),
   };
 
   const list = getLocal<Project[]>(KEY_PROJECTS, INITIAL_PROJECTS);
-  const index = list.findIndex((p) => p.id === projectId);
+  const index = list.findIndex((p) => p.id === projectId && p.organization_id === organizationId);
   if (index !== -1) {
     if (!list[index].addendums) list[index].addendums = [];
     list[index].addendums!.push(newAdd);
-    list[index].contract_value += newAdd.amount;
     list[index].updated_at = new Date().toISOString();
     setLocal(KEY_PROJECTS, list);
 
     await createAuditLog({
-      organization_id: addendum.organization_id,
+      organization_id: organizationId,
       project_id: projectId,
       project_name: list[index].name,
-      user_name: addendum.approved_by_name || 'Admin',
+      user_name: 'Pengguna demo',
       user_role: 'owner',
-      action: 'APPROVE_ADDENDUM',
+      action: 'CREATE_ADDENDUM',
       entity_type: 'addendum',
       entity_id: newAdd.addendum_number,
-      details: `Menambahkan amandemen kontrak ${newAdd.title} senilai Rp ${newAdd.amount.toLocaleString('id-ID')}`,
+      details: `Membuat addendum ${newAdd.addendum_number}; menunggu persetujuan.`,
     });
 
     return newAdd;
@@ -429,7 +558,7 @@ export async function fetchMembers(organizationId: string): Promise<Organization
   if (!supabase) return getLocal<OrganizationMember[]>(KEY_MEMBERS, INITIAL_MEMBERS).filter((m) => m.organization_id === organizationId);
   const { data, error } = await supabase
     .from('organization_members')
-    .select('*, user:profiles(*)')
+    .select('*, user:profiles!organization_members_user_id_fkey(*)')
     .eq('organization_id', organizationId);
   if (error) throw error;
   return (data ?? []) as OrganizationMember[];
@@ -517,18 +646,89 @@ export async function createAuditLog(log: Omit<AuditLog, 'id' | 'created_at'>): 
 // -------------------------------------------------------------
 // NOTIFICATIONS
 // -------------------------------------------------------------
-export async function fetchNotifications(): Promise<NotificationItem[]> {
-  initLocalStorage();
-  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+function mapNotification(row: Tables<'notifications'>): NotificationItem {
+  return {
+    id: row.id,
+    organization_id: row.organization_id,
+    user_id: row.user_id,
+    title: row.title,
+    message: row.message,
+    type: row.type,
+    link: row.link ?? null,
+    is_read: row.is_read,
+    created_at: row.created_at,
+  };
 }
 
-export async function markNotificationAsRead(id: string): Promise<void> {
+export async function fetchNotifications(organizationId: string): Promise<NotificationItem[]> {
+  initLocalStorage();
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memuat notifikasi.');
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id, organization_id, user_id, title, message, type, link, is_read, created_at')
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return (data ?? []).map(mapNotification);
+  }
+  return getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS)
+    .filter((notification) => notification.organization_id === organizationId);
+}
+
+export async function markNotificationAsRead(id: string, organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id);
+    if (error) throw error;
+    return;
+  }
   const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
-  const target = list.find((n) => n.id === id);
+  const target = list.find((notification) => notification.id === id
+    && notification.organization_id === organizationId);
   if (target) {
     target.is_read = true;
     setLocal(KEY_NOTIFS, list);
   }
+}
+
+export async function markAllNotificationsAsRead(organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) throw new Error('Sesi pengguna tidak tersedia untuk memperbarui notifikasi.');
+    const { error } = await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('organization_id', organizationId)
+      .eq('user_id', user.id)
+      .eq('is_read', false);
+    if (error) throw error;
+    return;
+  }
+  const list = getLocal<NotificationItem[]>(KEY_NOTIFS, INITIAL_NOTIFICATIONS);
+  let changed = false;
+  for (const notification of list) {
+    if (notification.organization_id === organizationId && !notification.is_read) {
+      notification.is_read = true;
+      changed = true;
+    }
+  }
+  if (changed) setLocal(KEY_NOTIFS, list);
 }
 
 // -------------------------------------------------------------
@@ -639,48 +839,47 @@ export async function createDailyReport(
 }
 
 // -------------------------------------------------------------
-// FASE 2: S-CURVE PROGRESS TRACKING
-// -------------------------------------------------------------
-export async function fetchSCurveData(projectId: string): Promise<WeeklyProgressCurve[]> {
-  initLocalStorage();
-  const list = getLocal<WeeklyProgressCurve[]>(KEY_SCURVES, INITIAL_SCURVE_WEEKS);
-  return list
-    .filter((s) => s.project_id === projectId)
-    .sort((a, b) => a.week_number - b.week_number);
-}
-
-export async function updateSCurveWeekActual(
-  weekId: string,
-  actualWeekly: number,
-  actualCumulative: number
-): Promise<WeeklyProgressCurve> {
-  const list = getLocal<WeeklyProgressCurve[]>(KEY_SCURVES, INITIAL_SCURVE_WEEKS);
-  const index = list.findIndex((s) => s.id === weekId);
-  if (index !== -1) {
-    const item = list[index];
-    item.actual_weekly_percent = actualWeekly;
-    item.actual_cumulative_percent = actualCumulative;
-    item.deviation_percent = Math.round((actualCumulative - item.planned_cumulative_percent) * 10) / 10;
-    setLocal(KEY_SCURVES, list);
-    return item;
-  }
-  throw new Error('Data Kurva S minggu tersebut tidak ditemukan');
-}
-
-// -------------------------------------------------------------
 // PENGADAAN (PROCUREMENT) & VENDOR
 // -------------------------------------------------------------
 export async function fetchVendors(orgId: string): Promise<Vendor[]> {
   initLocalStorage();
+  if (getSupabase()) return fetchPersistedVendors(orgId);
   const list = getLocal<Vendor[]>(KEY_VENDORS, INITIAL_VENDORS);
   return list.filter((v) => v.organization_id === orgId);
 }
 
 export async function createVendor(data: Omit<Vendor, 'id' | 'created_at'>): Promise<Vendor> {
+  if (getSupabase()) {
+    const {
+      organization_id: organizationId,
+      code,
+      name,
+      category,
+      contact_person,
+      phone,
+      email,
+      address,
+      npwp,
+      payment_terms_days,
+    } = data;
+    return createVendorRecord(organizationId, {
+      code,
+      name,
+      category,
+      contact_person,
+      phone,
+      email,
+      address,
+      npwp: npwp ?? '',
+      payment_terms_days,
+    });
+  }
   const newVendor: Vendor = {
     ...data,
     id: `vnd-${Date.now()}`,
     created_at: new Date().toISOString(),
+    is_active: data.is_active ?? true,
+    evaluation_count: data.evaluation_count ?? 0,
   };
   const list = getLocal<Vendor[]>(KEY_VENDORS, INITIAL_VENDORS);
   list.unshift(newVendor);
@@ -688,7 +887,32 @@ export async function createVendor(data: Omit<Vendor, 'id' | 'created_at'>): Pro
   return newVendor;
 }
 
+export async function updateVendor(
+  vendorId: string,
+  organizationId: string,
+  values: VendorInput,
+): Promise<Vendor> {
+  if (getSupabase()) return updateVendorRecord(organizationId, vendorId, values);
+  const list = getLocal<Vendor[]>(KEY_VENDORS, INITIAL_VENDORS);
+  const index = list.findIndex((vendor) => vendor.id === vendorId && vendor.organization_id === organizationId);
+  if (index < 0) throw new Error('Vendor tidak ditemukan.');
+  const updated: Vendor = { ...list[index], ...values, updated_at: new Date().toISOString() };
+  list[index] = updated;
+  setLocal(KEY_VENDORS, list);
+  return updated;
+}
+
+export async function archiveVendor(vendorId: string, organizationId: string): Promise<void> {
+  if (getSupabase()) return archiveVendorRecord(organizationId, vendorId);
+  const list = getLocal<Vendor[]>(KEY_VENDORS, INITIAL_VENDORS);
+  const index = list.findIndex((vendor) => vendor.id === vendorId && vendor.organization_id === organizationId);
+  if (index < 0) throw new Error('Vendor tidak ditemukan.');
+  list[index] = { ...list[index], is_active: false, deleted_at: new Date().toISOString() };
+  setLocal(KEY_VENDORS, list);
+}
+
 export async function fetchPurchaseOrders(orgId: string, projectId?: string): Promise<PurchaseOrder[]> {
+  if (getSupabase()) return fetchProcurementPurchaseOrders(orgId, projectId);
   initLocalStorage();
   const list = getLocal<PurchaseOrder[]>(KEY_POS, INITIAL_PURCHASE_ORDERS);
   return list
@@ -697,6 +921,9 @@ export async function fetchPurchaseOrders(orgId: string, projectId?: string): Pr
 }
 
 export async function createPurchaseOrder(data: Omit<PurchaseOrder, 'id' | 'created_at'>): Promise<PurchaseOrder> {
+  if (getSupabase()) {
+    throw new Error('PO hanya dapat dibuat dari penawaran vendor yang dipilih pada PR yang disetujui.');
+  }
   const newPO: PurchaseOrder = {
     ...data,
     id: `po-${Date.now()}`,
@@ -734,6 +961,9 @@ export async function updatePOStatus(
   approverName?: string,
   notes?: string
 ): Promise<PurchaseOrder> {
+  if (getSupabase()) {
+    throw new Error('Status persetujuan PO dikelola melalui Pusat Persetujuan.');
+  }
   const list = getLocal<PurchaseOrder[]>(KEY_POS, INITIAL_PURCHASE_ORDERS);
   const index = list.findIndex((p) => p.id === poId);
   if (index !== -1) {
@@ -748,27 +978,29 @@ export async function updatePOStatus(
 }
 
 export async function fetchPurchaseRequests(orgId: string, projectId?: string): Promise<PurchaseRequest[]> {
+  if (getSupabase()) {
+    const requests = await fetchProcurementPurchaseRequests(orgId, projectId);
+    return requests.map(toLegacyPurchaseRequest);
+  }
   initLocalStorage();
   const list = getLocal<PurchaseRequest[]>(KEY_PRS, INITIAL_PURCHASE_REQUESTS);
   return list.filter((pr) => pr.organization_id === orgId && (!projectId || projectId === 'all' || pr.project_id === projectId));
 }
 
 export async function fetchGoodsReceipts(orgId: string, projectId?: string): Promise<GoodsReceiptNote[]> {
+  if (getSupabase()) return fetchProcurementGoodsReceipts(orgId, projectId);
   initLocalStorage();
   const list = getLocal<GoodsReceiptNote[]>(KEY_GRNS, INITIAL_GOODS_RECEIPTS);
   return list.filter((grn) => grn.organization_id === orgId && (!projectId || projectId === 'all' || grn.project_id === projectId));
 }
 
-export async function createGoodsReceipt(data: Omit<GoodsReceiptNote, 'id' | 'created_at'>): Promise<GoodsReceiptNote> {
-  const newGRN: GoodsReceiptNote = {
-    ...data,
-    id: `grn-${Date.now()}`,
-    created_at: new Date().toISOString(),
-  };
-  const list = getLocal<GoodsReceiptNote[]>(KEY_GRNS, INITIAL_GOODS_RECEIPTS);
-  list.unshift(newGRN);
-  setLocal(KEY_GRNS, list);
-  return newGRN;
+export async function createGoodsReceipt(input: CreateGoodsReceiptInput): Promise<GoodsReceiptNote> {
+  if (!getSupabase()) throw new Error('Pencatatan penerimaan barang memerlukan koneksi Supabase.');
+  const receiptId = await createProcurementGoodsReceipt(input);
+  const receipts = await fetchProcurementGoodsReceipts(input.organizationId);
+  const receipt = receipts.find(({ id }) => id === receiptId);
+  if (!receipt) throw new Error('GRN berhasil disimpan tetapi tidak dapat dimuat kembali.');
+  return receipt;
 }
 
 // -------------------------------------------------------------
@@ -982,12 +1214,6 @@ export async function fetchDocuments(orgId: string, projectId?: string): Promise
 // -------------------------------------------------------------
 // APPROVAL ENGINE
 // -------------------------------------------------------------
-export async function fetchApprovals(orgId: string): Promise<ApprovalItem[]> {
-  initLocalStorage();
-  const list = getLocal<ApprovalItem[]>(KEY_APPROVALS, INITIAL_APPROVALS);
-  return list.filter((a) => a.organization_id === orgId);
-}
-
 export async function createApprovalItem(item: Omit<ApprovalItem, 'id'>): Promise<ApprovalItem> {
   const newItem: ApprovalItem = {
     ...item,
@@ -997,28 +1223,4 @@ export async function createApprovalItem(item: Omit<ApprovalItem, 'id'>): Promis
   list.unshift(newItem);
   setLocal(KEY_APPROVALS, list);
   return newItem;
-}
-
-export async function processApproval(id: string, status: 'approved' | 'rejected', notes?: string): Promise<ApprovalItem> {
-  const list = getLocal<ApprovalItem[]>(KEY_APPROVALS, INITIAL_APPROVALS);
-  const target = list.find((a) => a.id === id);
-  if (target) {
-    target.status = status;
-    if (notes) target.comments = notes;
-    setLocal(KEY_APPROVALS, list);
-
-    // If it's a PO approval, also update the PO
-    if (target.module_type === 'purchase_order') {
-      const pos = getLocal<PurchaseOrder[]>(KEY_POS, INITIAL_PURCHASE_ORDERS);
-      const po = pos.find((p) => p.po_number === target.reference_number);
-      if (po) {
-        po.status = status === 'approved' ? 'approved' : 'rejected';
-        if (notes) po.approval_notes = notes;
-        setLocal(KEY_POS, pos);
-      }
-    }
-
-    return target;
-  }
-  throw new Error('Approval item tidak ditemukan');
 }

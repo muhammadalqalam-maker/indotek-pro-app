@@ -4,7 +4,6 @@ import {
   ProjectBOQ,
   ProjectBOQItem,
   DailySiteReport,
-  WeeklyProgressCurve,
 } from '../types/database';
 
 export const INITIAL_RESOURCES: AHSPResource[] = [
@@ -396,23 +395,4 @@ export const INITIAL_DAILY_REPORTS: DailySiteReport[] = [
     photos: [],
     created_at: '2026-10-16T17:00:00Z',
   },
-];
-
-export const INITIAL_SCURVE_WEEKS: WeeklyProgressCurve[] = [
-  { id: 'sc-1', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 1, week_label: 'Mgg 1 (Jan)', start_date: '2026-01-10', end_date: '2026-01-16', planned_weekly_percent: 1.5, planned_cumulative_percent: 1.5, actual_weekly_percent: 1.8, actual_cumulative_percent: 1.8, deviation_percent: 0.3 },
-  { id: 'sc-2', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 2, week_label: 'Mgg 2 (Jan)', start_date: '2026-01-17', end_date: '2026-01-23', planned_weekly_percent: 2.0, planned_cumulative_percent: 3.5, actual_weekly_percent: 2.2, actual_cumulative_percent: 4.0, deviation_percent: 0.5 },
-  { id: 'sc-3', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 3, week_label: 'Mgg 3 (Jan)', start_date: '2026-01-24', end_date: '2026-01-30', planned_weekly_percent: 2.5, planned_cumulative_percent: 6.0, actual_weekly_percent: 2.7, actual_cumulative_percent: 6.7, deviation_percent: 0.7 },
-  { id: 'sc-4', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 4, week_label: 'Mgg 4 (Feb)', start_date: '2026-01-31', end_date: '2026-02-06', planned_weekly_percent: 3.0, planned_cumulative_percent: 9.0, actual_weekly_percent: 3.2, actual_cumulative_percent: 9.9, deviation_percent: 0.9 },
-  { id: 'sc-5', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 5, week_label: 'Mgg 5 (Feb)', start_date: '2026-02-07', end_date: '2026-02-13', planned_weekly_percent: 3.2, planned_cumulative_percent: 12.2, actual_weekly_percent: 3.3, actual_cumulative_percent: 13.2, deviation_percent: 1.0 },
-  { id: 'sc-6', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 6, week_label: 'Mgg 6 (Feb)', start_date: '2026-02-14', end_date: '2026-02-20', planned_weekly_percent: 3.5, planned_cumulative_percent: 15.7, actual_weekly_percent: 3.6, actual_cumulative_percent: 16.8, deviation_percent: 1.1 },
-  { id: 'sc-7', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 7, week_label: 'Mgg 7 (Feb)', start_date: '2026-02-21', end_date: '2026-02-27', planned_weekly_percent: 3.8, planned_cumulative_percent: 19.5, actual_weekly_percent: 3.9, actual_cumulative_percent: 20.7, deviation_percent: 1.2 },
-  { id: 'sc-8', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 8, week_label: 'Mgg 8 (Mar)', start_date: '2026-02-28', end_date: '2026-03-06', planned_weekly_percent: 4.0, planned_cumulative_percent: 23.5, actual_weekly_percent: 4.1, actual_cumulative_percent: 24.8, deviation_percent: 1.3 },
-  { id: 'sc-9', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 9, week_label: 'Mgg 9 (Mar)', start_date: '2026-03-07', end_date: '2026-03-13', planned_weekly_percent: 4.2, planned_cumulative_percent: 27.7, actual_weekly_percent: 4.3, actual_cumulative_percent: 29.1, deviation_percent: 1.4 },
-  { id: 'sc-10', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 10, week_label: 'Mgg 10 (Mar)', start_date: '2026-03-14', end_date: '2026-03-20', planned_weekly_percent: 4.5, planned_cumulative_percent: 32.2, actual_weekly_percent: 4.5, actual_cumulative_percent: 33.6, deviation_percent: 1.4 },
-  { id: 'sc-11', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 11, week_label: 'Mgg 11 (Apr)', start_date: '2026-03-21', end_date: '2026-03-27', planned_weekly_percent: 4.5, planned_cumulative_percent: 36.7, actual_weekly_percent: 4.6, actual_cumulative_percent: 38.2, deviation_percent: 1.5 },
-  { id: 'sc-12', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 12, week_label: 'Mgg 12 (Apr)', start_date: '2026-03-28', end_date: '2026-04-03', planned_weekly_percent: 4.8, planned_cumulative_percent: 41.5, actual_weekly_percent: 4.8, actual_cumulative_percent: 43.0, deviation_percent: 1.5 },
-  { id: 'sc-13', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 13, week_label: 'Mgg 13 (Okt)', start_date: '2026-10-01', end_date: '2026-10-07', planned_weekly_percent: 2.5, planned_cumulative_percent: 44.0, actual_weekly_percent: 2.5, actual_cumulative_percent: 45.5, deviation_percent: 1.5 },
-  { id: 'sc-14', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 14, week_label: 'Mgg 14 (Okt)', start_date: '2026-10-08', end_date: '2026-10-14', planned_weekly_percent: 2.5, planned_cumulative_percent: 46.5, actual_weekly_percent: 2.5, actual_cumulative_percent: 48.0, deviation_percent: 1.5 },
-  { id: 'sc-15', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 15, week_label: 'Mgg 15 (Okt)', start_date: '2026-10-15', end_date: '2026-10-21', planned_weekly_percent: 3.0, planned_cumulative_percent: 49.5, actual_weekly_percent: null, actual_cumulative_percent: null, deviation_percent: null },
-  { id: 'sc-16', organization_id: 'org-indotek-001', project_id: 'prj-001', week_number: 16, week_label: 'Mgg 16 (Nov)', start_date: '2026-10-22', end_date: '2026-10-28', planned_weekly_percent: 3.5, planned_cumulative_percent: 53.0, actual_weekly_percent: null, actual_cumulative_percent: null, deviation_percent: null },
 ];

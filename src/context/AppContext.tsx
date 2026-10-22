@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useEffect, useState, useMemo, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import {
   Organization,
   Project,
+  ProjectAddendum,
+  ProjectAddendumInput,
   OrganizationMember,
   AuditLog,
   NotificationItem,
@@ -24,7 +26,6 @@ import {
   ToolboxMeeting,
   PunchListItem,
   ProjectDocument,
-  ApprovalItem,
 } from '../types/database';
 import {
   hasPermission,
@@ -38,12 +39,10 @@ import {
   fetchProjects,
   fetchMembers,
   fetchAuditLogs,
-  fetchNotifications,
   createProject,
   updateProject,
   deleteProject,
   addProjectAddendum,
-  markNotificationAsRead,
   resetDemoData,
   fetchAHSPResources,
   fetchAHSPTemplates,
@@ -53,10 +52,10 @@ import {
   updateBOQItemProgress,
   fetchDailyReports,
   createDailyReport,
-  fetchSCurveData,
-  updateSCurveWeekActual,
   fetchVendors,
   createVendor,
+  updateVendor,
+  archiveVendor,
   fetchPurchaseOrders,
   createPurchaseOrder,
   updatePOStatus,
@@ -85,9 +84,19 @@ import {
   fetchPunchList,
   updatePunchListStatus,
   fetchDocuments,
-  fetchApprovals,
-  processApproval,
 } from '../services/dataService';
+import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
+import type { CreateGoodsReceiptInput } from '../features/procurement/types';
+import {
+  fetchNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '../services/dataService';
+import {
+  applyNotificationRealtimeEvent,
+  subscribeToNotifications,
+  type NotificationRealtimeStatus,
+} from '../features/notifications/services/notification.service';
 import {
   acceptOrganizationInvitation,
   fetchPendingOrganizationInvitations,
@@ -107,6 +116,7 @@ import {
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import { authMessages as messages, memberMessages, organizationMessages } from '../i18n/id';
+import { getMessages } from '../i18n';
 
 export type NavigationTab =
   | 'dashboard'
@@ -164,6 +174,7 @@ interface AppContextType {
   reloadOrganizations: () => void;
   setCurrentOrgId: (id: string) => void;
   completeOrganization: (organization: Organization) => void;
+  updateCurrentOrganization: (organization: Organization) => void;
 
   // Role simulation
   currentRole: UserRole;
@@ -187,6 +198,7 @@ interface AppContextType {
 
   // Data & Actions
   projects: Project[];
+  reloadProjects: () => Promise<void>;
   members: OrganizationMember[];
   membersLoading: boolean;
   membersError: string;
@@ -199,6 +211,12 @@ interface AppContextType {
   auditLogs: AuditLog[];
   notifications: NotificationItem[];
   unreadNotifsCount: number;
+  notificationsLoading: boolean;
+  notificationsError: string;
+  notificationsRealtimeStatus: NotificationRealtimeStatus;
+  notificationsRealtimeError: string;
+  notificationEventCount: number;
+  reloadNotifications: () => Promise<void>;
   isLoading: boolean;
 
   // Fase 2 Data & Actions
@@ -207,11 +225,9 @@ interface AppContextType {
   activeBoq: any;
   boqItems: any[];
   dailyReports: any[];
-  scurvePoints: any[];
   handleAddBOQItem: (item: any) => Promise<any>;
   handleUpdateBOQProgress: (itemId: string, vol: number, pct: number) => Promise<any>;
   handleCreateDailyReport: (report: any) => Promise<any>;
-  handleUpdateSCurve: (weekId: string, actualWeekly: number, actualCumulative: number) => Promise<any>;
 
   // Module Entities & Actions
   vendors: Vendor[];
@@ -233,13 +249,14 @@ interface AppContextType {
   toolboxMeetings: ToolboxMeeting[];
   punchList: PunchListItem[];
   documents: ProjectDocument[];
-  approvals: ApprovalItem[];
 
   // Module Handlers
-  handleCreateVendor: (data: Omit<Vendor, 'id' | 'created_at'>) => Promise<Vendor>;
+  handleCreateVendor: (data: VendorInput) => Promise<Vendor>;
+  handleUpdateVendor: (id: string, data: VendorInput) => Promise<Vendor>;
+  handleArchiveVendor: (id: string) => Promise<void>;
   handleCreatePO: (data: Omit<PurchaseOrder, 'id' | 'created_at'>) => Promise<PurchaseOrder>;
   handleUpdatePOStatus: (id: string, status: PurchaseOrder['status'], approverName?: string, notes?: string) => Promise<PurchaseOrder>;
-  handleCreateGRN: (data: Omit<GoodsReceiptNote, 'id' | 'created_at'>) => Promise<GoodsReceiptNote>;
+  handleCreateGRN: (data: CreateGoodsReceiptInput) => Promise<GoodsReceiptNote>;
   handleAddStockMovement: (data: Omit<StockMovement, 'id'>) => Promise<StockMovement>;
   handleCreateSubconOpname: (data: Omit<SubcontractorOpname, 'id' | 'created_at'>) => Promise<SubcontractorOpname>;
   handleCreateInvoice: (data: Omit<ClientInvoice, 'id' | 'created_at'>) => Promise<ClientInvoice>;
@@ -247,13 +264,12 @@ interface AppContextType {
   handleCreateCashTransaction: (data: Omit<ProjectCashTransaction, 'id'>) => Promise<ProjectCashTransaction>;
   handleCreateKasbon: (data: Omit<KasbonReimbursement, 'id' | 'created_at'>) => Promise<KasbonReimbursement>;
   handleUpdatePunchListStatus: (id: string, status: PunchListItem['status']) => Promise<PunchListItem>;
-  handleProcessApproval: (id: string, status: 'approved' | 'rejected', notes?: string) => Promise<ApprovalItem>;
 
   // Project Actions
   handleCreateProject: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<Project>;
   handleUpdateProject: (id: string, updates: Partial<Project>) => Promise<Project>;
   handleDeleteProject: (id: string) => Promise<void>;
-  handleAddAddendum: (projectId: string, addendum: any) => Promise<any>;
+  handleAddAddendum: (projectId: string, addendum: ProjectAddendumInput) => Promise<ProjectAddendum>;
 
   // Member Actions
   handleInviteMember: (data: MemberInvitationInput) => Promise<MemberInvitationSendResult>;
@@ -262,6 +278,7 @@ interface AppContextType {
 
   // Notification Actions
   handleMarkRead: (id: string) => Promise<void>;
+  handleMarkAllRead: () => Promise<void>;
 
   // System
   reloadAllData: () => Promise<void>;
@@ -328,6 +345,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Entities
   const [projects, setProjects] = useState<Project[]>([]);
   const dataLoadRequestId = useRef(0);
+  const projectRefreshRequestId = useRef(0);
   const [organizationDataError, setOrganizationDataError] = useState('');
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
@@ -339,7 +357,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const pendingInvitationsRequestId = useRef(0);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
+  const [notificationsRealtimeStatus, setNotificationsRealtimeStatus] = useState<NotificationRealtimeStatus>('disabled');
+  const [notificationsRealtimeError, setNotificationsRealtimeError] = useState('');
+  const [notificationEventCount, setNotificationEventCount] = useState(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const notificationRequestId = useRef(0);
+  const notificationRealtimeRevision = useRef(0);
+  const removedNotificationIds = useRef(new Set<string>());
+  const notificationScope = useRef('');
 
   // Fase 2 states
   const [resources, setResources] = useState<any[]>([]);
@@ -347,7 +374,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeBoq, setActiveBoq] = useState<any>(null);
   const [boqItems, setBoqItems] = useState<any[]>([]);
   const [dailyReports, setDailyReports] = useState<any[]>([]);
-  const [scurvePoints, setScurvePoints] = useState<any[]>([]);
 
   // Module states
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -369,7 +395,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [toolboxMeetings, setToolboxMeetings] = useState<ToolboxMeeting[]>([]);
   const [punchList, setPunchList] = useState<PunchListItem[]>([]);
   const [documents, setDocuments] = useState<ProjectDocument[]>([]);
-  const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [permissionOverrides, setPermissionOverrides] = useState<PermissionOverrides>({});
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [permissionsError, setPermissionsError] = useState('');
@@ -383,12 +408,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMembersError('');
     setAuditLogs([]);
     setNotifications([]);
+    setNotificationsLoading(false);
+    setNotificationsError('');
     setResources([]);
     setAhspTemplates([]);
     setActiveBoq(null);
     setBoqItems([]);
     setDailyReports([]);
-    setScurvePoints([]);
     setVendors([]);
     setPurchaseOrders([]);
     setPurchaseRequests([]);
@@ -408,7 +434,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setToolboxMeetings([]);
     setPunchList([]);
     setDocuments([]);
-    setApprovals([]);
   };
 
   const [authSession, setAuthSession] = useState<Session | null>(null);
@@ -719,6 +744,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const reloadProjects = async () => {
+    if (!currentOrg) {
+      setProjects([]);
+      return;
+    }
+    const requestId = ++projectRefreshRequestId.current;
+    try {
+      const result = await fetchProjects(currentOrg.id);
+      if (requestId === projectRefreshRequestId.current) setProjects(result);
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : 'Proyek gagal dimuat.';
+      if (requestId === projectRefreshRequestId.current) setOrganizationDataError(detail);
+      throw error;
+    }
+  };
+
   const reloadPendingInvitations = async () => {
     const requestId = ++pendingInvitationsRequestId.current;
     if (!isSupabaseLive || !authSession) {
@@ -771,7 +812,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const [
         projData,
         logData,
-        notifData,
         resData,
         ahspData,
         vnds,
@@ -793,11 +833,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         tbm,
         pnch,
         docs,
-        apps,
       ] = await Promise.all([
         fetchProjects(currentOrg.id),
         fetchAuditLogs(currentOrg.id),
-        fetchNotifications(),
         fetchAHSPResources(currentOrg.id),
         fetchAHSPTemplates(currentOrg.id),
         fetchVendors(currentOrg.id),
@@ -819,21 +857,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchToolboxMeetings(currentOrg.id, selectedProjectId),
         fetchPunchList(currentOrg.id, selectedProjectId),
         fetchDocuments(currentOrg.id, selectedProjectId),
-        fetchApprovals(currentOrg.id),
       ]);
 
       let boqData: Awaited<ReturnType<typeof fetchProjectBOQ>> = null;
       let boqItemData: Awaited<ReturnType<typeof fetchBOQItems>> = [];
       let reportData: Awaited<ReturnType<typeof fetchDailyReports>> = [];
-      let scurveData: Awaited<ReturnType<typeof fetchSCurveData>> = [];
       const targetProjId = selectedProjectId !== 'all'
         ? selectedProjectId
         : projData[0]?.id;
       if (targetProjId) {
-        [boqData, reportData, scurveData] = await Promise.all([
+        [boqData, reportData] = await Promise.all([
           fetchProjectBOQ(targetProjId),
           fetchDailyReports(targetProjId),
-          fetchSCurveData(targetProjId),
         ]);
         if (boqData) boqItemData = await fetchBOQItems(boqData.id);
       }
@@ -841,7 +876,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       setProjects(projData);
       setAuditLogs(logData);
-      setNotifications(notifData);
       setResources(resData);
       setAhspTemplates(ahspData);
       setVendors(vnds);
@@ -863,11 +897,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setToolboxMeetings(tbm);
       setPunchList(pnch);
       setDocuments(docs);
-      setApprovals(apps);
       setActiveBoq(boqData);
       setBoqItems(boqItemData);
       setDailyReports(reportData);
-      setScurvePoints(scurveData);
     } catch (error: unknown) {
       if (requestId !== dataLoadRequestId.current) return;
       clearOrganizationData();
@@ -885,11 +917,141 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [currentOrg?.id, selectedProjectId]);
 
+  const reloadNotifications = useCallback(async () => {
+    const organizationId = currentOrg?.id;
+    const userId = isSupabaseLive ? authSession?.user.id : undefined;
+    const requestId = ++notificationRequestId.current;
+    if (!organizationId) {
+      setNotifications([]);
+      setNotificationsError('');
+      setNotificationsLoading(false);
+      return;
+    }
+
+    setNotificationsLoading(true);
+    setNotificationsError('');
+    const revisionAtStart = notificationRealtimeRevision.current;
+    try {
+      const result = await fetchNotifications(organizationId);
+      if (requestId !== notificationRequestId.current) return;
+      setNotifications((previous) => {
+        const merged = new Map(result.map((notification) => [notification.id, notification]));
+        if (notificationRealtimeRevision.current !== revisionAtStart) {
+          for (const notification of previous) {
+            if (
+              notification.organization_id === organizationId
+              && (!userId || notification.user_id === userId)
+            ) {
+              merged.set(notification.id, notification);
+            }
+          }
+        }
+        for (const id of removedNotificationIds.current) merged.delete(id);
+        return [...merged.values()]
+          .sort((a, b) => b.created_at.localeCompare(a.created_at))
+          .slice(0, 50);
+      });
+    } catch (error: unknown) {
+      if (requestId === notificationRequestId.current) {
+        setNotificationsError(error instanceof Error ? error.message : getMessages().notifications.loadError);
+      }
+    } finally {
+      if (requestId === notificationRequestId.current) setNotificationsLoading(false);
+    }
+  }, [authSession?.user.id, currentOrg?.id, isSupabaseLive]);
+
+  useEffect(() => {
+    const scope = `${currentOrg?.id ?? ''}:${authSession?.user.id ?? ''}`;
+    if (scope !== notificationScope.current) {
+      notificationScope.current = scope;
+      notificationRealtimeRevision.current = 0;
+      removedNotificationIds.current.clear();
+      setNotifications([]);
+    }
+    void reloadNotifications();
+  }, [authSession?.user.id, currentOrg?.id, reloadNotifications]);
+
+  useEffect(() => {
+    const userId = authSession?.user.id;
+    const organizationId = currentOrg?.id;
+    if (!isSupabaseLive || !userId || !organizationId) {
+      setNotificationsRealtimeStatus('disabled');
+      setNotificationsRealtimeError('');
+      return;
+    }
+
+    let hasConnected = false;
+    let disconnectedAfterConnection = false;
+    let unsubscribe: (() => void) | undefined;
+    try {
+      unsubscribe = subscribeToNotifications(
+        organizationId,
+        userId,
+        (event) => {
+          notificationRealtimeRevision.current += 1;
+          if (event.type === 'DELETE') {
+            removedNotificationIds.current.add(event.id);
+            setNotifications((previous) => applyNotificationRealtimeEvent(previous, event));
+            return;
+          }
+
+          removedNotificationIds.current.delete(event.notification.id);
+          setNotifications((previous) => applyNotificationRealtimeEvent(previous, event));
+          if (event.type === 'INSERT') setNotificationEventCount((count) => count + 1);
+        },
+        (status, error) => {
+          setNotificationsRealtimeStatus(status);
+          if (status === 'connected') {
+            setNotificationsRealtimeError('');
+            if (hasConnected && disconnectedAfterConnection) void reloadNotifications();
+            hasConnected = true;
+            disconnectedAfterConnection = false;
+          } else if (status === 'error' || status === 'closed') {
+            if (hasConnected) disconnectedAfterConnection = true;
+            if (status === 'error') {
+              setNotificationsRealtimeError(error || getMessages().notifications.realtimeError);
+            }
+          }
+        },
+      );
+    } catch (error: unknown) {
+      setNotificationsRealtimeStatus('error');
+      setNotificationsRealtimeError(
+        error instanceof Error ? error.message : getMessages().notifications.realtimeError,
+      );
+    }
+    return () => unsubscribe?.();
+  }, [authSession?.user.id, currentOrg?.id, isSupabaseLive, reloadNotifications]);
+
   // Module Handlers
-  const handleCreateVendor = async (data: Omit<Vendor, 'id' | 'created_at'>) => {
-    const created = await createVendor(data);
+  const handleCreateVendor = async (data: VendorInput) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum menambah vendor.');
+    const created = await createVendor({
+      ...data,
+      organization_id: currentOrg.id,
+      bank_name: '',
+      bank_account_no: '',
+      bank_account_name: '',
+      rating: 0,
+      payment_terms_days: data.payment_terms_days,
+      is_active: true,
+      evaluation_count: 0,
+    });
     setVendors((prev) => [created, ...prev]);
     return created;
+  };
+
+  const handleUpdateVendor = async (id: string, data: VendorInput) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum mengubah vendor.');
+    const updated = await updateVendor(id, currentOrg.id, data);
+    setVendors((prev) => prev.map((vendor) => (vendor.id === id ? updated : vendor)));
+    return updated;
+  };
+
+  const handleArchiveVendor = async (id: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum mengarsipkan vendor.');
+    await archiveVendor(id, currentOrg.id);
+    setVendors((prev) => prev.filter((vendor) => vendor.id !== id));
   };
 
   const handleCreatePO = async (data: Omit<PurchaseOrder, 'id' | 'created_at'>) => {
@@ -911,9 +1073,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
-  const handleCreateGRN = async (data: Omit<GoodsReceiptNote, 'id' | 'created_at'>) => {
+  const handleCreateGRN = async (data: CreateGoodsReceiptInput) => {
     const created = await createGoodsReceipt(data);
-    setGoodsReceipts((prev) => [created, ...prev]);
+    await reloadAllData();
     return created;
   };
 
@@ -960,13 +1122,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
-  const handleProcessApproval = async (id: string, status: 'approved' | 'rejected', notes?: string) => {
-    const updated = await processApproval(id, status, notes);
-    setApprovals((prev) => prev.map((a) => (a.id === id ? updated : a)));
-    await reloadAllData();
-    return updated;
-  };
-
   // Fase 2 Handlers
   const handleAddBOQItem = async (item: any) => {
     const created = await addBOQItem(item);
@@ -984,12 +1139,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const created = await createDailyReport(reportData);
     setDailyReports((prev) => [created, ...prev]);
     return created;
-  };
-
-  const handleUpdateSCurve = async (weekId: string, actualWeekly: number, actualCumulative: number) => {
-    const updated = await updateSCurveWeekActual(weekId, actualWeekly, actualCumulative);
-    setScurvePoints((prev) => prev.map((s) => (s.id === weekId ? updated : s)));
-    return updated;
   };
 
   const setCurrentOrgId = (id: string) => {
@@ -1027,6 +1176,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveProjectDetailId(null);
   };
 
+  const updateCurrentOrganization = (organization: Organization) => {
+    setOrganizations((previous) => previous.map((item) => (
+      item.id === organization.id ? organization : item
+    )));
+  };
+
   const openProjectDetail = (projectId: string) => {
     setActiveProjectDetailId(projectId);
     setActiveTab('projects');
@@ -1056,7 +1211,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleUpdateProject = async (id: string, updates: Partial<Project>) => {
-    const updated = await updateProject(id, updates);
+    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
+    const updated = await updateProject(id, currentOrg.id, updates);
     setProjects((prev) => prev.map((p) => (p.id === id ? updated : p)));
     return updated;
   };
@@ -1070,9 +1226,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const handleAddAddendum = async (projectId: string, addendumData: any) => {
-    const created = await addProjectAddendum(projectId, addendumData);
-    await reloadAllData();
+  const handleAddAddendum = async (projectId: string, addendumData: ProjectAddendumInput) => {
+    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
+    const created = await addProjectAddendum(projectId, currentOrg.id, addendumData);
+    setProjects((previous) => previous.map((project) => (
+      project.id === projectId
+        ? { ...project, addendums: [...(project.addendums ?? []), created] }
+        : project
+    )));
     return created;
   };
 
@@ -1101,10 +1262,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleMarkRead = async (id: string) => {
-    await markNotificationAsRead(id);
+    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    await markNotificationAsRead(id, currentOrg.id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
+  };
+
+  const handleMarkAllRead = async () => {
+    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    await markAllNotificationsAsRead(currentOrg.id);
+    setNotifications((previous) => previous.map((notification) => ({ ...notification, is_read: true })));
   };
 
   const handleResetDemo = () => {
@@ -1146,6 +1314,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reloadOrganizations,
         setCurrentOrgId,
         completeOrganization,
+        updateCurrentOrganization,
         currentRole,
         setCurrentRole,
         can,
@@ -1159,6 +1328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isCommandPaletteOpen,
         setCommandPaletteOpen,
         projects,
+        reloadProjects,
         members,
         membersLoading,
         membersError,
@@ -1171,17 +1341,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         auditLogs,
         notifications,
         unreadNotifsCount,
+        notificationsLoading,
+        notificationsError,
+        notificationsRealtimeStatus,
+        notificationsRealtimeError,
+        notificationEventCount,
+        reloadNotifications,
         isLoading,
         resources,
         ahspTemplates,
         activeBoq,
         boqItems,
         dailyReports,
-        scurvePoints,
         handleAddBOQItem,
         handleUpdateBOQProgress,
         handleCreateDailyReport,
-        handleUpdateSCurve,
         vendors,
         purchaseOrders,
         purchaseRequests,
@@ -1201,8 +1375,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toolboxMeetings,
         punchList,
         documents,
-        approvals,
         handleCreateVendor,
+        handleUpdateVendor,
+        handleArchiveVendor,
         handleCreatePO,
         handleUpdatePOStatus,
         handleCreateGRN,
@@ -1213,7 +1388,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleCreateCashTransaction,
         handleCreateKasbon,
         handleUpdatePunchListStatus,
-        handleProcessApproval,
         handleCreateProject,
         handleUpdateProject,
         handleDeleteProject,
@@ -1222,6 +1396,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleUpdateRole,
         handleToggleMember,
         handleMarkRead,
+        handleMarkAllRead,
         reloadAllData,
         handleResetDemo,
       }}

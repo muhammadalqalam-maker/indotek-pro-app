@@ -56,9 +56,18 @@ export interface ProjectAddendum {
   description?: string;
   amount: number;
   time_extension_days: number;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  created_by?: string | null;
   approved_by_name?: string;
+  approval_status?: 'pending' | 'approved' | 'rejected';
   created_at: string;
 }
+
+export type ProjectAddendumInput = Pick<
+  ProjectAddendum,
+  'addendum_number' | 'title' | 'description' | 'amount' | 'time_extension_days'
+>;
 
 export interface Project {
   id: string;
@@ -83,6 +92,8 @@ export interface Project {
   planned_progress: number;
   actual_progress: number;
   status: ProjectStatus;
+  project_manager_id?: string | null;
+  site_manager_id?: string | null;
   project_manager_name?: string;
   site_manager_name?: string;
   notes?: string;
@@ -107,10 +118,12 @@ export interface AuditLog {
 
 export interface NotificationItem {
   id: string;
+  organization_id: string;
+  user_id: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'urgent' | 'success';
-  link?: string;
+  type: string;
+  link: string | null;
   is_read: boolean;
   created_at: string;
 }
@@ -250,21 +263,6 @@ export interface DailySiteReport {
   created_at: string;
 }
 
-export interface WeeklyProgressCurve {
-  id: string;
-  organization_id: string;
-  project_id: string;
-  week_number: number;
-  week_label: string;
-  start_date: string;
-  end_date: string;
-  planned_weekly_percent: number;
-  planned_cumulative_percent: number;
-  actual_weekly_percent?: number | null;
-  actual_cumulative_percent?: number | null;
-  deviation_percent?: number | null;
-}
-
 // ==========================================
 // PENGADAAN & PROCUREMENT TYPES
 // ==========================================
@@ -284,7 +282,11 @@ export interface Vendor {
   bank_account_name: string;
   rating: number; // 1-5
   payment_terms_days: number;
+  is_active?: boolean;
+  evaluation_count?: number;
   created_at: string;
+  updated_at?: string;
+  deleted_at?: string | null;
 }
 
 export interface PurchaseOrderItem {
@@ -335,9 +337,10 @@ export interface PurchaseRequest {
   requester_name: string;
   department: string;
   urgency: 'normal' | 'urgent' | 'critical';
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'converted_to_po';
+  status?: 'draft' | 'submitted' | 'approved' | 'rejected' | 'converted_to_po';
   total_estimated_amount: number;
   items: Array<{
+    id?: string;
     item_name: string;
     specification: string;
     unit: string;
@@ -353,6 +356,7 @@ export interface GoodsReceiptNote {
   organization_id: string;
   project_id: string;
   project_name: string;
+  purchase_order_id?: string;
   grn_number: string;
   po_number: string;
   vendor_name: string;
@@ -366,6 +370,7 @@ export interface GoodsReceiptNote {
   items: Array<{
     item_name: string;
     unit: string;
+    purchase_order_item_id?: string;
     po_quantity: number;
     received_quantity: number;
     accepted_quantity: number;
@@ -705,4 +710,3 @@ export interface ApprovalItem {
   approval_level: string; // e.g. "Level 1 (Site Manager)", "Level 2 (Direktur)"
   comments?: string;
 }
-

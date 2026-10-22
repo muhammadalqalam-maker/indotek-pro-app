@@ -3,11 +3,11 @@ import { useApp } from '../../context/AppContext';
 import { UserRole, ROLE_LABELS, ROLE_BADGE_COLORS } from '../../utils/permissions';
 import { organizationMessages, shellMessages } from '../../i18n/id';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
+import { NotificationCenter } from '../../features/notifications/components/NotificationCenter';
 import {
   Building2,
   ChevronDown,
   Search,
-  Bell,
   Moon,
   Sun,
   Database,
@@ -44,15 +44,10 @@ export const TopNavbar: React.FC<{
     authSession,
     signOut,
     setCommandPaletteOpen,
-    notifications,
-    unreadNotifsCount,
-    handleMarkRead,
-    openProjectDetail,
   } = useApp();
 
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
-  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
 
   const handleProjectChange = (projectId: string) => {
     setSelectedProjectId(projectId);
@@ -117,7 +112,6 @@ export const TopNavbar: React.FC<{
             onClick={() => {
               setOrgDropdownOpen((prev) => !prev);
               setRoleDropdownOpen(false);
-              setNotifDropdownOpen(false);
             }}
             className="flex min-w-0 max-w-28 items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition sm:max-w-[220px] disabled:cursor-wait disabled:opacity-70"
           >
@@ -250,7 +244,6 @@ export const TopNavbar: React.FC<{
             onClick={() => {
               setRoleDropdownOpen((prev) => !prev);
               setOrgDropdownOpen(false);
-              setNotifDropdownOpen(false);
             }}
             className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition ${
               ROLE_BADGE_COLORS[currentRole] || 'border-slate-200'
@@ -302,66 +295,7 @@ export const TopNavbar: React.FC<{
         {/* PWA Install Button */}
         <PWAInstallButton />
 
-        {/* Notifications Popover */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setNotifDropdownOpen((prev) => !prev);
-              setOrgDropdownOpen(false);
-              setRoleDropdownOpen(false);
-            }}
-            className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            aria-label="Notifikasi"
-          >
-            <Bell className="w-4 h-4" />
-            {unreadNotifsCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black flex items-center justify-center">
-                {unreadNotifsCount}
-              </span>
-            )}
-          </button>
-
-          {notifDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Notifikasi Realtime</span>
-                <span className="text-[10px] text-amber-500 font-semibold">{unreadNotifsCount} Baru</span>
-              </div>
-              <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60">
-                {notifications.length === 0 ? (
-                  <p className="p-4 text-center text-xs text-slate-400">Tidak ada notifikasi</p>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => {
-                        handleMarkRead(n.id);
-                        if (n.link?.includes('prj-')) {
-                          const prjId = n.link.split('/').pop();
-                          if (prjId) openProjectDetail(prjId);
-                        }
-                        setNotifDropdownOpen(false);
-                      }}
-                      className={`p-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition ${
-                        !n.is_read ? 'bg-amber-500/5' : ''
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white">{n.title}</p>
-                        {!n.is_read && (
-                          <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 mt-1" />
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                        {n.message}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationCenter />
 
         {/* Theme Toggle */}
         <button

@@ -5,6 +5,8 @@ import {
   calculateProjectHealth,
   calculateBudgetMetrics,
   calculateTotalContractWithAddendums,
+  calculateApprovedTimeExtensionDays,
+  calculateEffectiveContractEndDate,
   calculateRetention,
 } from './projectCalculations.ts';
 import { hasPermission } from './permissions.ts';
@@ -54,11 +56,27 @@ test('calculateBudgetMetrics computes remaining budget and percentage', () => {
   assert.equal(over.isOverBudget, true);
 });
 
-test('calculateTotalContractWithAddendums sums variation orders', () => {
+test('calculateTotalContractWithAddendums includes approved variation orders only', () => {
   const base = 5000000000;
-  const addendums = [{ amount: 250000000 }, { amount: -50000000 }];
+  const addendums = [
+    { amount: 250000000, approved_at: '2026-10-18T09:00:00Z' },
+    { amount: -50000000, approved_at: '2026-10-18T10:00:00Z' },
+    { amount: 900000000, approved_at: null },
+  ];
   const total = calculateTotalContractWithAddendums(base, addendums);
   assert.equal(total, 5200000000);
+});
+
+test('calculateApprovedTimeExtensionDays ignores pending addendums', () => {
+  assert.equal(calculateApprovedTimeExtensionDays([
+    { time_extension_days: 14, approved_at: '2026-10-18T09:00:00Z' },
+    { time_extension_days: 21, approved_at: null },
+  ]), 14);
+});
+
+test('calculateEffectiveContractEndDate handles date-only values without timezone shifts', () => {
+  assert.equal(calculateEffectiveContractEndDate('2026-12-20', 14), '2027-01-03');
+  assert.equal(calculateEffectiveContractEndDate('invalid', 14), 'invalid');
 });
 
 test('calculateRetention calculates 5% standard retention', () => {
@@ -107,4 +125,3 @@ test('Client invoice computes PPN 11% and construction PPh correctly', () => {
   assert.equal(pph, 25175000);
   assert.equal(net, 1029325000);
 });
-

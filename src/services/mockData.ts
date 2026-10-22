@@ -163,6 +163,7 @@ export const INITIAL_PROJECTS: Project[] = [
         description: 'Perubahan kapasitas daya listrik gedung dari 1.500 kVA menjadi 2.000 kVA sesuai permintaan tenant utama.',
         amount: 850000000,
         time_extension_days: 14,
+        approved_at: '2026-05-14T10:00:00Z',
         approved_by_name: 'Ir. Bambang Suryono, MT',
         created_at: '2026-05-14T10:00:00Z',
       },
@@ -331,6 +332,8 @@ export const INITIAL_AUDIT_LOGS: AuditLog[] = [
 export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   {
     id: 'notif-001',
+    organization_id: 'org-indotek-001',
+    user_id: 'usr-001',
     title: 'Peringatan Deviasi Proyek',
     message: 'Proyek Renovasi RSUD Harapan Sehat mengalami deviasi -7.5%. Tindakan percepatan diperlukan.',
     type: 'urgent',
@@ -340,6 +343,8 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-002',
+    organization_id: 'org-indotek-001',
+    user_id: 'usr-001',
     title: 'Jaminan Pelaksanaan Mendekati Jatuh Tempo',
     message: 'Bank Garansi Proyek Menara Mandiri Sentosa perlu diperpanjang dalam 30 hari ke depan.',
     type: 'warning',
@@ -349,6 +354,8 @@ export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   },
   {
     id: 'notif-003',
+    organization_id: 'org-indotek-001',
+    user_id: 'usr-001',
     title: 'PO Memerlukan Approval Direktur',
     message: 'Pengajuan PO Besi Beton Ulir D16 senilai Rp 280.000.000 menunggu persetujuan Anda.',
     type: 'info',
