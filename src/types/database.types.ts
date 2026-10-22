@@ -2777,6 +2777,104 @@ export type Database = {
           },
         ]
       }
+      client_invoices: {
+        Row: {
+          advance_deduction: number
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          due_date: string
+          gross_amount: number
+          id: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string
+          notes: string
+          organization_id: string
+          paid_amount: number
+          paid_at: string | null
+          payment_reference: string
+          pph_amount: number
+          pph_percent: number
+          progress_basis_percent: number
+          project_id: string
+          retention_deduction: number
+          status: string
+          taxable_amount: number
+          term_label: string
+          total_amount: number
+          updated_at: string
+          vat_amount: number
+          vat_percent: number
+        }
+        Insert: {
+          advance_deduction?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          due_date: string
+          gross_amount: number
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          invoice_type: string
+          notes?: string
+          organization_id: string
+          paid_amount?: number
+          paid_at?: string | null
+          payment_reference?: string
+          pph_amount?: number
+          pph_percent?: number
+          progress_basis_percent?: number
+          project_id: string
+          retention_deduction?: number
+          status?: string
+          taxable_amount: number
+          term_label: string
+          total_amount: number
+          updated_at?: string
+          vat_amount: number
+          vat_percent?: number
+        }
+        Update: {
+          advance_deduction?: number
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          due_date?: string
+          gross_amount?: number
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          invoice_type?: string
+          notes?: string
+          organization_id?: string
+          paid_amount?: number
+          paid_at?: string | null
+          payment_reference?: string
+          pph_amount?: number
+          pph_percent?: number
+          progress_basis_percent?: number
+          project_id?: string
+          retention_deduction?: number
+          status?: string
+          taxable_amount?: number
+          term_label?: string
+          total_amount?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_invoices_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           actual_progress: number
@@ -4297,6 +4395,39 @@ export type Database = {
       decide_subcontract_opname: {
         Args: { p_opname_id: string; p_decision: string; p_comment: string }
         Returns: undefined
+      }
+      get_project_invoice_basis: {
+        Args: { p_organization_id: string; p_project_id: string }
+        Returns: {
+          approved_progress_percent: number
+          contract_value: number
+          retention_percent: number
+        }[]
+      }
+      record_client_invoice_payment: {
+        Args: { p_amount: number; p_invoice_id: string; p_payment_reference?: string }
+        Returns: undefined
+      }
+      save_client_invoice: {
+        Args: {
+          p_advance_deduction: number
+          p_due_date: string
+          p_gross_amount: number
+          p_invoice_date: string
+          p_invoice_id: string | null
+          p_invoice_number: string
+          p_invoice_type: string
+          p_notes: string
+          p_organization_id: string
+          p_pph_percent: number
+          p_progress_basis_percent: number
+          p_project_id: string
+          p_retention_deduction: number
+          p_status: string
+          p_term_label: string
+          p_vat_percent: number
+        }
+        Returns: string
       }
       save_subcontract_opname: {
         Args: { p_organization_id: string; p_opname_id: string | null; p_subcontract_id: string; p_opname_number: string; p_period_start: string; p_period_end: string; p_gross_amount: number; p_notes: string; p_deductions: Json }

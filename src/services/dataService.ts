@@ -1030,12 +1030,95 @@ export async function createSubconOpname(data: Omit<SubcontractorOpname, 'id' | 
 // KEUANGAN PROYEK (FINANCE)
 // -------------------------------------------------------------
 export async function fetchClientInvoices(orgId: string, projectId?: string): Promise<ClientInvoice[]> {
+  const supabase = getSupabase();
+  if (supabase) {
+    let query = supabase
+      .from('client_invoices')
+      .select('*')
+      .eq('organization_id', orgId)
+      .is('deleted_at', null)
+      .order('invoice_date', { ascending: false });
+    if (projectId && projectId !== 'all') query = query.eq('project_id', projectId);
+    const { data, error } = await query;
+    if (error) throw error;
+    const projectIds = [...new Set(data.map((row) => row.project_id))];
+    const projectResult = projectIds.length
+      ? await supabase.from('projects').select('id, name, client_name').eq('organization_id', orgId).in('id', projectIds)
+      : { data: [], error: null };
+    if (projectResult.error) throw projectResult.error;
+    const projectsById = new Map(projectResult.data.map((project) => [project.id, project]));
+    const today = new Date().toISOString().slice(0, 10);
+    return data.map((row) => {
+      const project = projectsById.get(row.project_id);
+      const status = (row.status === 'sent' || row.status === 'partially_paid') && row.due_date < today
+        ? 'overdue'
+        : row.status;
+      if (!['draft', 'sent', 'partially_paid', 'paid', 'overdue', 'cancelled'].includes(status)) {
+        throw new Error('Status invoice dari server tidak dikenal.');
+      }
+      return {
+        id: row.id,
+        organization_id: row.organization_id,
+        project_id: row.project_id,
+        project_name: project?.name ?? 'Proyek tidak tersedia',
+        client_name: project?.client_name ?? 'Klien tidak tersedia',
+        invoice_number: row.invoice_number,
+        invoice_type: row.invoice_type as ClientInvoice['invoice_type'],
+        term_label: row.term_label,
+        invoice_date: row.invoice_date,
+        due_date: row.due_date,
+        progress_basis_percent: Number(row.progress_basis_percent),
+        gross_amount: Number(row.gross_amount),
+        retention_deduction: Number(row.retention_deduction),
+        dp_deduction: Number(row.advance_deduction),
+        advance_deduction: Number(row.advance_deduction),
+        subtotal_taxable: Number(row.taxable_amount),
+        vat_percent: Number(row.vat_percent),
+        ppn_amount: Number(row.vat_amount),
+        pph_percent: Number(row.pph_percent),
+        pph_amount: Number(row.pph_amount),
+        net_receivable: Number(row.total_amount),
+        paid_amount: Number(row.paid_amount),
+        status,
+        payment_date: row.paid_at?.slice(0, 10),
+        payment_reference: row.payment_reference,
+        notes: row.notes,
+        created_at: row.created_at,
+      };
+    });
+  }
   initLocalStorage();
   const list = getLocal<ClientInvoice[]>(KEY_INVOICES, INITIAL_CLIENT_INVOICES);
   return list.filter((inv) => inv.organization_id === orgId && (!projectId || projectId === 'all' || inv.project_id === projectId));
 }
 
 export async function createClientInvoice(data: Omit<ClientInvoice, 'id' | 'created_at'>): Promise<ClientInvoice> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: invoiceId, error } = await supabase.rpc('save_client_invoice', {
+      p_organization_id: data.organization_id,
+      p_invoice_id: null,
+      p_project_id: data.project_id,
+      p_invoice_number: data.invoice_number,
+      p_invoice_type: data.invoice_type ?? 'progress',
+      p_term_label: data.term_label,
+      p_invoice_date: data.invoice_date,
+      p_due_date: data.due_date,
+      p_progress_basis_percent: data.progress_basis_percent,
+      p_gross_amount: data.gross_amount,
+      p_advance_deduction: data.advance_deduction ?? data.dp_deduction,
+      p_retention_deduction: data.retention_deduction,
+      p_vat_percent: data.vat_percent ?? 11,
+      p_pph_percent: data.pph_percent ?? 2.65,
+      p_status: data.status === 'draft' ? 'draft' : 'sent',
+      p_notes: data.notes ?? '',
+    });
+    if (error) throw error;
+    const invoices = await fetchClientInvoices(data.organization_id, data.project_id);
+    const created = invoices.find((invoice) => invoice.id === invoiceId);
+    if (!created) throw new Error('Invoice tersimpan tetapi tidak dapat dimuat ulang.');
+    return created;
+  }
   const newInv: ClientInvoice = {
     ...data,
     id: `inv-${Date.now()}`,
@@ -1047,12 +1130,35 @@ export async function createClientInvoice(data: Omit<ClientInvoice, 'id' | 'crea
   return newInv;
 }
 
-export async function markInvoicePaid(invId: string, paymentRef: string): Promise<ClientInvoice> {
+export async function markInvoicePaid(invId: string, paymentRef: string, amount?: number): Promise<ClientInvoice> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: invoice, error: readError } = await supabase
+      .from('client_invoices')
+      .select('organization_id, total_amount, paid_amount')
+      .eq('id', invId)
+      .is('deleted_at', null)
+      .single();
+    if (readError) throw readError;
+    const paymentAmount = amount ?? Number(invoice.total_amount) - Number(invoice.paid_amount);
+    const { error } = await supabase.rpc('record_client_invoice_payment', {
+      p_invoice_id: invId,
+      p_amount: paymentAmount,
+      p_payment_reference: paymentRef,
+    });
+    if (error) throw error;
+    const invoices = await fetchClientInvoices(invoice.organization_id);
+    const updated = invoices.find((item) => item.id === invId);
+    if (!updated) throw new Error('Pembayaran tersimpan tetapi invoice tidak dapat dimuat ulang.');
+    return updated;
+  }
   const list = getLocal<ClientInvoice[]>(KEY_INVOICES, INITIAL_CLIENT_INVOICES);
   const target = list.find((i) => i.id === invId);
   if (target) {
-    target.status = 'paid';
-    target.payment_date = new Date().toISOString().split('T')[0];
+    const remaining = target.net_receivable - (target.paid_amount ?? (target.status === 'paid' ? target.net_receivable : 0));
+    target.paid_amount = (target.paid_amount ?? 0) + (amount ?? remaining);
+    target.status = target.paid_amount >= target.net_receivable ? 'paid' : 'partially_paid';
+    if (target.status === 'paid') target.payment_date = new Date().toISOString().split('T')[0];
     target.payment_reference = paymentRef;
     setLocal(KEY_INVOICES, list);
     return target;

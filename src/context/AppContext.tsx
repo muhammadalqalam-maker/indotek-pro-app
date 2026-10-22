@@ -252,7 +252,7 @@ interface AppContextType {
   handleCreateGRN: (data: CreateGoodsReceiptInput) => Promise<GoodsReceiptNote>;
   handleCreateSubconOpname: (data: Omit<SubcontractorOpname, 'id' | 'created_at'>) => Promise<SubcontractorOpname>;
   handleCreateInvoice: (data: Omit<ClientInvoice, 'id' | 'created_at'>) => Promise<ClientInvoice>;
-  handleMarkInvoicePaid: (id: string, ref: string) => Promise<ClientInvoice>;
+  handleMarkInvoicePaid: (id: string, ref: string, amount?: number) => Promise<ClientInvoice>;
   handleCreateCashTransaction: (data: Omit<ProjectCashTransaction, 'id'>) => Promise<ProjectCashTransaction>;
   handleCreateKasbon: (data: Omit<KasbonReimbursement, 'id' | 'created_at'>) => Promise<KasbonReimbursement>;
   handleUpdatePunchListStatus: (id: string, status: PunchListItem['status']) => Promise<PunchListItem>;
@@ -1073,8 +1073,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return created;
   };
 
-  const handleMarkInvoicePaid = async (id: string, ref: string) => {
-    const updated = await markInvoicePaid(id, ref);
+  const handleMarkInvoicePaid = async (id: string, ref: string, amount?: number) => {
+    const updated = await markInvoicePaid(id, ref, amount);
     setClientInvoices((prev) => prev.map((i) => (i.id === id ? updated : i)));
     return updated;
   };

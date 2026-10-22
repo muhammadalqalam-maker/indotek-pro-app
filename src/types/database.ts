@@ -504,19 +504,25 @@ export interface ClientInvoice {
   client_name: string;
   invoice_number: string;
   term_label: string; // e.g. "Termin 1 (Uang Muka 15%)", "Termin 2 (Progress 30%)"
+  invoice_type?: 'advance' | 'progress' | 'retention';
   invoice_date: string;
   due_date: string;
   progress_basis_percent: number;
   gross_amount: number;
   retention_deduction: number; // 5%
   dp_deduction: number; // Potongan DP
+  advance_deduction?: number;
   subtotal_taxable: number;
+  vat_percent?: number;
   ppn_amount: number; // PPN 11%
+  pph_percent?: number;
   pph_amount: number; // PPh Final Konstruksi (1.75% or 2.65%)
   net_receivable: number;
-  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue';
+  paid_amount?: number;
+  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
   payment_date?: string;
   payment_reference?: string;
+  notes?: string;
   created_at: string;
 }
 

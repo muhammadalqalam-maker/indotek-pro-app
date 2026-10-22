@@ -3,6 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, formatPercent } from '../../utils/format';
 import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { ClientInvoice, ProjectCashTransaction, KasbonReimbursement } from '../../types/database';
+import { ClientInvoiceDialog } from './components/ClientInvoiceDialog';
+import { ClientInvoicePaymentDialog } from './components/ClientInvoicePaymentDialog';
 import {
   DollarSign,
   TrendingUp,
@@ -35,20 +37,19 @@ export const FinanceView: React.FC = () => {
     handleMarkInvoicePaid,
     handleCreateCashTransaction,
     handleCreateKasbon,
+    isLoading,
+    organizationDataError,
+    reloadAllData,
     currentRole,
   } = useApp();
+  const canRecordInvoicePayment = currentRole === 'owner' || currentRole === 'admin' || currentRole === 'finance';
 
   const [activeTab, setActiveTab] = useState<'invoices' | 'cashbook' | 'kasbon' | 'profit_loss'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [invoiceForPayment, setInvoiceForPayment] = useState<ClientInvoice | null>(null);
   const [isCashTransactionModalOpen, setIsCashTransactionModalOpen] = useState(false);
   const [isKasbonModalOpen, setIsKasbonModalOpen] = useState(false);
-
-  // New Invoice Form
-  const [newInvProjectId, setNewInvProjectId] = useState(projects[0]?.id || '');
-  const [newInvTermLabel, setNewInvTermLabel] = useState('Termin Penagihan Progres');
-  const [newInvGrossAmount, setNewInvGrossAmount] = useState(5000000000);
-  const [newInvDueDate, setNewInvDueDate] = useState('2026-11-15');
 
   // New Cash Transaction Form
   const [newCtxProjectId, setNewCtxProjectId] = useState(projects[0]?.id || '');
@@ -85,8 +86,7 @@ export const FinanceView: React.FC = () => {
   // Financial KPIs
   const totalBilled = clientInvoices.reduce((acc, i) => acc + i.net_receivable, 0);
   const totalReceived = clientInvoices
-    .filter((i) => i.status === 'paid')
-    .reduce((acc, i) => acc + i.net_receivable, 0);
+    .reduce((acc, i) => acc + (i.paid_amount ?? (i.status === 'paid' ? i.net_receivable : 0)), 0);
   const totalOutstanding = totalBilled - totalReceived;
 
   const totalInflow = cashTransactions
@@ -96,41 +96,6 @@ export const FinanceView: React.FC = () => {
     .filter((t) => t.type === 'outflow')
     .reduce((acc, t) => acc + t.amount, 0);
   const cashBalance = totalInflow - totalOutflow;
-
-  const handleSaveInvoice = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg) return;
-    const proj = projects.find((p) => p.id === newInvProjectId) || projects[0];
-
-    const gross = Number(newInvGrossAmount);
-    const retention = gross * 0.05;
-    const taxable = gross - retention;
-    const ppn = taxable * 0.11;
-    const pph = taxable * 0.0265;
-    const net = taxable + ppn - pph;
-
-    await handleCreateInvoice({
-      organization_id: currentOrg.id,
-      project_id: proj.id,
-      project_name: proj.name,
-      client_name: proj.client_name,
-      invoice_number: `INV/${currentOrg.company_code}/2026/10/${Math.floor(100 + Math.random() * 900)}`,
-      term_label: newInvTermLabel,
-      invoice_date: new Date().toISOString().split('T')[0],
-      due_date: newInvDueDate,
-      progress_basis_percent: 45,
-      gross_amount: gross,
-      retention_deduction: retention,
-      dp_deduction: 0,
-      subtotal_taxable: taxable,
-      ppn_amount: ppn,
-      pph_amount: pph,
-      net_receivable: net,
-      status: 'sent',
-    });
-
-    setIsInvoiceModalOpen(false);
-  };
 
   const handleSaveCashTransaction = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,7 +288,18 @@ export const FinanceView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredInvoices.map((inv) => (
+                {isLoading ? (
+                  <tr><td className="p-6 text-center text-sm text-muted" colSpan={8}>Memuat invoice termin…</td></tr>
+                ) : organizationDataError ? (
+                  <tr>
+                    <td className="p-6 text-center" colSpan={8}>
+                      <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+                      <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">Coba muat ulang</button>
+                    </td>
+                  </tr>
+                ) : filteredInvoices.length === 0 ? (
+                  <tr><td className="p-6 text-center text-sm text-muted" colSpan={8}>Belum ada invoice untuk filter ini. Terbitkan invoice dari termin proyek.</td></tr>
+                ) : filteredInvoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                     <td className="py-3.5 px-4">
                       <span className="font-bold text-xs text-slate-900 dark:text-white">{inv.invoice_number}</span>
@@ -341,6 +317,9 @@ export const FinanceView: React.FC = () => {
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-xs text-slate-900 dark:text-white">
                       {formatRupiah(inv.net_receivable)}
+                      {(inv.paid_amount ?? 0) > 0 && inv.status !== 'paid' && (
+                        <span className="block text-[11px] font-normal text-slate-500">Diterima {formatRupiah(inv.paid_amount ?? 0)}</span>
+                      )}
                     </td>
                     <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
                       {formatDateIndo(inv.due_date)}
@@ -354,6 +333,18 @@ export const FinanceView: React.FC = () => {
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
                           <AlertTriangle className="w-3 h-3" /> Jatuh Tempo
                         </span>
+                      ) : inv.status === 'partially_paid' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
+                          <Clock className="w-3 h-3" /> Dibayar Sebagian
+                        </span>
+                      ) : inv.status === 'draft' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          Draf
+                        </span>
+                      ) : inv.status === 'cancelled' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                          Dibatalkan
+                        </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400">
                           <Clock className="w-3 h-3" /> Terkirim
@@ -361,12 +352,12 @@ export const FinanceView: React.FC = () => {
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      {inv.status !== 'paid' && (
+                      {canRecordInvoicePayment && (inv.status === 'sent' || inv.status === 'partially_paid' || inv.status === 'overdue') && (
                         <button
-                          onClick={() => handleMarkInvoicePaid(inv.id, `TRF-${Date.now().toString().slice(-6)}`)}
-                          className="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-lg text-xs transition"
+                          onClick={() => setInvoiceForPayment(inv)}
+                          className="min-h-11 rounded-md px-2.5 text-xs font-semibold text-primary-700 hover:bg-surface-2 dark:text-primary-500"
                         >
-                          Catat Lunas
+                          Catat pembayaran
                         </button>
                       )}
                     </td>
@@ -537,104 +528,22 @@ export const FinanceView: React.FC = () => {
       )}
 
       {/* Buat Invoice Modal */}
-      {isInvoiceModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">Terbitkan Invoice Penagihan Klien</h3>
-              <button onClick={() => setIsInvoiceModalOpen(false)}>
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveInvoice} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Pilih Proyek</label>
-                <select
-                  value={newInvProjectId}
-                  onChange={(e) => setNewInvProjectId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} - {p.client_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Keterangan Termin
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Termin 4 (Sertifikat Opname 50%)"
-                  value={newInvTermLabel}
-                  onChange={(e) => setNewInvTermLabel(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Nilai Bruto Termin (Rp)
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={newInvGrossAmount}
-                  onChange={(e) => setNewInvGrossAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tanggal Jatuh Tempo</label>
-                <input
-                  type="date"
-                  required
-                  value={newInvDueDate}
-                  onChange={(e) => setNewInvDueDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1 text-slate-600 dark:text-slate-400">
-                <div className="flex justify-between">
-                  <span>Potongan Retensi 5%:</span>
-                  <span>- {formatRupiah(newInvGrossAmount * 0.05)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>PPN 11%:</span>
-                  <span>+ {formatRupiah((newInvGrossAmount * 0.95) * 0.11)}</span>
-                </div>
-                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between font-bold text-slate-900 dark:text-white">
-                  <span>Perkiraan Bersih Tagihan:</span>
-                  <span>{formatRupiah(((newInvGrossAmount * 0.95) * 1.11) - ((newInvGrossAmount * 0.95) * 0.0265))}</span>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsInvoiceModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition"
-                >
-                  Terbitkan Invoice
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {isInvoiceModalOpen && currentOrg && (
+        <ClientInvoiceDialog
+          onClose={() => setIsInvoiceModalOpen(false)}
+          onSubmit={handleCreateInvoice}
+          organizationId={currentOrg.id}
+          projects={projects}
+        />
+      )}
+      {invoiceForPayment && (
+        <ClientInvoicePaymentDialog
+          invoice={invoiceForPayment}
+          onClose={() => setInvoiceForPayment(null)}
+          onSubmit={async (amount, reference) => {
+            await handleMarkInvoicePaid(invoiceForPayment.id, reference, amount);
+          }}
+        />
       )}
 
       {/* Kas Masuk/Keluar Modal */}
