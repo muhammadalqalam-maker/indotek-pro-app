@@ -17,6 +17,10 @@ import {
   ClientInvoice,
   ProjectCashTransaction,
   KasbonReimbursement,
+  CashAdvanceDecision,
+  CashPaymentMethod,
+  CreateCashAdvanceRequestInput,
+  CreateProjectCashTransactionInput,
   FieldWorker,
   DailyAttendance,
   EquipmentAsset,
@@ -69,8 +73,12 @@ import {
   markInvoicePaid,
   fetchCashTransactions,
   createCashTransaction,
+  verifyCashTransaction,
   fetchKasbonList,
   createKasbon,
+  decideCashAdvance,
+  payCashAdvance,
+  settleCashAdvance,
   fetchFieldWorkers,
   fetchDailyAttendance,
   fetchEquipmentAssets,
@@ -252,9 +260,18 @@ interface AppContextType {
   handleCreateGRN: (data: CreateGoodsReceiptInput) => Promise<GoodsReceiptNote>;
   handleCreateSubconOpname: (data: Omit<SubcontractorOpname, 'id' | 'created_at'>) => Promise<SubcontractorOpname>;
   handleCreateInvoice: (data: Omit<ClientInvoice, 'id' | 'created_at'>) => Promise<ClientInvoice>;
-  handleMarkInvoicePaid: (id: string, ref: string, amount?: number) => Promise<ClientInvoice>;
-  handleCreateCashTransaction: (data: Omit<ProjectCashTransaction, 'id'>) => Promise<ProjectCashTransaction>;
-  handleCreateKasbon: (data: Omit<KasbonReimbursement, 'id' | 'created_at'>) => Promise<KasbonReimbursement>;
+  handleMarkInvoicePaid: (
+    id: string,
+    ref: string,
+    amount?: number,
+    paymentMethod?: CashPaymentMethod,
+  ) => Promise<ClientInvoice>;
+  handleCreateCashTransaction: (data: CreateProjectCashTransactionInput) => Promise<ProjectCashTransaction>;
+  handleVerifyCashTransaction: (id: string) => Promise<ProjectCashTransaction>;
+  handleCreateKasbon: (data: CreateCashAdvanceRequestInput) => Promise<KasbonReimbursement>;
+  handleDecideCashAdvance: (id: string, decision: CashAdvanceDecision, comment: string) => Promise<KasbonReimbursement>;
+  handlePayCashAdvance: (id: string, paymentMethod: CashPaymentMethod, reference: string) => Promise<KasbonReimbursement>;
+  handleSettleCashAdvance: (id: string, settledAmount: number, notes: string) => Promise<KasbonReimbursement>;
   handleUpdatePunchListStatus: (id: string, status: PunchListItem['status']) => Promise<PunchListItem>;
 
   // Project Actions
@@ -1073,22 +1090,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return created;
   };
 
-  const handleMarkInvoicePaid = async (id: string, ref: string, amount?: number) => {
-    const updated = await markInvoicePaid(id, ref, amount);
+  const handleMarkInvoicePaid = async (id: string, ref: string, amount?: number, paymentMethod?: CashPaymentMethod) => {
+    const updated = await markInvoicePaid(id, ref, amount, paymentMethod);
     setClientInvoices((prev) => prev.map((i) => (i.id === id ? updated : i)));
+    await reloadAllData();
     return updated;
   };
 
-  const handleCreateCashTransaction = async (data: Omit<ProjectCashTransaction, 'id'>) => {
+  const handleCreateCashTransaction = async (data: CreateProjectCashTransactionInput) => {
     const created = await createCashTransaction(data);
     setCashTransactions((prev) => [created, ...prev]);
     return created;
   };
 
-  const handleCreateKasbon = async (data: Omit<KasbonReimbursement, 'id' | 'created_at'>) => {
+  const handleVerifyCashTransaction = async (id: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk memverifikasi transaksi.');
+    const updated = await verifyCashTransaction(id, currentOrg.id);
+    setCashTransactions((prev) => prev.map((transaction) => transaction.id === id ? updated : transaction));
+    return updated;
+  };
+
+  const handleCreateKasbon = async (data: CreateCashAdvanceRequestInput) => {
     const created = await createKasbon(data);
     setKasbonList((prev) => [created, ...prev]);
     return created;
+  };
+
+  const handleDecideCashAdvance = async (id: string, decision: CashAdvanceDecision, comment: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk memproses pengajuan.');
+    const updated = await decideCashAdvance(id, currentOrg.id, decision, comment);
+    setKasbonList((prev) => prev.map((request) => request.id === id ? updated : request));
+    return updated;
+  };
+
+  const handlePayCashAdvance = async (id: string, paymentMethod: CashPaymentMethod, reference: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk mencatat pencairan.');
+    const updated = await payCashAdvance(id, currentOrg.id, paymentMethod, reference);
+    setKasbonList((prev) => prev.map((request) => request.id === id ? updated : request));
+    await reloadAllData();
+    return updated;
+  };
+
+  const handleSettleCashAdvance = async (id: string, settledAmount: number, notes: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk menyelesaikan kasbon.');
+    const updated = await settleCashAdvance(id, currentOrg.id, settledAmount, notes);
+    setKasbonList((prev) => prev.map((request) => request.id === id ? updated : request));
+    await reloadAllData();
+    return updated;
   };
 
   const handleUpdatePunchListStatus = async (id: string, status: PunchListItem['status']) => {
@@ -1358,7 +1406,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleCreateInvoice,
         handleMarkInvoicePaid,
         handleCreateCashTransaction,
+        handleVerifyCashTransaction,
         handleCreateKasbon,
+        handleDecideCashAdvance,
+        handlePayCashAdvance,
+        handleSettleCashAdvance,
         handleUpdatePunchListStatus,
         handleCreateProject,
         handleUpdateProject,

@@ -892,6 +892,248 @@ export type Database = {
           },
         ]
       }
+      cash_advance_requests: {
+        Row: {
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          decision_comment: string
+          deleted_at: string | null
+          employee_name: string
+          employee_role: string
+          id: string
+          organization_id: string
+          paid_amount: number
+          paid_at: string | null
+          paid_by: string | null
+          payment_method: string | null
+          project_id: string
+          purpose: string
+          request_date: string
+          request_type: string
+          settled_amount: number
+          settled_at: string | null
+          settled_by: string | null
+          settlement_notes: string
+          status: string
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          decision_comment?: string
+          deleted_at?: string | null
+          employee_name: string
+          employee_role?: string
+          id?: string
+          organization_id: string
+          paid_amount?: number
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_method?: string | null
+          project_id: string
+          purpose: string
+          request_date?: string
+          request_type: string
+          settled_amount?: number
+          settled_at?: string | null
+          settled_by?: string | null
+          settlement_notes?: string
+          status?: string
+          ticket_number: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          decision_comment?: string
+          deleted_at?: string | null
+          employee_name?: string
+          employee_role?: string
+          id?: string
+          organization_id?: string
+          paid_amount?: number
+          paid_at?: string | null
+          paid_by?: string | null
+          payment_method?: string | null
+          project_id?: string
+          purpose?: string
+          request_date?: string
+          request_type?: string
+          settled_amount?: number
+          settled_at?: string | null
+          settled_by?: string | null
+          settlement_notes?: string
+          status?: string
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_advance_requests_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_advance_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_advance_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_advance_requests_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "cash_advance_requests_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_advance_requests_settled_by_fkey"
+            columns: ["settled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_invoices: {
+        Row: {
+          advance_deduction: number
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          due_date: string
+          gross_amount: number
+          id: string
+          invoice_date: string
+          invoice_number: string
+          invoice_type: string
+          notes: string
+          organization_id: string
+          paid_amount: number
+          paid_at: string | null
+          payment_reference: string
+          pph_amount: number
+          pph_percent: number
+          progress_basis_percent: number
+          project_id: string
+          retention_deduction: number
+          status: string
+          taxable_amount: number
+          term_label: string
+          total_amount: number
+          updated_at: string
+          vat_amount: number
+          vat_percent: number
+        }
+        Insert: {
+          advance_deduction?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          due_date: string
+          gross_amount: number
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          invoice_type: string
+          notes?: string
+          organization_id: string
+          paid_amount?: number
+          paid_at?: string | null
+          payment_reference?: string
+          pph_amount?: number
+          pph_percent?: number
+          progress_basis_percent?: number
+          project_id: string
+          retention_deduction?: number
+          status?: string
+          taxable_amount: number
+          term_label: string
+          total_amount: number
+          updated_at?: string
+          vat_amount: number
+          vat_percent?: number
+        }
+        Update: {
+          advance_deduction?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          due_date?: string
+          gross_amount?: number
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          invoice_type?: string
+          notes?: string
+          organization_id?: string
+          paid_amount?: number
+          paid_at?: string | null
+          payment_reference?: string
+          pph_amount?: number
+          pph_percent?: number
+          progress_basis_percent?: number
+          project_id?: string
+          retention_deduction?: number
+          status?: string
+          taxable_amount?: number
+          term_label?: string
+          total_amount?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_percent?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_invoices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_invoices_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       daily_report_equipment: {
         Row: {
           active_hours: number
@@ -1563,8 +1805,8 @@ export type Database = {
           project_id: string
           purchase_order_id: string
           received_date: string
-          receiving_location: string | null
           receiver_name: string
+          receiving_location: string | null
           status: string
           updated_at: string
           vehicle_number: string
@@ -1583,8 +1825,8 @@ export type Database = {
           project_id: string
           purchase_order_id: string
           received_date: string
-          receiving_location?: string | null
           receiver_name: string
+          receiving_location?: string | null
           status?: string
           updated_at?: string
           vehicle_number?: string
@@ -1603,8 +1845,8 @@ export type Database = {
           project_id?: string
           purchase_order_id?: string
           received_date?: string
-          receiving_location?: string | null
           receiver_name?: string
+          receiving_location?: string | null
           status?: string
           updated_at?: string
           vehicle_number?: string
@@ -1724,116 +1966,151 @@ export type Database = {
           },
         ]
       }
-      stock_movements: {
+      material_request_items: {
         Row: {
           created_at: string
           created_by: string
           deleted_at: string | null
-          destination_inventory_item_id: string | null
-          destination_project_id: string | null
-          goods_receipt_item_id: string | null
           id: string
-          movement_date: string
-          movement_number: string
-          movement_type: string
+          inventory_item_id: string
+          material_request_id: string
           notes: string
           organization_id: string
           quantity: number
-          recipient_or_supplier: string
-          reference_doc: string
-          source_inventory_item_id: string | null
-          source_project_id: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by?: string
           deleted_at?: string | null
-          destination_inventory_item_id?: string | null
-          destination_project_id?: string | null
-          goods_receipt_item_id?: string | null
           id?: string
-          movement_date?: string
-          movement_number: string
-          movement_type: string
+          inventory_item_id: string
+          material_request_id: string
           notes?: string
           organization_id: string
           quantity: number
-          recipient_or_supplier?: string
-          reference_doc?: string
-          source_inventory_item_id?: string | null
-          source_project_id?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string
           deleted_at?: string | null
-          destination_inventory_item_id?: string | null
-          destination_project_id?: string | null
-          goods_receipt_item_id?: string | null
           id?: string
-          movement_date?: string
-          movement_number?: string
-          movement_type?: string
+          inventory_item_id?: string
+          material_request_id?: string
           notes?: string
           organization_id?: string
           quantity?: number
-          recipient_or_supplier?: string
-          reference_doc?: string
-          source_inventory_item_id?: string | null
-          source_project_id?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "stock_movements_created_by_fkey"
+            foreignKeyName: "material_request_items_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_movements_organization_id_fkey"
+            foreignKeyName: "material_request_items_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "stock_movements_organization_id_source_inventory_item_id_fkey"
-            columns: ["organization_id", "source_inventory_item_id"]
+            foreignKeyName: "material_request_items_organization_id_inventory_item_id_fkey"
+            columns: ["organization_id", "inventory_item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
             referencedColumns: ["organization_id", "id"]
           },
           {
-            foreignKeyName: "stock_movements_organization_id_destination_inventory_item_id_fkey"
-            columns: ["organization_id", "destination_inventory_item_id"]
+            foreignKeyName: "material_request_items_organization_id_material_request_id_fkey"
+            columns: ["organization_id", "material_request_id"]
             isOneToOne: false
-            referencedRelation: "inventory_items"
+            referencedRelation: "material_requests"
             referencedColumns: ["organization_id", "id"]
           },
+        ]
+      }
+      material_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          id: string
+          location_name: string
+          organization_id: string
+          project_id: string
+          purpose: string
+          request_date: string
+          request_number: string
+          requester_id: string
+          required_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          location_name: string
+          organization_id: string
+          project_id: string
+          purpose: string
+          request_date?: string
+          request_number: string
+          requester_id?: string
+          required_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          location_name?: string
+          organization_id?: string
+          project_id?: string
+          purpose?: string
+          request_date?: string
+          request_number?: string
+          requester_id?: string
+          required_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "stock_movements_organization_id_source_project_id_fkey"
-            columns: ["organization_id", "source_project_id"]
+            foreignKeyName: "material_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_requests_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
             isOneToOne: false
             referencedRelation: "projects"
             referencedColumns: ["organization_id", "id"]
           },
           {
-            foreignKeyName: "stock_movements_organization_id_destination_project_id_fkey"
-            columns: ["organization_id", "destination_project_id"]
+            foreignKeyName: "material_requests_requester_id_fkey"
+            columns: ["requester_id"]
             isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "stock_movements_organization_id_goods_receipt_item_id_fkey"
-            columns: ["organization_id", "goods_receipt_item_id"]
-            isOneToOne: false
-            referencedRelation: "goods_receipt_items"
-            referencedColumns: ["organization_id", "id"]
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2722,6 +2999,121 @@ export type Database = {
           },
         ]
       }
+      project_cash_transactions: {
+        Row: {
+          amount: number
+          cash_advance_request_id: string | null
+          category: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string
+          id: string
+          invoice_id: string | null
+          organization_id: string
+          payment_method: string
+          project_id: string
+          recipient_or_payer: string
+          reference: string
+          status: string
+          transaction_date: string
+          transaction_number: string
+          type: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          amount: number
+          cash_advance_request_id?: string | null
+          category: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          invoice_id?: string | null
+          organization_id: string
+          payment_method: string
+          project_id: string
+          recipient_or_payer: string
+          reference?: string
+          status?: string
+          transaction_date?: string
+          transaction_number: string
+          type: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          amount?: number
+          cash_advance_request_id?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          invoice_id?: string | null
+          organization_id?: string
+          payment_method?: string
+          project_id?: string
+          recipient_or_payer?: string
+          reference?: string
+          status?: string
+          transaction_date?: string
+          transaction_number?: string
+          type?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_cash_transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_organization_id_cash_advance_req_fkey"
+            columns: ["organization_id", "cash_advance_request_id"]
+            isOneToOne: false
+            referencedRelation: "cash_advance_requests"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_organization_id_invoice_id_fkey"
+            columns: ["organization_id", "invoice_id"]
+            isOneToOne: false
+            referencedRelation: "client_invoices"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_members: {
         Row: {
           created_at: string
@@ -2774,104 +3166,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          },
-        ]
-      }
-      client_invoices: {
-        Row: {
-          advance_deduction: number
-          created_at: string
-          created_by: string | null
-          deleted_at: string | null
-          due_date: string
-          gross_amount: number
-          id: string
-          invoice_date: string
-          invoice_number: string
-          invoice_type: string
-          notes: string
-          organization_id: string
-          paid_amount: number
-          paid_at: string | null
-          payment_reference: string
-          pph_amount: number
-          pph_percent: number
-          progress_basis_percent: number
-          project_id: string
-          retention_deduction: number
-          status: string
-          taxable_amount: number
-          term_label: string
-          total_amount: number
-          updated_at: string
-          vat_amount: number
-          vat_percent: number
-        }
-        Insert: {
-          advance_deduction?: number
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          due_date: string
-          gross_amount: number
-          id?: string
-          invoice_date?: string
-          invoice_number: string
-          invoice_type: string
-          notes?: string
-          organization_id: string
-          paid_amount?: number
-          paid_at?: string | null
-          payment_reference?: string
-          pph_amount?: number
-          pph_percent?: number
-          progress_basis_percent?: number
-          project_id: string
-          retention_deduction?: number
-          status?: string
-          taxable_amount: number
-          term_label: string
-          total_amount: number
-          updated_at?: string
-          vat_amount: number
-          vat_percent?: number
-        }
-        Update: {
-          advance_deduction?: number
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          due_date?: string
-          gross_amount?: number
-          id?: string
-          invoice_date?: string
-          invoice_number?: string
-          invoice_type?: string
-          notes?: string
-          organization_id?: string
-          paid_amount?: number
-          paid_at?: string | null
-          payment_reference?: string
-          pph_amount?: number
-          pph_percent?: number
-          progress_basis_percent?: number
-          project_id?: string
-          retention_deduction?: number
-          status?: string
-          taxable_amount?: number
-          term_label?: string
-          total_amount?: number
-          updated_at?: string
-          vat_amount?: number
-          vat_percent?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_invoices_organization_id_project_id_fkey"
-            columns: ["organization_id", "project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -3271,42 +3565,6 @@ export type Database = {
           },
         ]
       }
-      material_requests: {
-        Row: { id: string; organization_id: string; project_id: string; request_number: string; request_date: string; required_date: string; requester_id: string; location_name: string; purpose: string; status: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; project_id: string; request_number: string; request_date?: string; required_date: string; requester_id?: string; location_name: string; purpose: string; status?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; project_id?: string; request_number?: string; request_date?: string; required_date?: string; requester_id?: string; location_name?: string; purpose?: string; status?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
-      material_request_items: {
-        Row: { id: string; organization_id: string; material_request_id: string; inventory_item_id: string; quantity: number; notes: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; material_request_id: string; inventory_item_id: string; quantity: number; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; material_request_id?: string; inventory_item_id?: string; quantity?: number; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
-      subcontractors: {
-        Row: { id: string; organization_id: string; code: string; company_name: string; trade_specialty: string; pic_name: string; phone: string; email: string; address: string; npwp: string; bank_name: string; bank_account_no: string; bank_account_name: string; is_active: boolean; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; code: string; company_name: string; trade_specialty: string; pic_name: string; phone: string; email?: string; address?: string; npwp?: string; bank_name?: string; bank_account_no?: string; bank_account_name?: string; is_active?: boolean; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; code?: string; company_name?: string; trade_specialty?: string; pic_name?: string; phone?: string; email?: string; address?: string; npwp?: string; bank_name?: string; bank_account_no?: string; bank_account_name?: string; is_active?: boolean; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
-      subcontract_opname_deductions: {
-        Row: { id: string; organization_id: string; subcontract_opname_id: string; description: string; amount: number; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; subcontract_opname_id: string; description: string; amount: number; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; subcontract_opname_id?: string; description?: string; amount?: number; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
-      subcontract_opnames: {
-        Row: { id: string; organization_id: string; project_id: string; subcontract_id: string; opname_number: string; period_start: string; period_end: string; gross_amount: number; retention_percent: number; retention_amount: number; deduction_amount: number; net_amount: number; status: string; notes: string; approved_by: string | null; approved_at: string | null; rejection_comment: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; project_id: string; subcontract_id: string; opname_number: string; period_start: string; period_end: string; gross_amount: number; retention_percent: number; retention_amount: number; deduction_amount?: number; net_amount: number; status?: string; notes?: string; approved_by?: string | null; approved_at?: string | null; rejection_comment?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; project_id?: string; subcontract_id?: string; opname_number?: string; period_start?: string; period_end?: string; gross_amount?: number; retention_percent?: number; retention_amount?: number; deduction_amount?: number; net_amount?: number; status?: string; notes?: string; approved_by?: string | null; approved_at?: string | null; rejection_comment?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
-      subcontracts: {
-        Row: { id: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent: number; status: string; notes: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
-        Insert: { id?: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent?: number; status?: string; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Update: { id?: string; organization_id?: string; project_id?: string; subcontractor_id?: string; spk_number?: string; work_description?: string; contract_date?: string; start_date?: string; end_date?: string; contract_amount?: number; retention_percent?: number; status?: string; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
-        Relationships: []
-      }
       purchase_requests: {
         Row: {
           created_at: string
@@ -3431,6 +3689,452 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          destination_inventory_item_id: string | null
+          destination_project_id: string | null
+          goods_receipt_item_id: string | null
+          id: string
+          movement_date: string
+          movement_number: string
+          movement_type: string
+          notes: string
+          organization_id: string
+          quantity: number
+          recipient_or_supplier: string
+          reference_doc: string
+          source_inventory_item_id: string | null
+          source_project_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          destination_inventory_item_id?: string | null
+          destination_project_id?: string | null
+          goods_receipt_item_id?: string | null
+          id?: string
+          movement_date?: string
+          movement_number: string
+          movement_type: string
+          notes?: string
+          organization_id: string
+          quantity: number
+          recipient_or_supplier?: string
+          reference_doc?: string
+          source_inventory_item_id?: string | null
+          source_project_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          destination_inventory_item_id?: string | null
+          destination_project_id?: string | null
+          goods_receipt_item_id?: string | null
+          id?: string
+          movement_date?: string
+          movement_number?: string
+          movement_type?: string
+          notes?: string
+          organization_id?: string
+          quantity?: number
+          recipient_or_supplier?: string
+          reference_doc?: string
+          source_inventory_item_id?: string | null
+          source_project_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_destination_inventory_item_fkey"
+            columns: ["organization_id", "destination_inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_destination_project_id_fkey"
+            columns: ["organization_id", "destination_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_goods_receipt_item_id_fkey"
+            columns: ["organization_id", "goods_receipt_item_id"]
+            isOneToOne: true
+            referencedRelation: "goods_receipt_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_source_inventory_item_id_fkey"
+            columns: ["organization_id", "source_inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "stock_movements_organization_id_source_project_id_fkey"
+            columns: ["organization_id", "source_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      subcontract_opname_deductions: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string
+          id: string
+          organization_id: string
+          subcontract_opname_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          organization_id: string
+          subcontract_opname_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          organization_id?: string
+          subcontract_opname_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_opname_deductions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_opname_deductions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_opname_deductions_organization_id_subcontract__fkey"
+            columns: ["organization_id", "subcontract_opname_id"]
+            isOneToOne: false
+            referencedRelation: "subcontract_opnames"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      subcontract_opnames: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string
+          deduction_amount: number
+          deleted_at: string | null
+          gross_amount: number
+          id: string
+          net_amount: number
+          notes: string
+          opname_number: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          project_id: string
+          rejection_comment: string
+          retention_amount: number
+          retention_percent: number
+          status: string
+          subcontract_id: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          deduction_amount?: number
+          deleted_at?: string | null
+          gross_amount: number
+          id?: string
+          net_amount: number
+          notes?: string
+          opname_number: string
+          organization_id: string
+          period_end: string
+          period_start: string
+          project_id: string
+          rejection_comment?: string
+          retention_amount: number
+          retention_percent: number
+          status?: string
+          subcontract_id: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string
+          deduction_amount?: number
+          deleted_at?: string | null
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          notes?: string
+          opname_number?: string
+          organization_id?: string
+          period_end?: string
+          period_start?: string
+          project_id?: string
+          rejection_comment?: string
+          retention_amount?: number
+          retention_percent?: number
+          status?: string
+          subcontract_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontract_opnames_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_opnames_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_opnames_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontract_opnames_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "subcontract_opnames_organization_id_subcontract_id_fkey"
+            columns: ["organization_id", "subcontract_id"]
+            isOneToOne: false
+            referencedRelation: "subcontracts"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      subcontractors: {
+        Row: {
+          address: string
+          bank_account_name: string
+          bank_account_no: string
+          bank_name: string
+          code: string
+          company_name: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          email: string
+          id: string
+          is_active: boolean
+          npwp: string
+          organization_id: string
+          phone: string
+          pic_name: string
+          trade_specialty: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          bank_account_name?: string
+          bank_account_no?: string
+          bank_name?: string
+          code: string
+          company_name: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean
+          npwp?: string
+          organization_id: string
+          phone: string
+          pic_name: string
+          trade_specialty: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          bank_account_name?: string
+          bank_account_no?: string
+          bank_name?: string
+          code?: string
+          company_name?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean
+          npwp?: string
+          organization_id?: string
+          phone?: string
+          pic_name?: string
+          trade_specialty?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontractors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontractors_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcontracts: {
+        Row: {
+          contract_amount: number
+          contract_date: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          end_date: string
+          id: string
+          notes: string
+          organization_id: string
+          project_id: string
+          retention_percent: number
+          spk_number: string
+          start_date: string
+          status: string
+          subcontractor_id: string
+          updated_at: string
+          work_description: string
+        }
+        Insert: {
+          contract_amount: number
+          contract_date: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          end_date: string
+          id?: string
+          notes?: string
+          organization_id: string
+          project_id: string
+          retention_percent?: number
+          spk_number: string
+          start_date: string
+          status?: string
+          subcontractor_id: string
+          updated_at?: string
+          work_description: string
+        }
+        Update: {
+          contract_amount?: number
+          contract_date?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          end_date?: string
+          id?: string
+          notes?: string
+          organization_id?: string
+          project_id?: string
+          retention_percent?: number
+          spk_number?: string
+          start_date?: string
+          status?: string
+          subcontractor_id?: string
+          updated_at?: string
+          work_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcontracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subcontracts_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "subcontracts_organization_id_subcontractor_id_fkey"
+            columns: ["organization_id", "subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -4080,6 +4784,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_cash_advance_request: {
+        Args: {
+          p_amount: number
+          p_employee_name: string
+          p_employee_role: string
+          p_organization_id: string
+          p_project_id: string
+          p_purpose: string
+          p_request_date: string
+          p_request_type: string
+        }
+        Returns: string
+      }
       create_default_approval_flows: {
         Args: { target_organization_id: string }
         Returns: undefined
@@ -4107,9 +4824,20 @@ export type Database = {
           p_organization_id: string
           p_purchase_order_id: string
           p_received_date: string
-          p_receiving_location: string
           p_receiver_name: string
+          p_receiving_location: string
           p_vehicle_number: string
+        }
+        Returns: string
+      }
+      create_material_request: {
+        Args: {
+          p_items: Json
+          p_location_name: string
+          p_organization_id: string
+          p_project_id: string
+          p_purpose: string
+          p_required_date: string
         }
         Returns: string
       }
@@ -4204,6 +4932,21 @@ export type Database = {
         }
         Returns: string
       }
+      create_project_cash_transaction: {
+        Args: {
+          p_amount: number
+          p_category: string
+          p_description: string
+          p_organization_id: string
+          p_payment_method: string
+          p_project_id: string
+          p_recipient_or_payer: string
+          p_reference?: string
+          p_transaction_date: string
+          p_type: string
+        }
+        Returns: string
+      }
       create_purchase_order_from_quote: {
         Args: {
           p_delivery_address: string
@@ -4212,10 +4955,6 @@ export type Database = {
           p_purchase_request_id: string
           p_vendor_quote_id: string
         }
-        Returns: string
-      }
-      create_material_request: {
-        Args: { p_organization_id: string; p_project_id: string; p_required_date: string; p_location_name: string; p_purpose: string; p_items: Json }
         Returns: string
       }
       create_purchase_request: {
@@ -4248,6 +4987,19 @@ export type Database = {
         Args: { target_org_id: string }
         Returns: Database["public"]["Enums"]["user_role_type"]
       }
+      decide_cash_advance_request: {
+        Args: {
+          p_comment?: string
+          p_decision: string
+          p_organization_id: string
+          p_request_id: string
+        }
+        Returns: undefined
+      }
+      decide_subcontract_opname: {
+        Args: { p_comment: string; p_decision: string; p_opname_id: string }
+        Returns: undefined
+      }
       delegate_approval_step: {
         Args: {
           p_approval_step_id: string
@@ -4264,40 +5016,13 @@ export type Database = {
         }
         Returns: string
       }
-      register_inventory_item: {
-        Args: {
-          p_category: string
-          p_item_code: string
-          p_item_name: string
-          p_location_name: string
-          p_minimum_stock: number
-          p_organization_id: string
-          p_project_id: string
-          p_unit: string
-        }
-        Returns: string
-      }
-      record_stock_movement: {
-        Args: {
-          p_destination_inventory_item_id: string | null
-          p_movement_date: string
-          p_movement_type: string
-          p_notes: string
-          p_organization_id: string
-          p_quantity: number
-          p_recipient_or_supplier: string
-          p_reference_doc: string
-          p_source_inventory_item_id: string | null
-        }
-        Returns: string
-      }
-      update_inventory_minimum: {
-        Args: {
-          p_inventory_item_id: string
-          p_minimum_stock: number
-          p_organization_id: string
-        }
-        Returns: string
+      get_project_invoice_basis: {
+        Args: { p_organization_id: string; p_project_id: string }
+        Returns: {
+          approved_progress_percent: number
+          contract_value: number
+          retention_percent: number
+        }[]
       }
       has_role: {
         Args: {
@@ -4341,12 +5066,30 @@ export type Database = {
         Args: { p_message: string; p_request_id: string; p_step_number: number }
         Returns: undefined
       }
+      pay_cash_advance_request: {
+        Args: {
+          p_organization_id: string
+          p_payment_method: string
+          p_reference?: string
+          p_request_id: string
+        }
+        Returns: undefined
+      }
       process_approval_step: {
         Args: {
           p_approval_request_id: string
           p_approver_signature_path?: string
           p_comment: string
           p_decision: string
+        }
+        Returns: undefined
+      }
+      record_client_invoice_payment: {
+        Args: {
+          p_amount: number
+          p_invoice_id: string
+          p_payment_method: string
+          p_payment_reference?: string
         }
         Returns: undefined
       }
@@ -4359,6 +5102,20 @@ export type Database = {
           p_expense_date: string
           p_organization_id: string
           p_project_id: string
+        }
+        Returns: string
+      }
+      record_stock_movement: {
+        Args: {
+          p_destination_inventory_item_id: string | null
+          p_movement_date: string
+          p_movement_type: string
+          p_notes: string
+          p_organization_id: string
+          p_quantity: number
+          p_recipient_or_supplier: string
+          p_reference_doc: string
+          p_source_inventory_item_id: string | null
         }
         Returns: string
       }
@@ -4383,6 +5140,19 @@ export type Database = {
         Args: { target_version_id: string }
         Returns: undefined
       }
+      register_inventory_item: {
+        Args: {
+          p_category: string
+          p_item_code: string
+          p_item_name: string
+          p_location_name: string
+          p_minimum_stock: number
+          p_organization_id: string
+          p_project_id: string
+          p_unit: string
+        }
+        Returns: string
+      }
       request_boq_revision_approval: {
         Args: {
           p_boq_version_id: string
@@ -4390,59 +5160,6 @@ export type Database = {
           p_organization_id: string
           p_project_id: string
         }
-        Returns: string
-      }
-      decide_subcontract_opname: {
-        Args: { p_opname_id: string; p_decision: string; p_comment: string }
-        Returns: undefined
-      }
-      get_project_invoice_basis: {
-        Args: { p_organization_id: string; p_project_id: string }
-        Returns: {
-          approved_progress_percent: number
-          contract_value: number
-          retention_percent: number
-        }[]
-      }
-      record_client_invoice_payment: {
-        Args: { p_amount: number; p_invoice_id: string; p_payment_reference?: string }
-        Returns: undefined
-      }
-      save_client_invoice: {
-        Args: {
-          p_advance_deduction: number
-          p_due_date: string
-          p_gross_amount: number
-          p_invoice_date: string
-          p_invoice_id: string | null
-          p_invoice_number: string
-          p_invoice_type: string
-          p_notes: string
-          p_organization_id: string
-          p_pph_percent: number
-          p_progress_basis_percent: number
-          p_project_id: string
-          p_retention_deduction: number
-          p_status: string
-          p_term_label: string
-          p_vat_percent: number
-        }
-        Returns: string
-      }
-      save_subcontract_opname: {
-        Args: { p_organization_id: string; p_opname_id: string | null; p_subcontract_id: string; p_opname_number: string; p_period_start: string; p_period_end: string; p_gross_amount: number; p_notes: string; p_deductions: Json }
-        Returns: string
-      }
-      submit_subcontract_opname: {
-        Args: { p_opname_id: string }
-        Returns: undefined
-      }
-      save_subcontractor: {
-        Args: { p_organization_id: string; p_subcontractor_id: string | null; p_code: string; p_company_name: string; p_trade_specialty: string; p_pic_name: string; p_phone: string; p_email: string; p_address: string; p_npwp: string; p_bank_name: string; p_bank_account_no: string; p_bank_account_name: string }
-        Returns: string
-      }
-      save_subcontract: {
-        Args: { p_organization_id: string; p_subcontract_id: string | null; p_project_id: string; p_subcontractor_id: string; p_spk_number: string; p_work_description: string; p_contract_date: string; p_start_date: string; p_end_date: string; p_contract_amount: number; p_retention_percent: number; p_status: string; p_notes: string }
         Returns: string
       }
       save_approval_flow: {
@@ -4468,6 +5185,27 @@ export type Database = {
         }
         Returns: string
       }
+      save_client_invoice: {
+        Args: {
+          p_advance_deduction: number
+          p_due_date: string
+          p_gross_amount: number
+          p_invoice_date: string
+          p_invoice_id: string
+          p_invoice_number: string
+          p_invoice_type: string
+          p_notes: string
+          p_organization_id: string
+          p_pph_percent: number
+          p_progress_basis_percent: number
+          p_project_id: string
+          p_retention_deduction: number
+          p_status: string
+          p_term_label: string
+          p_vat_percent: number
+        }
+        Returns: string
+      }
       save_daily_report_draft: {
         Args: {
           p_organization_id: string
@@ -4487,6 +5225,56 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_subcontract: {
+        Args: {
+          p_contract_amount: number
+          p_contract_date: string
+          p_end_date: string
+          p_notes: string
+          p_organization_id: string
+          p_project_id: string
+          p_retention_percent: number
+          p_spk_number: string
+          p_start_date: string
+          p_status: string
+          p_subcontract_id: string
+          p_subcontractor_id: string
+          p_work_description: string
+        }
+        Returns: string
+      }
+      save_subcontract_opname: {
+        Args: {
+          p_deductions: Json
+          p_gross_amount: number
+          p_notes: string
+          p_opname_id: string
+          p_opname_number: string
+          p_organization_id: string
+          p_period_end: string
+          p_period_start: string
+          p_subcontract_id: string
+        }
+        Returns: string
+      }
+      save_subcontractor: {
+        Args: {
+          p_address: string
+          p_bank_account_name: string
+          p_bank_account_no: string
+          p_bank_name: string
+          p_code: string
+          p_company_name: string
+          p_email: string
+          p_npwp: string
+          p_organization_id: string
+          p_phone: string
+          p_pic_name: string
+          p_subcontractor_id: string
+          p_trade_specialty: string
+        }
+        Returns: string
+      }
       save_wbs_task: {
         Args: {
           p_organization_id: string
@@ -4496,6 +5284,15 @@ export type Database = {
           p_values: Json
         }
         Returns: string
+      }
+      settle_cash_advance_request: {
+        Args: {
+          p_organization_id: string
+          p_request_id: string
+          p_settled_amount: number
+          p_settlement_notes?: string
+        }
+        Returns: undefined
       }
       start_approval_request: {
         Args: {
@@ -4515,12 +5312,28 @@ export type Database = {
         }
         Returns: string
       }
+      submit_subcontract_opname: {
+        Args: { p_opname_id: string }
+        Returns: undefined
+      }
+      update_inventory_minimum: {
+        Args: {
+          p_inventory_item_id: string
+          p_minimum_stock: number
+          p_organization_id: string
+        }
+        Returns: string
+      }
       verify_project_boq_expense: {
         Args: {
           p_expense_id: string
           p_organization_id: string
           p_project_id: string
         }
+        Returns: undefined
+      }
+      verify_project_cash_transaction: {
+        Args: { p_organization_id: string; p_transaction_id: string }
         Returns: undefined
       }
     }

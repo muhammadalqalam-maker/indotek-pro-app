@@ -33,6 +33,10 @@ import {
   ClientInvoice,
   ProjectCashTransaction,
   KasbonReimbursement,
+  CashAdvanceDecision,
+  CreateCashAdvanceRequestInput,
+  CreateProjectCashTransactionInput,
+  CashPaymentMethod,
   FieldWorker,
   DailyAttendance,
   EquipmentAsset,
@@ -1130,7 +1134,12 @@ export async function createClientInvoice(data: Omit<ClientInvoice, 'id' | 'crea
   return newInv;
 }
 
-export async function markInvoicePaid(invId: string, paymentRef: string, amount?: number): Promise<ClientInvoice> {
+export async function markInvoicePaid(
+  invId: string,
+  paymentRef: string,
+  amount?: number,
+  paymentMethod: CashPaymentMethod = 'Transfer Bank',
+): Promise<ClientInvoice> {
   const supabase = getSupabase();
   if (supabase) {
     const { data: invoice, error: readError } = await supabase
@@ -1145,6 +1154,7 @@ export async function markInvoicePaid(invId: string, paymentRef: string, amount?
       p_invoice_id: invId,
       p_amount: paymentAmount,
       p_payment_reference: paymentRef,
+      p_payment_method: paymentMethod,
     });
     if (error) throw error;
     const invoices = await fetchClientInvoices(invoice.organization_id);
@@ -1161,21 +1171,109 @@ export async function markInvoicePaid(invId: string, paymentRef: string, amount?
     if (target.status === 'paid') target.payment_date = new Date().toISOString().split('T')[0];
     target.payment_reference = paymentRef;
     setLocal(KEY_INVOICES, list);
+    const transactions = getLocal<ProjectCashTransaction[]>(KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS);
+    transactions.unshift({
+      id: `ctx-invoice-${Date.now()}`,
+      organization_id: target.organization_id,
+      project_id: target.project_id,
+      project_name: target.project_name,
+      transaction_number: `BKM-${Date.now()}`,
+      transaction_date: new Date().toISOString().slice(0, 10),
+      type: 'inflow',
+      category: 'Termin Klien',
+      amount: amount ?? remaining,
+      recipient_or_payer: target.client_name,
+      description: `Penerimaan invoice ${target.invoice_number}`,
+      payment_method: paymentMethod,
+      status: 'verified',
+      reference: paymentRef,
+      invoice_id: target.id,
+    });
+    setLocal(KEY_CASH_TRANSACTIONS, transactions);
     return target;
   }
   throw new Error('Invoice tidak ditemukan');
 }
 
 export async function fetchCashTransactions(orgId: string, projectId?: string): Promise<ProjectCashTransaction[]> {
+  const supabase = getSupabase();
+  if (supabase) {
+    let query = supabase
+      .from('project_cash_transactions')
+      .select('*')
+      .eq('organization_id', orgId)
+      .is('deleted_at', null)
+      .order('transaction_date', { ascending: false });
+    if (projectId && projectId !== 'all') query = query.eq('project_id', projectId);
+    const { data, error } = await query;
+    if (error) throw error;
+    const projectIds = [...new Set(data.map((row) => row.project_id))];
+    const projectResult = projectIds.length
+      ? await supabase.from('projects').select('id, name').eq('organization_id', orgId).in('id', projectIds)
+      : { data: [], error: null };
+    if (projectResult.error) throw projectResult.error;
+    const projectsById = new Map(projectResult.data.map((project) => [project.id, project.name]));
+    return data.map((row) => {
+      if (!['inflow', 'outflow'].includes(row.type)
+        || !['Termin Klien', 'Material', 'Upah Pekerja', 'Subkon', 'Sewa Alat', 'Operasional Site', 'Kasbon / Petty Cash', 'Lainnya'].includes(row.category)
+        || !['Transfer Bank', 'Kas Tunai', 'Giro / Cek', 'Lainnya'].includes(row.payment_method)
+        || !['pending', 'verified'].includes(row.status)) {
+        throw new Error('Data transaksi buku kas dari server tidak dikenal.');
+      }
+      return {
+        id: row.id,
+        organization_id: row.organization_id,
+        project_id: row.project_id,
+        project_name: projectsById.get(row.project_id) ?? 'Proyek tidak tersedia',
+        transaction_number: row.transaction_number,
+        transaction_date: row.transaction_date,
+        type: row.type as ProjectCashTransaction['type'],
+        category: row.category as ProjectCashTransaction['category'],
+        amount: Number(row.amount),
+        recipient_or_payer: row.recipient_or_payer,
+        description: row.description,
+        payment_method: row.payment_method as CashPaymentMethod,
+        status: row.status as ProjectCashTransaction['status'],
+        reference: row.reference,
+        invoice_id: row.invoice_id,
+        cash_advance_request_id: row.cash_advance_request_id,
+        verified_by: row.verified_by,
+        verified_at: row.verified_at,
+      };
+    });
+  }
   initLocalStorage();
   const list = getLocal<ProjectCashTransaction[]>(KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS);
   return list.filter((t) => t.organization_id === orgId && (!projectId || projectId === 'all' || t.project_id === projectId));
 }
 
-export async function createCashTransaction(data: Omit<ProjectCashTransaction, 'id'>): Promise<ProjectCashTransaction> {
+export async function createCashTransaction(data: CreateProjectCashTransactionInput): Promise<ProjectCashTransaction> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: transactionId, error } = await supabase.rpc('create_project_cash_transaction', {
+      p_organization_id: data.organization_id,
+      p_project_id: data.project_id,
+      p_transaction_date: data.transaction_date,
+      p_type: data.type,
+      p_category: data.category,
+      p_amount: data.amount,
+      p_recipient_or_payer: data.recipient_or_payer,
+      p_description: data.description,
+      p_payment_method: data.payment_method,
+      p_reference: data.reference ?? '',
+    });
+    if (error) throw error;
+    const transactions = await fetchCashTransactions(data.organization_id, data.project_id);
+    const created = transactions.find((transaction) => transaction.id === transactionId);
+    if (!created) throw new Error('Transaksi tersimpan tetapi tidak dapat dimuat ulang.');
+    return created;
+  }
   const newCtx: ProjectCashTransaction = {
     ...data,
     id: `ctx-${Date.now()}`,
+    project_name: INITIAL_CASH_TRANSACTIONS.find((item) => item.project_id === data.project_id)?.project_name ?? '',
+    transaction_number: `BK-${Date.now()}`,
+    status: 'pending',
   };
   const list = getLocal<ProjectCashTransaction[]>(KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS);
   list.unshift(newCtx);
@@ -1183,22 +1281,206 @@ export async function createCashTransaction(data: Omit<ProjectCashTransaction, '
   return newCtx;
 }
 
+export async function verifyCashTransaction(transactionId: string, organizationId: string): Promise<ProjectCashTransaction> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase.rpc('verify_project_cash_transaction', {
+      p_organization_id: organizationId,
+      p_transaction_id: transactionId,
+    });
+    if (error) throw error;
+    const transactions = await fetchCashTransactions(organizationId);
+    const updated = transactions.find((transaction) => transaction.id === transactionId);
+    if (!updated) throw new Error('Transaksi diverifikasi tetapi tidak dapat dimuat ulang.');
+    return updated;
+  }
+  const list = getLocal<ProjectCashTransaction[]>(KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS);
+  const target = list.find((transaction) => transaction.id === transactionId && transaction.organization_id === organizationId);
+  if (!target) throw new Error('Transaksi kas tidak ditemukan.');
+  target.status = 'verified';
+  setLocal(KEY_CASH_TRANSACTIONS, list);
+  return target;
+}
+
 export async function fetchKasbonList(orgId: string, projectId?: string): Promise<KasbonReimbursement[]> {
+  const supabase = getSupabase();
+  if (supabase) {
+    let query = supabase
+      .from('cash_advance_requests')
+      .select('*')
+      .eq('organization_id', orgId)
+      .is('deleted_at', null)
+      .order('request_date', { ascending: false });
+    if (projectId && projectId !== 'all') query = query.eq('project_id', projectId);
+    const { data, error } = await query;
+    if (error) throw error;
+    const projectIds = [...new Set(data.map((row) => row.project_id))];
+    const projectResult = projectIds.length
+      ? await supabase.from('projects').select('id, name').eq('organization_id', orgId).in('id', projectIds)
+      : { data: [], error: null };
+    if (projectResult.error) throw projectResult.error;
+    const projectsById = new Map(projectResult.data.map((project) => [project.id, project.name]));
+    return data.map((row) => {
+      if (!['kasbon', 'reimbursement'].includes(row.request_type)
+        || !['pending_approval', 'approved_ready_payout', 'active_unsettled', 'settled', 'rejected'].includes(row.status)) {
+        throw new Error('Status pengajuan kasbon dari server tidak dikenal.');
+      }
+      return {
+        id: row.id,
+        organization_id: row.organization_id,
+        project_id: row.project_id,
+        project_name: projectsById.get(row.project_id) ?? 'Proyek tidak tersedia',
+        ticket_number: row.ticket_number,
+        employee_name: row.employee_name,
+        role: row.employee_role,
+        date: row.request_date,
+        type: row.request_type as KasbonReimbursement['type'],
+        amount: Number(row.amount),
+        purpose: row.purpose,
+        settlement_status: row.status as KasbonReimbursement['settlement_status'],
+        decision_comment: row.decision_comment,
+        paid_amount: Number(row.paid_amount),
+        paid_at: row.paid_at,
+        payment_method: row.payment_method as CashPaymentMethod | null,
+        settled_amount: Number(row.settled_amount),
+        settled_at: row.settled_at,
+        settlement_notes: row.settlement_notes,
+        created_by: row.created_by,
+        created_at: row.created_at,
+      };
+    });
+  }
   initLocalStorage();
   const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
   return list.filter((k) => k.organization_id === orgId && (!projectId || projectId === 'all' || k.project_id === projectId));
 }
 
-export async function createKasbon(data: Omit<KasbonReimbursement, 'id' | 'created_at'>): Promise<KasbonReimbursement> {
+export async function createKasbon(data: CreateCashAdvanceRequestInput): Promise<KasbonReimbursement> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data: requestId, error } = await supabase.rpc('create_cash_advance_request', {
+      p_organization_id: data.organization_id,
+      p_project_id: data.project_id,
+      p_request_type: data.type,
+      p_employee_name: data.employee_name,
+      p_employee_role: data.role,
+      p_request_date: data.date,
+      p_amount: data.amount,
+      p_purpose: data.purpose,
+    });
+    if (error) throw error;
+    const requests = await fetchKasbonList(data.organization_id, data.project_id);
+    const created = requests.find((request) => request.id === requestId);
+    if (!created) throw new Error('Pengajuan tersimpan tetapi tidak dapat dimuat ulang.');
+    return created;
+  }
   const newKasbon: KasbonReimbursement = {
     ...data,
     id: `ksb-${Date.now()}`,
+    project_name: INITIAL_KASBON.find((item) => item.project_id === data.project_id)?.project_name ?? '',
+    ticket_number: `KSB-${Date.now()}`,
+    settlement_status: 'pending_approval',
     created_at: new Date().toISOString(),
   };
   const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
   list.unshift(newKasbon);
   setLocal(KEY_KASBON, list);
   return newKasbon;
+}
+
+async function reloadCashAdvance(requestId: string, organizationId: string): Promise<KasbonReimbursement> {
+  const requests = await fetchKasbonList(organizationId);
+  const request = requests.find((item) => item.id === requestId);
+  if (!request) throw new Error('Pengajuan diproses tetapi tidak dapat dimuat ulang.');
+  return request;
+}
+
+export async function decideCashAdvance(
+  requestId: string,
+  organizationId: string,
+  decision: CashAdvanceDecision,
+  comment: string,
+): Promise<KasbonReimbursement> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase.rpc('decide_cash_advance_request', {
+      p_organization_id: organizationId,
+      p_request_id: requestId,
+      p_decision: decision,
+      p_comment: comment,
+    });
+    if (error) throw error;
+    return reloadCashAdvance(requestId, organizationId);
+  }
+  const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
+  const request = list.find((item) => item.id === requestId && item.organization_id === organizationId);
+  if (!request || request.settlement_status !== 'pending_approval') throw new Error('Pengajuan tidak tersedia.');
+  request.settlement_status = decision === 'approve' ? 'approved_ready_payout' : 'rejected';
+  request.decision_comment = comment;
+  setLocal(KEY_KASBON, list);
+  return request;
+}
+
+export async function payCashAdvance(
+  requestId: string,
+  organizationId: string,
+  paymentMethod: CashPaymentMethod,
+  reference: string,
+): Promise<KasbonReimbursement> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase.rpc('pay_cash_advance_request', {
+      p_organization_id: organizationId,
+      p_request_id: requestId,
+      p_payment_method: paymentMethod,
+      p_reference: reference,
+    });
+    if (error) throw error;
+    return reloadCashAdvance(requestId, organizationId);
+  }
+  const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
+  const request = list.find((item) => item.id === requestId && item.organization_id === organizationId);
+  if (!request || request.settlement_status !== 'approved_ready_payout') throw new Error('Pengajuan belum siap dibayar.');
+  request.settlement_status = request.type === 'kasbon' ? 'active_unsettled' : 'settled';
+  request.paid_amount = request.amount;
+  request.paid_at = new Date().toISOString();
+  request.payment_method = paymentMethod;
+  if (request.type === 'reimbursement') {
+    request.settled_amount = request.amount;
+    request.settled_at = new Date().toISOString();
+  }
+  setLocal(KEY_KASBON, list);
+  return request;
+}
+
+export async function settleCashAdvance(
+  requestId: string,
+  organizationId: string,
+  settledAmount: number,
+  notes: string,
+): Promise<KasbonReimbursement> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { error } = await supabase.rpc('settle_cash_advance_request', {
+      p_organization_id: organizationId,
+      p_request_id: requestId,
+      p_settled_amount: settledAmount,
+      p_settlement_notes: notes,
+    });
+    if (error) throw error;
+    return reloadCashAdvance(requestId, organizationId);
+  }
+  const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
+  const request = list.find((item) => item.id === requestId && item.organization_id === organizationId);
+  if (!request || request.settlement_status !== 'active_unsettled' || settledAmount > (request.paid_amount ?? request.amount)) {
+    throw new Error('Kasbon belum dapat diselesaikan atau nilai realisasi tidak valid.');
+  }
+  request.settlement_status = 'settled';
+  request.settled_amount = settledAmount;
+  request.settled_at = new Date().toISOString();
+  request.settlement_notes = notes;
+  setLocal(KEY_KASBON, list);
+  return request;
 }
 
 // -------------------------------------------------------------

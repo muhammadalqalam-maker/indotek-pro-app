@@ -2,28 +2,37 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, formatPercent } from '../../utils/format';
 import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
-import { ClientInvoice, ProjectCashTransaction, KasbonReimbursement } from '../../types/database';
+import {
+  CASH_ADVANCE_STATUSES,
+  CASH_TRANSACTION_STATUSES,
+  type CashAdvanceDecision,
+  type ClientInvoice,
+  type KasbonReimbursement,
+  type ProjectCashTransaction,
+} from '../../types/database';
+import { getMessages } from '../../i18n';
 import { ClientInvoiceDialog } from './components/ClientInvoiceDialog';
 import { ClientInvoicePaymentDialog } from './components/ClientInvoicePaymentDialog';
+import { CashTransactionDialog } from './components/CashTransactionDialog';
+import { CashAdvanceRequestDialog } from './components/CashAdvanceRequestDialog';
+import { CashAdvanceActionDialog } from './components/CashAdvanceActionDialog';
+import type { CashAdvanceActionFormValues } from './schemas/cashbook.schema';
 import {
-  DollarSign,
   TrendingUp,
-  TrendingDown,
-  FileCheck2,
   Receipt,
   Plus,
   CheckCircle2,
+  Check,
   Clock,
   AlertTriangle,
   ArrowDownLeft,
   ArrowUpRight,
   Wallet,
-  Building2,
-  Search,
-  Filter,
-  X,
   CreditCard,
+  XCircle,
 } from 'lucide-react';
+
+const messages = getMessages('id').finance;
 
 export const FinanceView: React.FC = () => {
   const {
@@ -36,13 +45,20 @@ export const FinanceView: React.FC = () => {
     handleCreateInvoice,
     handleMarkInvoicePaid,
     handleCreateCashTransaction,
+    handleVerifyCashTransaction,
     handleCreateKasbon,
+    handleDecideCashAdvance,
+    handlePayCashAdvance,
+    handleSettleCashAdvance,
     isLoading,
     organizationDataError,
     reloadAllData,
     currentRole,
+    authSession,
   } = useApp();
   const canRecordInvoicePayment = currentRole === 'owner' || currentRole === 'admin' || currentRole === 'finance';
+  const canRecordFinance = ['owner', 'admin', 'project_manager', 'finance'].includes(currentRole);
+  const canProcessFinance = ['owner', 'admin', 'finance'].includes(currentRole);
 
   const [activeTab, setActiveTab] = useState<'invoices' | 'cashbook' | 'kasbon' | 'profit_loss'>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,20 +66,13 @@ export const FinanceView: React.FC = () => {
   const [invoiceForPayment, setInvoiceForPayment] = useState<ClientInvoice | null>(null);
   const [isCashTransactionModalOpen, setIsCashTransactionModalOpen] = useState(false);
   const [isKasbonModalOpen, setIsKasbonModalOpen] = useState(false);
-
-  // New Cash Transaction Form
-  const [newCtxProjectId, setNewCtxProjectId] = useState(projects[0]?.id || '');
-  const [newCtxType, setNewCtxType] = useState<'inflow' | 'outflow'>('outflow');
-  const [newCtxCategory, setNewCtxCategory] = useState<ProjectCashTransaction['category']>('Material');
-  const [newCtxAmount, setNewCtxAmount] = useState(50000000);
-  const [newCtxRecipient, setNewCtxRecipient] = useState('');
-  const [newCtxDesc, setNewCtxDesc] = useState('');
-
-  // New Kasbon Form
-  const [newKsbProjectId, setNewKsbProjectId] = useState(projects[0]?.id || '');
-  const [newKsbName, setNewKsbName] = useState('');
-  const [newKsbAmount, setNewKsbAmount] = useState(5000000);
-  const [newKsbPurpose, setNewKsbPurpose] = useState('');
+  const [cashAdvanceAction, setCashAdvanceAction] = useState<{
+    request: KasbonReimbursement;
+    action: CashAdvanceActionFormValues['action'];
+  } | null>(null);
+  const [financeFeedback, setFinanceFeedback] = useState('');
+  const [financeActionError, setFinanceActionError] = useState('');
+  const [verifyingTransactionId, setVerifyingTransactionId] = useState<string | null>(null);
 
   // Filtered lists
   const filteredInvoices = clientInvoices.filter((inv) => {
@@ -82,6 +91,13 @@ export const FinanceView: React.FC = () => {
     const matchProject = selectedProjectId === 'all' || ctx.project_id === selectedProjectId;
     return matchSearch && matchProject;
   });
+  const filteredKasbonList = kasbonList.filter((request) => {
+    const search = searchTerm.toLocaleLowerCase('id-ID');
+    const matchesSearch = [request.ticket_number, request.employee_name, request.purpose, request.project_name]
+      .some((value) => value.toLocaleLowerCase('id-ID').includes(search));
+    const matchesProject = selectedProjectId === 'all' || request.project_id === selectedProjectId;
+    return matchesSearch && matchesProject;
+  });
 
   // Financial KPIs
   const totalBilled = clientInvoices.reduce((acc, i) => acc + i.net_receivable, 0);
@@ -89,57 +105,58 @@ export const FinanceView: React.FC = () => {
     .reduce((acc, i) => acc + (i.paid_amount ?? (i.status === 'paid' ? i.net_receivable : 0)), 0);
   const totalOutstanding = totalBilled - totalReceived;
 
-  const totalInflow = cashTransactions
+  const verifiedTransactions = cashTransactions.filter((transaction) => transaction.status === CASH_TRANSACTION_STATUSES.verified);
+  const totalInflow = verifiedTransactions
     .filter((t) => t.type === 'inflow')
     .reduce((acc, t) => acc + t.amount, 0);
-  const totalOutflow = cashTransactions
+  const totalOutflow = verifiedTransactions
     .filter((t) => t.type === 'outflow')
     .reduce((acc, t) => acc + t.amount, 0);
   const cashBalance = totalInflow - totalOutflow;
 
-  const handleSaveCashTransaction = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg) return;
-    const proj = projects.find((p) => p.id === newCtxProjectId) || projects[0];
-
-    await handleCreateCashTransaction({
-      organization_id: currentOrg.id,
-      project_id: proj.id,
-      project_name: proj.name,
-      transaction_number: `BKK-${currentOrg.company_code}-2026-${Math.floor(100 + Math.random() * 900)}`,
-      transaction_date: new Date().toISOString().split('T')[0],
-      type: newCtxType,
-      category: newCtxCategory,
-      amount: Number(newCtxAmount),
-      recipient_or_payer: newCtxRecipient || 'Pihak Terkait',
-      description: newCtxDesc || 'Operasional Proyek',
-      payment_method: 'Transfer Bank',
-      status: 'verified',
-    });
-
-    setIsCashTransactionModalOpen(false);
+  const handleCashAdvanceAction = async (values: CashAdvanceActionFormValues) => {
+    if (!cashAdvanceAction) return;
+    const { request } = cashAdvanceAction;
+    if (values.action === 'approve' || values.action === 'reject') {
+      const decision: CashAdvanceDecision = values.action;
+      await handleDecideCashAdvance(request.id, decision, values.comment);
+      setFinanceFeedback(decision === 'approve' ? messages.decisionSuccess : messages.decisionSuccess);
+    } else if (values.action === 'payout') {
+      await handlePayCashAdvance(request.id, values.paymentMethod, values.reference);
+      setFinanceFeedback(messages.payoutSuccess);
+    } else {
+      await handleSettleCashAdvance(request.id, Number(values.settledAmount), values.notes);
+      setFinanceFeedback(messages.settlementSuccess);
+    }
+    setFinanceActionError('');
   };
 
-  const handleSaveKasbon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentOrg) return;
-    const proj = projects.find((p) => p.id === newKsbProjectId) || projects[0];
+  const saveCashTransaction = async (data: Parameters<typeof handleCreateCashTransaction>[0]) => {
+    await handleCreateCashTransaction(data);
+    setFinanceFeedback(messages.transactionSaved);
+    setFinanceActionError('');
+    setActiveTab('cashbook');
+  };
 
-    await handleCreateKasbon({
-      organization_id: currentOrg.id,
-      project_id: proj.id,
-      project_name: proj.name,
-      ticket_number: `KSB-2026-10-${Math.floor(100 + Math.random() * 900)}`,
-      employee_name: newKsbName || 'Staf Proyek',
-      role: 'Site Team',
-      date: new Date().toISOString().split('T')[0],
-      type: 'kasbon',
-      amount: Number(newKsbAmount),
-      purpose: newKsbPurpose || 'Operasional Lapangan',
-      settlement_status: 'active_unsettled',
-    });
+  const saveCashAdvance = async (data: Parameters<typeof handleCreateKasbon>[0]) => {
+    await handleCreateKasbon(data);
+    setFinanceFeedback(messages.requestSaved);
+    setFinanceActionError('');
+    setActiveTab('kasbon');
+  };
 
-    setIsKasbonModalOpen(false);
+  const verifyTransaction = async (transactionId: string) => {
+    setVerifyingTransactionId(transactionId);
+    setFinanceActionError('');
+    setFinanceFeedback('');
+    try {
+      await handleVerifyCashTransaction(transactionId);
+      setFinanceFeedback(messages.verifiedSuccess);
+    } catch (error) {
+      setFinanceActionError(error instanceof Error ? error.message : messages.verifyError);
+    } finally {
+      setVerifyingTransactionId(null);
+    }
   };
 
   return (
@@ -161,20 +178,24 @@ export const FinanceView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsInvoiceModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Terbitkan Invoice Termin</span>
-          </button>
-          <button
-            onClick={() => setIsCashTransactionModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Catat Kas Keluar/Masuk</span>
-          </button>
+          {canRecordFinance && (
+            <button
+              onClick={() => setIsInvoiceModalOpen(true)}
+              className="flex min-h-11 items-center gap-2 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-sm transition hover:bg-amber-600"
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              <span>Terbitkan Invoice Termin</span>
+            </button>
+          )}
+          {canRecordFinance && (
+            <button
+              onClick={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsCashTransactionModalOpen(true); }}
+              className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-700"
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              <span>Catat Kas Keluar/Masuk</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -211,10 +232,10 @@ export const FinanceView: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <div className="flex gap-6 overflow-x-auto whitespace-nowrap border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveTab('invoices')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
             activeTab === 'invoices'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -229,7 +250,7 @@ export const FinanceView: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('cashbook')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
             activeTab === 'cashbook'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -244,7 +265,7 @@ export const FinanceView: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('kasbon')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
             activeTab === 'kasbon'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -253,13 +274,13 @@ export const FinanceView: React.FC = () => {
           <CreditCard className="w-4 h-4" />
           <span>Kasbon & Reimbursement</span>
           <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-            {kasbonList.length}
+            {filteredKasbonList.length}
           </span>
         </button>
 
         <button
           onClick={() => setActiveTab('profit_loss')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
             activeTab === 'profit_loss'
               ? 'border-amber-500 text-amber-600 dark:text-amber-400'
               : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -371,58 +392,117 @@ export const FinanceView: React.FC = () => {
 
       {/* Tab: Cashbook */}
       {activeTab === 'cashbook' && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">No. Bukti & Tanggal</th>
-                  <th className="py-3 px-4">Arus & Kategori</th>
-                  <th className="py-3 px-4">Deskripsi Transaksi</th>
-                  <th className="py-3 px-4">Penerima / Pembayar</th>
-                  <th className="py-3 px-4 text-right">Jumlah (Rp)</th>
-                  <th className="py-3 px-4">Metode Bayar</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filteredCashTransactions.map((ctx) => (
-                  <tr key={ctx.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-xs text-slate-900 dark:text-white">{ctx.transaction_number}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{formatDateIndo(ctx.transaction_date)}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        {ctx.type === 'inflow' ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-                            <ArrowDownLeft className="w-3 h-3" /> Masuk
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
-                            <ArrowUpRight className="w-3 h-3" /> Keluar
-                          </span>
-                        )}
-                        <span className="text-xs text-slate-500 font-medium">{ctx.category}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {ctx.description}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      {ctx.recipient_or_payer}
-                    </td>
-                    <td
-                      className={`py-3.5 px-4 text-right font-bold text-xs ${
-                        ctx.type === 'inflow' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'
-                      }`}
-                    >
-                      {ctx.type === 'inflow' ? '+' : '-'} {formatRupiah(ctx.amount)}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-500">{ctx.payment_method}</td>
+        <div className="space-y-3">
+          {financeFeedback && <p className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success" role="status">{financeFeedback}</p>}
+          {financeActionError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{financeActionError}</p>}
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
+                  <tr>
+                    <th className="px-4 py-3">No. Bukti & Tanggal</th>
+                    <th className="px-4 py-3">Arus & Kategori</th>
+                    <th className="px-4 py-3">Deskripsi / Penerima</th>
+                    <th className="px-4 py-3 text-right">Jumlah (Rp)</th>
+                    <th className="px-4 py-3">Metode / Status</th>
+                    <th className="px-4 py-3 text-center">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {isLoading ? (
+                    Array.from({ length: 3 }, (_, index) => (
+                      <tr key={`cash-skeleton-${index}`} aria-hidden="true">
+                        {Array.from({ length: 6 }, (_, cell) => <td className="px-4 py-5" key={cell}><div className="h-4 animate-pulse rounded bg-surface-2" /></td>)}
+                      </tr>
+                    ))
+                  ) : organizationDataError ? (
+                    <tr><td className="p-6 text-center" colSpan={6}>
+                      <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+                      <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+                    </td></tr>
+                  ) : filteredCashTransactions.length === 0 ? (
+                    <tr><td className="p-6 text-center text-sm text-muted" colSpan={6}>{messages.cashTransactionsEmpty}</td></tr>
+                  ) : filteredCashTransactions.map((transaction) => (
+                    <tr key={transaction.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                      <td className="px-4 py-3.5">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">{transaction.transaction_number}</span>
+                        <span className="mt-0.5 block text-[11px] text-slate-400">{formatDateIndo(transaction.transaction_date)}</span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {transaction.type === 'inflow' ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
+                              <ArrowDownLeft aria-hidden="true" className="h-3 w-3" /> Kas masuk
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
+                              <ArrowUpRight aria-hidden="true" className="h-3 w-3" /> Kas keluar
+                            </span>
+                          )}
+                          <span className="text-xs font-medium text-slate-500">{transaction.category}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{transaction.description}</span>
+                        <span className="mt-0.5 block text-[11px] text-slate-500">{transaction.recipient_or_payer}</span>
+                      </td>
+                      <td className={`px-4 py-3.5 text-right text-xs font-bold tabular-nums ${transaction.type === 'inflow' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                        {transaction.type === 'inflow' ? '+' : '−'} {formatRupiah(transaction.amount)}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="block text-xs text-slate-600 dark:text-slate-400">{transaction.payment_method}</span>
+                        <span className={`mt-1 inline-flex items-center gap-1 text-[11px] font-semibold ${transaction.status === CASH_TRANSACTION_STATUSES.verified ? 'text-success' : 'text-warning'}`}>
+                          {transaction.status === CASH_TRANSACTION_STATUSES.verified
+                            ? <><CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {messages.verified}</>
+                            : <><Clock aria-hidden="true" className="h-3 w-3" /> {messages.pending}</>}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
+                          <button className="min-h-11 rounded-md px-3 text-xs font-semibold text-primary-700 hover:bg-surface-2 disabled:opacity-60 dark:text-primary-500" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} type="button">
+                            {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="space-y-3 p-3 md:hidden">
+              {isLoading ? (
+                Array.from({ length: 2 }, (_, index) => <div aria-hidden="true" className="h-32 animate-pulse rounded-xl bg-surface-2" key={`cash-card-skeleton-${index}`} />)
+              ) : organizationDataError ? (
+                <div className="p-4 text-center">
+                  <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+                  <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+                </div>
+              ) : filteredCashTransactions.length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted">{messages.cashTransactionsEmpty}</p>
+              ) : filteredCashTransactions.map((transaction) => (
+                <article className="space-y-3 rounded-xl border border-border p-4" key={transaction.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-text">{transaction.transaction_number}</p>
+                      <p className="mt-1 text-xs text-muted">{formatDateIndo(transaction.transaction_date)} · {transaction.category}</p>
+                    </div>
+                    <span className={`shrink-0 text-sm font-bold tabular-nums ${transaction.type === 'inflow' ? 'text-success' : 'text-text'}`}>
+                      {transaction.type === 'inflow' ? '+' : '−'} {formatRupiah(transaction.amount)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-text">{transaction.description}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted">
+                    <span>{transaction.recipient_or_payer} · {transaction.payment_method}</span>
+                    <span className="font-semibold">{transaction.status === CASH_TRANSACTION_STATUSES.verified ? messages.verified : messages.pending}</span>
+                  </div>
+                  {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
+                    <button className="min-h-11 w-full rounded-md border border-border text-sm font-semibold text-primary-700 hover:bg-surface-2 disabled:opacity-60 dark:text-primary-500" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} type="button">
+                      {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
+                    </button>
+                  )}
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -430,24 +510,56 @@ export const FinanceView: React.FC = () => {
       {/* Tab: Kasbon */}
       {activeTab === 'kasbon' && (
         <div className="space-y-4">
+          {financeFeedback && <p className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success" role="status">{financeFeedback}</p>}
+          {financeActionError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{financeActionError}</p>}
           <div className="flex justify-between items-center">
             <h3 className="font-bold text-sm text-slate-900 dark:text-white">
               Daftar Kasbon Operasional & Reimbursement Lapangan
             </h3>
-            <button
-              onClick={() => setIsKasbonModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-lg text-xs transition"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Pengajuan Kasbon / Reimbursement</span>
-            </button>
+            {canRecordFinance && (
+              <button
+                onClick={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsKasbonModalOpen(true); }}
+                className="flex min-h-11 items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 transition hover:bg-amber-600"
+              >
+                <Plus aria-hidden="true" className="h-3.5 w-3.5" />
+                <span>Pengajuan Kasbon / Reimbursement</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {kasbonList.map((k) => (
+          {isLoading ? (
+            <div aria-label={messages.loadingCashAdvances} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {Array.from({ length: 2 }, (_, index) => <div aria-hidden="true" className="h-48 animate-pulse rounded-2xl border border-border bg-surface-2" key={`advance-skeleton-${index}`} />)}
+            </div>
+          ) : organizationDataError ? (
+            <div className="rounded-xl border border-border bg-surface p-6 text-center">
+              <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+              <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+            </div>
+          ) : filteredKasbonList.length === 0 ? (
+            <div className="rounded-xl border border-border bg-surface p-6 text-center">
+              <p className="text-sm text-muted">{messages.cashAdvanceEmpty}</p>
+            </div>
+          ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {filteredKasbonList.map((k) => {
+              const isRequester = k.created_by === authSession?.user.id;
+              const statusLabels = {
+                [CASH_ADVANCE_STATUSES.pendingApproval]: messages.pendingApproval,
+                [CASH_ADVANCE_STATUSES.approvedReadyPayout]: messages.approvedReadyPayout,
+                [CASH_ADVANCE_STATUSES.activeUnsettled]: messages.activeUnsettled,
+                [CASH_ADVANCE_STATUSES.settled]: messages.settled,
+                [CASH_ADVANCE_STATUSES.rejected]: messages.rejected,
+              };
+              const openAction = (action: CashAdvanceActionFormValues['action']) => {
+                setFinanceFeedback('');
+                setFinanceActionError('');
+                setCashAdvanceAction({ request: k, action });
+              };
+              return (
               <div
                 key={k.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3"
+                className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
               >
                 <div className="flex justify-between items-start">
                   <div>
@@ -468,13 +580,51 @@ export const FinanceView: React.FC = () => {
 
                 <div className="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <span>Tanggal: {formatDateIndo(k.date)}</span>
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    Status: {k.settlement_status === 'settled' ? 'Selesai' : 'Belum Selesai'}
+                  <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
+                    {k.settlement_status === CASH_ADVANCE_STATUSES.settled
+                      ? <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 text-success" />
+                      : k.settlement_status === CASH_ADVANCE_STATUSES.rejected
+                        ? <XCircle aria-hidden="true" className="h-3.5 w-3.5 text-danger" />
+                        : <Clock aria-hidden="true" className="h-3.5 w-3.5 text-warning" />}
+                    {statusLabels[k.settlement_status]}
                   </span>
                 </div>
+                {k.decision_comment && <p className="rounded-md bg-surface-2 p-2 text-xs text-muted">{k.decision_comment}</p>}
+                {(k.paid_amount ?? 0) > 0 && (
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <p className="text-muted">Dibayar: <span className="font-semibold text-text">{formatRupiah(k.paid_amount ?? 0)}</span></p>
+                    {k.settlement_status === CASH_ADVANCE_STATUSES.settled && (
+                      <p className="text-muted">Realisasi: <span className="font-semibold text-text">{formatRupiah(k.settled_amount ?? 0)}</span></p>
+                    )}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+                  {canProcessFinance && k.settlement_status === CASH_ADVANCE_STATUSES.pendingApproval && !isRequester && (
+                    <>
+                      <button className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary-700 px-3 text-xs font-semibold text-white hover:bg-primary-600" onClick={() => openAction('approve')} type="button">
+                        <Check aria-hidden="true" className="h-4 w-4" /> {messages.approve}
+                      </button>
+                      <button className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-danger/30 px-3 text-xs font-semibold text-danger hover:bg-danger-bg" onClick={() => openAction('reject')} type="button">
+                        <XCircle aria-hidden="true" className="h-4 w-4" /> {messages.reject}
+                      </button>
+                    </>
+                  )}
+                  {canProcessFinance && k.settlement_status === CASH_ADVANCE_STATUSES.approvedReadyPayout && (
+                    <button className="min-h-11 rounded-md bg-primary-700 px-3 text-xs font-semibold text-white hover:bg-primary-600" onClick={() => openAction('payout')} type="button">
+                      {messages.recordPayout}
+                    </button>
+                  )}
+                  {(isRequester || canProcessFinance) && k.type === 'kasbon' && k.settlement_status === CASH_ADVANCE_STATUSES.activeUnsettled && (
+                    <button className="min-h-11 rounded-md border border-border px-3 text-xs font-semibold text-text hover:bg-surface-2" onClick={() => openAction('settle')} type="button">
+                      {messages.settle}
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
+              );
+            })}
           </div>
+          )}
         </div>
       )}
 
@@ -540,216 +690,37 @@ export const FinanceView: React.FC = () => {
         <ClientInvoicePaymentDialog
           invoice={invoiceForPayment}
           onClose={() => setInvoiceForPayment(null)}
-          onSubmit={async (amount, reference) => {
-            await handleMarkInvoicePaid(invoiceForPayment.id, reference, amount);
+          onSubmit={async (amount, reference, paymentMethod) => {
+            await handleMarkInvoicePaid(invoiceForPayment.id, reference, amount, paymentMethod);
           }}
         />
       )}
 
-      {/* Kas Masuk/Keluar Modal */}
-      {isCashTransactionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">Catat Transaksi Kas Proyek</h3>
-              <button onClick={() => setIsCashTransactionModalOpen(false)}>
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveCashTransaction} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Jenis Arus</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNewCtxType('outflow')}
-                    className={`py-2 rounded-xl font-bold transition text-center ${
-                      newCtxType === 'outflow' ? 'bg-rose-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    }`}
-                  >
-                    Pengeluaran (Kas Keluar)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNewCtxType('inflow')}
-                    className={`py-2 rounded-xl font-bold transition text-center ${
-                      newCtxType === 'inflow' ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    }`}
-                  >
-                    Penerimaan (Kas Masuk)
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Proyek Terkait</label>
-                <select
-                  value={newCtxProjectId}
-                  onChange={(e) => setNewCtxProjectId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori Biaya</label>
-                <select
-                  value={newCtxCategory}
-                  onChange={(e) => setNewCtxCategory(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                >
-                  <option value="Material">Material</option>
-                  <option value="Upah Pekerja">Upah Pekerja</option>
-                  <option value="Subkon">Subkontraktor</option>
-                  <option value="Sewa Alat">Sewa Alat</option>
-                  <option value="Operasional Site">Operasional Site & Petty Cash</option>
-                  <option value="Termin Klien">Termin Klien</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Jumlah Nominal (Rp)</label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={newCtxAmount}
-                  onChange={(e) => setNewCtxAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Penerima / Pembayar</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nama supplier, mandor, atau pihak penerima"
-                  value={newCtxRecipient}
-                  onChange={(e) => setNewCtxRecipient(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Deskripsi Transaksi</label>
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Uraian pembayaran atau penerimaan dana"
-                  value={newCtxDesc}
-                  onChange={(e) => setNewCtxDesc(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCashTransactionModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition"
-                >
-                  Simpan Transaksi Kas
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {isCashTransactionModalOpen && currentOrg && (
+        <CashTransactionDialog
+          onClose={() => setIsCashTransactionModalOpen(false)}
+          onSubmit={saveCashTransaction}
+          organizationId={currentOrg.id}
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+        />
       )}
-
-      {/* Kasbon Modal */}
-      {isKasbonModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">Pengajuan Kasbon / Petty Cash</h3>
-              <button onClick={() => setIsKasbonModalOpen(false)}>
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveKasbon} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Proyek Terkait</label>
-                <select
-                  value={newKsbProjectId}
-                  onChange={(e) => setNewKsbProjectId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                >
-                  {projects.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Pemohon</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: Rian Pratama (Site Manager)"
-                  value={newKsbName}
-                  onChange={(e) => setNewKsbName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Nominal Kasbon (Rp)</label>
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={newKsbAmount}
-                  onChange={(e) => setNewKsbAmount(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1">Tujuan / Keperluan</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Jelaskan kebutuhan dana operasional darurat"
-                  value={newKsbPurpose}
-                  onChange={(e) => setNewKsbPurpose(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsKasbonModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition"
-                >
-                  Ajukan Kasbon
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {isKasbonModalOpen && currentOrg && (
+        <CashAdvanceRequestDialog
+          onClose={() => setIsKasbonModalOpen(false)}
+          onSubmit={saveCashAdvance}
+          organizationId={currentOrg.id}
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+        />
+      )}
+      {cashAdvanceAction && (
+        <CashAdvanceActionDialog
+          action={cashAdvanceAction.action}
+          onClose={() => setCashAdvanceAction(null)}
+          onSubmit={handleCashAdvanceAction}
+          request={cashAdvanceAction.request}
+        />
       )}
     </div>
   );

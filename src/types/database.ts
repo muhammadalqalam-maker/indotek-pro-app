@@ -526,6 +526,42 @@ export interface ClientInvoice {
   created_at: string;
 }
 
+export const CASH_TRANSACTION_TYPES = {
+  inflow: 'inflow',
+  outflow: 'outflow',
+} as const;
+
+export const CASH_TRANSACTION_CATEGORIES = {
+  clientInvoice: 'Termin Klien',
+  material: 'Material',
+  wages: 'Upah Pekerja',
+  subcontractor: 'Subkon',
+  equipmentRental: 'Sewa Alat',
+  siteOperations: 'Operasional Site',
+  cashAdvance: 'Kasbon / Petty Cash',
+  other: 'Lainnya',
+} as const;
+
+export const CASH_TRANSACTION_STATUSES = {
+  pending: 'pending',
+  verified: 'verified',
+} as const;
+
+export const CASH_ADVANCE_TYPES = {
+  advance: 'kasbon',
+  reimbursement: 'reimbursement',
+} as const;
+
+export const CASH_ADVANCE_STATUSES = {
+  pendingApproval: 'pending_approval',
+  approvedReadyPayout: 'approved_ready_payout',
+  activeUnsettled: 'active_unsettled',
+  settled: 'settled',
+  rejected: 'rejected',
+} as const;
+
+export type CashPaymentMethod = 'Transfer Bank' | 'Kas Tunai' | 'Giro / Cek' | 'Lainnya';
+
 export interface ProjectCashTransaction {
   id: string;
   organization_id: string;
@@ -533,13 +569,18 @@ export interface ProjectCashTransaction {
   project_name: string;
   transaction_number: string;
   transaction_date: string;
-  type: 'inflow' | 'outflow';
-  category: 'Termin Klien' | 'Material' | 'Upah Pekerja' | 'Subkon' | 'Sewa Alat' | 'Operasional Site' | 'Kasbon / Petty Cash';
+  type: typeof CASH_TRANSACTION_TYPES[keyof typeof CASH_TRANSACTION_TYPES];
+  category: typeof CASH_TRANSACTION_CATEGORIES[keyof typeof CASH_TRANSACTION_CATEGORIES];
   amount: number;
   recipient_or_payer: string;
   description: string;
-  payment_method: 'Transfer Bank' | 'Kas Tunai' | 'Giro / Cek';
-  status: 'verified' | 'pending';
+  payment_method: CashPaymentMethod;
+  status: typeof CASH_TRANSACTION_STATUSES[keyof typeof CASH_TRANSACTION_STATUSES];
+  reference?: string;
+  invoice_id?: string | null;
+  cash_advance_request_id?: string | null;
+  verified_by?: string | null;
+  verified_at?: string | null;
   receipt_url?: string;
 }
 
@@ -552,13 +593,42 @@ export interface KasbonReimbursement {
   employee_name: string;
   role: string;
   date: string;
-  type: 'kasbon' | 'reimbursement';
+  type: typeof CASH_ADVANCE_TYPES[keyof typeof CASH_ADVANCE_TYPES];
   amount: number;
   purpose: string;
-  settlement_status: 'pending_approval' | 'approved_ready_payout' | 'active_unsettled' | 'settled';
+  settlement_status: typeof CASH_ADVANCE_STATUSES[keyof typeof CASH_ADVANCE_STATUSES];
   approved_by_name?: string;
+  decision_comment?: string;
+  paid_amount?: number;
+  paid_at?: string | null;
+  payment_method?: CashPaymentMethod | null;
+  settled_amount?: number;
+  settled_at?: string | null;
+  settlement_notes?: string;
+  created_by?: string;
   created_at: string;
 }
+
+export type CreateProjectCashTransactionInput = Pick<
+  ProjectCashTransaction,
+  | 'organization_id'
+  | 'project_id'
+  | 'transaction_date'
+  | 'type'
+  | 'category'
+  | 'amount'
+  | 'recipient_or_payer'
+  | 'description'
+  | 'payment_method'
+  | 'reference'
+>;
+
+export type CreateCashAdvanceRequestInput = Pick<
+  KasbonReimbursement,
+  'organization_id' | 'project_id' | 'employee_name' | 'role' | 'date' | 'type' | 'amount' | 'purpose'
+>;
+
+export type CashAdvanceDecision = 'approve' | 'reject';
 
 // ==========================================
 // SDM & ABSENSI LAPANGAN TYPES
