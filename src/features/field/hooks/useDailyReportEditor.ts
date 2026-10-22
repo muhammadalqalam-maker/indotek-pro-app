@@ -35,18 +35,14 @@ function technicalError(error: unknown): string {
 export type DailyReportEditorState = {
   form: UseFormReturn<DailyReportFormValues>;
   editable: boolean;
-  showApproverSignature: boolean;
   pendingPhotos: File[];
   changePendingPhotos: (files: File[]) => void;
   photoPreviewUrls: Record<string, string>;
   siteSignatureUrl: string | null;
-  approverSignatureUrl: string | null;
   onSiteSignatureChange: (file: File | null) => void;
-  onApproverSignatureChange: (file: File | null) => void;
   removePhoto: (path: string) => void;
   persistDraft: (showValidation?: boolean) => Promise<boolean>;
   submit: () => Promise<void>;
-  approve: () => Promise<void>;
   hasUnsavedChanges: boolean;
   isOnline: boolean;
   isSaving: boolean;
@@ -65,7 +61,6 @@ type UseDailyReportEditorOptions = {
   details: DailyReportDetails | undefined;
   defaultValues: DailyReportFormValues;
   canEdit: boolean;
-  canApprove: boolean;
   reportsKey: QueryKey;
 };
 
@@ -77,7 +72,6 @@ export function useDailyReportEditor({
   details,
   defaultValues,
   canEdit,
-  canApprove,
   reportsKey,
 }: UseDailyReportEditorOptions): DailyReportEditorState {
   const { authSession } = useApp();
@@ -86,7 +80,6 @@ export function useDailyReportEditor({
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [pendingPhotoIds, setPendingPhotoIds] = useState<Map<File, string>>(() => new Map());
   const [siteSignatureFile, setSiteSignatureFile] = useState<File | null>(null);
-  const [approverSignatureFile, setApproverSignatureFile] = useState<File | null>(null);
   const [saveState, setSaveState] = useState<SaveState>('saved');
   const [saveError, setSaveError] = useState('');
   const [saveErrorDetail, setSaveErrorDetail] = useState('');
@@ -97,9 +90,6 @@ export function useDailyReportEditor({
   const form = useForm<DailyReportFormValues>({ defaultValues, mode: 'onBlur' });
   const watchedValues = useWatch({ control: form.control });
   const editable = Boolean(canEdit && report?.status === DAILY_REPORT_STATUSES.draft);
-  const showApproverSignature = Boolean(
-    canApprove && report?.status === DAILY_REPORT_STATUSES.submitted,
-  );
   const hasUnsavedChanges = form.formState.isDirty
     || pendingPhotos.length > 0
     || siteSignatureFile !== null;
@@ -122,7 +112,6 @@ export function useDailyReportEditor({
     setPendingPhotos([]);
     setPendingPhotoIds(new Map());
     setSiteSignatureFile(null);
-    setApproverSignatureFile(null);
     setSaveState('saved');
     setSaveError('');
     setSaveErrorDetail('');
@@ -288,9 +277,7 @@ export function useDailyReportEditor({
     reportId,
     form,
     isOnline,
-    canApprove: showApproverSignature,
     hasSiteSignatureFile: siteSignatureFile !== null,
-    approverSignatureFile,
     persistDraft,
     queryClient,
     reportsKey,
@@ -298,7 +285,6 @@ export function useDailyReportEditor({
     setSaveError,
     setSaveErrorDetail,
     setActionFeedback,
-    setApproverSignatureFile,
   });
 
   useEffect(() => {
@@ -374,18 +360,14 @@ export function useDailyReportEditor({
   return {
     form,
     editable,
-    showApproverSignature,
     pendingPhotos,
     changePendingPhotos,
     photoPreviewUrls: details?.photoPreviewUrls ?? {},
     siteSignatureUrl: details?.siteSignatureUrl ?? null,
-    approverSignatureUrl: details?.approverSignatureUrl ?? null,
     onSiteSignatureChange,
-    onApproverSignatureChange: setApproverSignatureFile,
     removePhoto,
     persistDraft,
     submit: workflow.submit,
-    approve: workflow.approve,
     hasUnsavedChanges,
     isOnline,
     isSaving,

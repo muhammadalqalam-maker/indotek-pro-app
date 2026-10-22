@@ -7,9 +7,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  ConfirmDialog,
   EmptyState,
-  useToast,
 } from '../../../components/ui';
 import { Can } from '../../../components/shared/Can';
 import { getMessages } from '../../../i18n';
@@ -25,16 +23,15 @@ import { ProjectAddendumFormDialog } from './ProjectAddendumFormDialog';
 const messages = getMessages('id').projects;
 const noAddendums: ProjectAddendum[] = [];
 
-function addendumStatusVariant(addendum: ProjectAddendum): 'success' | 'warning' {
-  return addendum.approved_at ? 'success' : 'warning';
+function addendumStatusVariant(status: string): 'success' | 'warning' | 'danger' {
+  if (status === 'approved') return 'success';
+  if (status === 'rejected') return 'danger';
+  return 'warning';
 }
 
 export function ProjectAddendumsTab({ project }: { project: Project }) {
-  const { members, handleApproveAddendum } = useApp();
-  const { toast } = useToast();
+  const { members } = useApp();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [addendumToApprove, setAddendumToApprove] = useState<ProjectAddendum | null>(null);
-  const [isApproving, setIsApproving] = useState(false);
   const addendums = project.addendums ?? noAddendums;
   const effectiveContractValue = calculateEffectiveProjectContractValue(project);
   const approvedExtensionDays = calculateApprovedTimeExtensionDays(addendums);
@@ -45,21 +42,6 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
     )),
     [addendums],
   );
-
-  const approveAddendum = async () => {
-    if (!addendumToApprove) return;
-    setIsApproving(true);
-    try {
-      await handleApproveAddendum(project.id, addendumToApprove.id);
-      toast({ title: messages.addendumApproved, variant: 'success' });
-      setAddendumToApprove(null);
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : messages.addendumApprovalFailed;
-      toast({ title: messages.addendumApprovalFailed, description: detail, variant: 'error' });
-    } finally {
-      setIsApproving(false);
-    }
-  };
 
   return (
     <section className="space-y-4">
@@ -114,7 +96,9 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
                 const approverName = approver?.user?.full_name
                   ?? addendum.approved_by_name
                   ?? messages.addendumApproverUnavailable;
-                const approved = Boolean(addendum.approved_at);
+                const status = addendum.approval_status
+                  ?? (addendum.approved_at ? 'approved' : 'pending');
+                const approved = status === 'approved';
 
                 return (
                   <li key={addendum.id}>
@@ -126,24 +110,18 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
                               <p className="break-all font-mono text-xs font-semibold text-muted">
                                 {addendum.addendum_number}
                               </p>
-                              <Badge variant={addendumStatusVariant(addendum)}>
-                                {approved ? messages.addendumStatusApproved : messages.addendumStatusPending}
+                              <Badge variant={addendumStatusVariant(status)}>
+                                {status === 'approved'
+                                  ? messages.addendumStatusApproved
+                                  : status === 'rejected'
+                                    ? messages.addendumStatusRejected
+                                    : messages.addendumStatusPending}
                               </Badge>
                             </div>
                             <h3 className="mt-1 break-words text-base font-semibold text-text">
                               {addendum.title}
                             </h3>
                           </div>
-                          {!approved && (
-                            <Can module="projects" action="approve">
-                              <Button
-                                variant="outline"
-                                onClick={() => setAddendumToApprove(addendum)}
-                              >
-                                {messages.addendumApproveAction}
-                              </Button>
-                            </Can>
-                          )}
                         </div>
 
                         {addendum.description && (
@@ -198,18 +176,6 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
         addendums={addendums}
       />
 
-      <ConfirmDialog
-        open={Boolean(addendumToApprove)}
-        onOpenChange={(open) => {
-          if (!open && !isApproving) setAddendumToApprove(null);
-        }}
-        title={messages.addendumConfirmApprovalTitle}
-        description={messages.addendumConfirmApprovalDescription(addendumToApprove?.addendum_number ?? '')}
-        confirmLabel={messages.addendumApproveAction}
-        cancelLabel={messages.cancel}
-        loading={isApproving}
-        onConfirm={() => void approveAddendum()}
-      />
     </section>
   );
 }

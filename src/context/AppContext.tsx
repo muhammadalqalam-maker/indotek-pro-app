@@ -26,7 +26,6 @@ import {
   ToolboxMeeting,
   PunchListItem,
   ProjectDocument,
-  ApprovalItem,
 } from '../types/database';
 import {
   hasPermission,
@@ -44,7 +43,6 @@ import {
   updateProject,
   deleteProject,
   addProjectAddendum,
-  approveProjectAddendum,
   resetDemoData,
   fetchAHSPResources,
   fetchAHSPTemplates,
@@ -54,10 +52,10 @@ import {
   updateBOQItemProgress,
   fetchDailyReports,
   createDailyReport,
-  fetchSCurveData,
-  updateSCurveWeekActual,
   fetchVendors,
   createVendor,
+  updateVendor,
+  archiveVendor,
   fetchPurchaseOrders,
   createPurchaseOrder,
   updatePOStatus,
@@ -86,9 +84,9 @@ import {
   fetchPunchList,
   updatePunchListStatus,
   fetchDocuments,
-  fetchApprovals,
-  processApproval,
 } from '../services/dataService';
+import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
+import type { CreateGoodsReceiptInput } from '../features/procurement/types';
 import {
   fetchNotifications,
   markAllNotificationsAsRead,
@@ -200,6 +198,7 @@ interface AppContextType {
 
   // Data & Actions
   projects: Project[];
+  reloadProjects: () => Promise<void>;
   members: OrganizationMember[];
   membersLoading: boolean;
   membersError: string;
@@ -226,11 +225,9 @@ interface AppContextType {
   activeBoq: any;
   boqItems: any[];
   dailyReports: any[];
-  scurvePoints: any[];
   handleAddBOQItem: (item: any) => Promise<any>;
   handleUpdateBOQProgress: (itemId: string, vol: number, pct: number) => Promise<any>;
   handleCreateDailyReport: (report: any) => Promise<any>;
-  handleUpdateSCurve: (weekId: string, actualWeekly: number, actualCumulative: number) => Promise<any>;
 
   // Module Entities & Actions
   vendors: Vendor[];
@@ -252,13 +249,14 @@ interface AppContextType {
   toolboxMeetings: ToolboxMeeting[];
   punchList: PunchListItem[];
   documents: ProjectDocument[];
-  approvals: ApprovalItem[];
 
   // Module Handlers
-  handleCreateVendor: (data: Omit<Vendor, 'id' | 'created_at'>) => Promise<Vendor>;
+  handleCreateVendor: (data: VendorInput) => Promise<Vendor>;
+  handleUpdateVendor: (id: string, data: VendorInput) => Promise<Vendor>;
+  handleArchiveVendor: (id: string) => Promise<void>;
   handleCreatePO: (data: Omit<PurchaseOrder, 'id' | 'created_at'>) => Promise<PurchaseOrder>;
   handleUpdatePOStatus: (id: string, status: PurchaseOrder['status'], approverName?: string, notes?: string) => Promise<PurchaseOrder>;
-  handleCreateGRN: (data: Omit<GoodsReceiptNote, 'id' | 'created_at'>) => Promise<GoodsReceiptNote>;
+  handleCreateGRN: (data: CreateGoodsReceiptInput) => Promise<GoodsReceiptNote>;
   handleAddStockMovement: (data: Omit<StockMovement, 'id'>) => Promise<StockMovement>;
   handleCreateSubconOpname: (data: Omit<SubcontractorOpname, 'id' | 'created_at'>) => Promise<SubcontractorOpname>;
   handleCreateInvoice: (data: Omit<ClientInvoice, 'id' | 'created_at'>) => Promise<ClientInvoice>;
@@ -266,14 +264,12 @@ interface AppContextType {
   handleCreateCashTransaction: (data: Omit<ProjectCashTransaction, 'id'>) => Promise<ProjectCashTransaction>;
   handleCreateKasbon: (data: Omit<KasbonReimbursement, 'id' | 'created_at'>) => Promise<KasbonReimbursement>;
   handleUpdatePunchListStatus: (id: string, status: PunchListItem['status']) => Promise<PunchListItem>;
-  handleProcessApproval: (id: string, status: 'approved' | 'rejected', notes?: string) => Promise<ApprovalItem>;
 
   // Project Actions
   handleCreateProject: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<Project>;
   handleUpdateProject: (id: string, updates: Partial<Project>) => Promise<Project>;
   handleDeleteProject: (id: string) => Promise<void>;
   handleAddAddendum: (projectId: string, addendum: ProjectAddendumInput) => Promise<ProjectAddendum>;
-  handleApproveAddendum: (projectId: string, addendumId: string) => Promise<ProjectAddendum>;
 
   // Member Actions
   handleInviteMember: (data: MemberInvitationInput) => Promise<MemberInvitationSendResult>;
@@ -349,6 +345,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Entities
   const [projects, setProjects] = useState<Project[]>([]);
   const dataLoadRequestId = useRef(0);
+  const projectRefreshRequestId = useRef(0);
   const [organizationDataError, setOrganizationDataError] = useState('');
   const [members, setMembers] = useState<OrganizationMember[]>([]);
   const [membersLoading, setMembersLoading] = useState(true);
@@ -377,7 +374,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeBoq, setActiveBoq] = useState<any>(null);
   const [boqItems, setBoqItems] = useState<any[]>([]);
   const [dailyReports, setDailyReports] = useState<any[]>([]);
-  const [scurvePoints, setScurvePoints] = useState<any[]>([]);
 
   // Module states
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -399,7 +395,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [toolboxMeetings, setToolboxMeetings] = useState<ToolboxMeeting[]>([]);
   const [punchList, setPunchList] = useState<PunchListItem[]>([]);
   const [documents, setDocuments] = useState<ProjectDocument[]>([]);
-  const [approvals, setApprovals] = useState<ApprovalItem[]>([]);
   const [permissionOverrides, setPermissionOverrides] = useState<PermissionOverrides>({});
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [permissionsError, setPermissionsError] = useState('');
@@ -420,7 +415,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveBoq(null);
     setBoqItems([]);
     setDailyReports([]);
-    setScurvePoints([]);
     setVendors([]);
     setPurchaseOrders([]);
     setPurchaseRequests([]);
@@ -440,7 +434,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setToolboxMeetings([]);
     setPunchList([]);
     setDocuments([]);
-    setApprovals([]);
   };
 
   const [authSession, setAuthSession] = useState<Session | null>(null);
@@ -751,6 +744,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const reloadProjects = async () => {
+    if (!currentOrg) {
+      setProjects([]);
+      return;
+    }
+    const requestId = ++projectRefreshRequestId.current;
+    try {
+      const result = await fetchProjects(currentOrg.id);
+      if (requestId === projectRefreshRequestId.current) setProjects(result);
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : 'Proyek gagal dimuat.';
+      if (requestId === projectRefreshRequestId.current) setOrganizationDataError(detail);
+      throw error;
+    }
+  };
+
   const reloadPendingInvitations = async () => {
     const requestId = ++pendingInvitationsRequestId.current;
     if (!isSupabaseLive || !authSession) {
@@ -824,7 +833,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         tbm,
         pnch,
         docs,
-        apps,
       ] = await Promise.all([
         fetchProjects(currentOrg.id),
         fetchAuditLogs(currentOrg.id),
@@ -849,21 +857,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchToolboxMeetings(currentOrg.id, selectedProjectId),
         fetchPunchList(currentOrg.id, selectedProjectId),
         fetchDocuments(currentOrg.id, selectedProjectId),
-        fetchApprovals(currentOrg.id),
       ]);
 
       let boqData: Awaited<ReturnType<typeof fetchProjectBOQ>> = null;
       let boqItemData: Awaited<ReturnType<typeof fetchBOQItems>> = [];
       let reportData: Awaited<ReturnType<typeof fetchDailyReports>> = [];
-      let scurveData: Awaited<ReturnType<typeof fetchSCurveData>> = [];
       const targetProjId = selectedProjectId !== 'all'
         ? selectedProjectId
         : projData[0]?.id;
       if (targetProjId) {
-        [boqData, reportData, scurveData] = await Promise.all([
+        [boqData, reportData] = await Promise.all([
           fetchProjectBOQ(targetProjId),
           fetchDailyReports(targetProjId),
-          fetchSCurveData(targetProjId),
         ]);
         if (boqData) boqItemData = await fetchBOQItems(boqData.id);
       }
@@ -892,11 +897,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setToolboxMeetings(tbm);
       setPunchList(pnch);
       setDocuments(docs);
-      setApprovals(apps);
       setActiveBoq(boqData);
       setBoqItems(boqItemData);
       setDailyReports(reportData);
-      setScurvePoints(scurveData);
     } catch (error: unknown) {
       if (requestId !== dataLoadRequestId.current) return;
       clearOrganizationData();
@@ -1021,10 +1024,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [authSession?.user.id, currentOrg?.id, isSupabaseLive, reloadNotifications]);
 
   // Module Handlers
-  const handleCreateVendor = async (data: Omit<Vendor, 'id' | 'created_at'>) => {
-    const created = await createVendor(data);
+  const handleCreateVendor = async (data: VendorInput) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum menambah vendor.');
+    const created = await createVendor({
+      ...data,
+      organization_id: currentOrg.id,
+      bank_name: '',
+      bank_account_no: '',
+      bank_account_name: '',
+      rating: 0,
+      payment_terms_days: data.payment_terms_days,
+      is_active: true,
+      evaluation_count: 0,
+    });
     setVendors((prev) => [created, ...prev]);
     return created;
+  };
+
+  const handleUpdateVendor = async (id: string, data: VendorInput) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum mengubah vendor.');
+    const updated = await updateVendor(id, currentOrg.id, data);
+    setVendors((prev) => prev.map((vendor) => (vendor.id === id ? updated : vendor)));
+    return updated;
+  };
+
+  const handleArchiveVendor = async (id: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif sebelum mengarsipkan vendor.');
+    await archiveVendor(id, currentOrg.id);
+    setVendors((prev) => prev.filter((vendor) => vendor.id !== id));
   };
 
   const handleCreatePO = async (data: Omit<PurchaseOrder, 'id' | 'created_at'>) => {
@@ -1046,9 +1073,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
-  const handleCreateGRN = async (data: Omit<GoodsReceiptNote, 'id' | 'created_at'>) => {
+  const handleCreateGRN = async (data: CreateGoodsReceiptInput) => {
     const created = await createGoodsReceipt(data);
-    setGoodsReceipts((prev) => [created, ...prev]);
+    await reloadAllData();
     return created;
   };
 
@@ -1095,13 +1122,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
-  const handleProcessApproval = async (id: string, status: 'approved' | 'rejected', notes?: string) => {
-    const updated = await processApproval(id, status, notes);
-    setApprovals((prev) => prev.map((a) => (a.id === id ? updated : a)));
-    await reloadAllData();
-    return updated;
-  };
-
   // Fase 2 Handlers
   const handleAddBOQItem = async (item: any) => {
     const created = await addBOQItem(item);
@@ -1119,12 +1139,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const created = await createDailyReport(reportData);
     setDailyReports((prev) => [created, ...prev]);
     return created;
-  };
-
-  const handleUpdateSCurve = async (weekId: string, actualWeekly: number, actualCumulative: number) => {
-    const updated = await updateSCurveWeekActual(weekId, actualWeekly, actualCumulative);
-    setScurvePoints((prev) => prev.map((s) => (s.id === weekId ? updated : s)));
-    return updated;
   };
 
   const setCurrentOrgId = (id: string) => {
@@ -1223,22 +1237,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return created;
   };
 
-  const handleApproveAddendum = async (projectId: string, addendumId: string) => {
-    if (!currentOrg) throw new Error('Organisasi aktif tidak ditemukan.');
-    const approved = await approveProjectAddendum(projectId, currentOrg.id, addendumId);
-    setProjects((previous) => previous.map((project) => (
-      project.id === projectId
-        ? {
-          ...project,
-          addendums: (project.addendums ?? []).map((addendum) => (
-            addendum.id === addendumId ? approved : addendum
-          )),
-        }
-        : project
-    )));
-    return approved;
-  };
-
   // Member handlers
   const handleInviteMember = async (data: MemberInvitationInput) => {
     const result = await sendMemberInvitation(data);
@@ -1330,6 +1328,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isCommandPaletteOpen,
         setCommandPaletteOpen,
         projects,
+        reloadProjects,
         members,
         membersLoading,
         membersError,
@@ -1354,11 +1353,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeBoq,
         boqItems,
         dailyReports,
-        scurvePoints,
         handleAddBOQItem,
         handleUpdateBOQProgress,
         handleCreateDailyReport,
-        handleUpdateSCurve,
         vendors,
         purchaseOrders,
         purchaseRequests,
@@ -1378,8 +1375,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toolboxMeetings,
         punchList,
         documents,
-        approvals,
         handleCreateVendor,
+        handleUpdateVendor,
+        handleArchiveVendor,
         handleCreatePO,
         handleUpdatePOStatus,
         handleCreateGRN,
@@ -1390,12 +1388,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleCreateCashTransaction,
         handleCreateKasbon,
         handleUpdatePunchListStatus,
-        handleProcessApproval,
         handleCreateProject,
         handleUpdateProject,
         handleDeleteProject,
         handleAddAddendum,
-        handleApproveAddendum,
         handleInviteMember,
         handleUpdateRole,
         handleToggleMember,

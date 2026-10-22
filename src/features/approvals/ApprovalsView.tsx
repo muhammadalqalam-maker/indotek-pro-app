@@ -1,208 +1,195 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { CheckCircle2, Clock3, ListChecks, RotateCcw, Settings2, XCircle } from 'lucide-react';
+import { Button, EmptyState, Skeleton } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
-import { Can } from '../../components/shared/Can';
-import { formatRupiah, formatDateIndo } from '../../utils/format';
-import { ApprovalItem } from '../../types/database';
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  AlertCircle,
-  Check,
-  X,
-  FileText,
-  Filter,
-  Search,
-  ShieldCheck,
-  ArrowRight,
-} from 'lucide-react';
+import { useCan } from '../../hooks/useCan';
+import { getMessages } from '../../i18n';
+import { ApprovalFlowEditor } from './components/ApprovalFlowEditor';
+import { ApprovalRequestCard } from './components/ApprovalRequestCard';
+import { fetchApprovalFlows, fetchApprovals } from './services/approval.service';
+import { APPROVAL_STATUSES, type ApprovalStatus } from './types';
 
-export const ApprovalsView: React.FC = () => {
-  const { approvals, handleProcessApproval } = useApp();
-  const [filterStatus, setFilterStatus] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
-  const [commentText, setCommentText] = useState('');
-  const [activeApprovalId, setActiveApprovalId] = useState<string | null>(null);
+const messages = getMessages().approvals;
+type StatusFilter = ApprovalStatus | 'all';
 
-  const filteredApprovals = approvals.filter((app) => {
-    if (filterStatus === 'all') return true;
-    return app.status === filterStatus;
+export function ApprovalsView() {
+  const {
+    currentOrg,
+    currentMemberRole,
+    isSupabaseLive,
+    members,
+    reloadProjects,
+  } = useApp();
+  const hasApprovalPermission = useCan('approvals', 'approve');
+  const organizationId = currentOrg?.id ?? null;
+  const queryClient = useQueryClient();
+  const [filter, setFilter] = useState<StatusFilter>(APPROVAL_STATUSES.pending);
+  const [activeTab, setActiveTab] = useState<'requests' | 'flows'>('requests');
+  const canManageFlows = Boolean(
+    isSupabaseLive && (currentMemberRole === 'owner' || currentMemberRole === 'admin'),
+  );
+  const requestsQuery = useQuery({
+    queryKey: ['approvals', organizationId],
+    queryFn: () => {
+      if (!organizationId) throw new Error(messages.noOrganization);
+      return fetchApprovals(organizationId);
+    },
+    enabled: Boolean(organizationId && isSupabaseLive),
+  });
+  const flowsQuery = useQuery({
+    queryKey: ['approval-flows', organizationId],
+    queryFn: () => {
+      if (!organizationId) throw new Error(messages.noOrganization);
+      return fetchApprovalFlows(organizationId);
+    },
+    enabled: Boolean(organizationId && isSupabaseLive && canManageFlows),
   });
 
-  const handleApprove = async (id: string) => {
-    await handleProcessApproval(id, 'approved', commentText || 'Disetujui sesuai prosedur');
-    setActiveApprovalId(null);
-    setCommentText('');
+  const requests = requestsQuery.data?.requests ?? [];
+  const pendingCount = requests.filter((request) => request.status === APPROVAL_STATUSES.pending).length;
+  const visibleRequests = requests.filter((request) => (
+    filter === 'all' || request.status === filter
+  ));
+
+  const refreshAfterDecision = async () => {
+    if (!organizationId) return;
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['approvals', organizationId] }),
+      queryClient.invalidateQueries({ queryKey: ['boq-workspace', organizationId] }),
+      queryClient.invalidateQueries({ queryKey: ['daily-reports', organizationId] }),
+      queryClient.invalidateQueries({ queryKey: ['daily-report-details', organizationId] }),
+      reloadProjects(),
+    ]);
   };
 
-  const handleReject = async (id: string) => {
-    await handleProcessApproval(id, 'rejected', commentText || 'Ditolak: mohon revisi anggaran atau spesifikasi');
-    setActiveApprovalId(null);
-    setCommentText('');
-  };
-
-  const pendingCount = approvals.filter((a) => a.status === 'pending').length;
+  if (!organizationId) {
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.noOrganization}</p>;
+  }
+  if (!isSupabaseLive) {
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.liveRequired}</p>;
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <main className="mx-auto grid w-full max-w-6xl gap-6">
+      <header className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Pusat Persetujuan & Approval
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              Modul M
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Mesin persetujuan berjenjang: Purchase Order, PR, Kasbon Proyek, Opname Mandor & Addendum Kontrak
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted">{messages.description}</p>
         </div>
+        <span className="inline-flex min-h-10 items-center gap-2 self-start rounded-full bg-warning-bg px-3 text-sm font-semibold text-warning sm:self-auto">
+          <Clock3 className="h-4 w-4" aria-hidden="true" />
+          {messages.pendingCount(pendingCount)}
+        </span>
+      </header>
 
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-            <Clock className="w-4 h-4" />
-            <span>{pendingCount} Menunggu Persetujuan</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Filter Tabs */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+      <nav className="flex flex-wrap gap-2 border-b border-border pb-3" aria-label={messages.title}>
         <button
-          onClick={() => setFilterStatus('pending')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            filterStatus === 'pending'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+          type="button"
+          aria-pressed={activeTab === 'requests'}
+          onClick={() => setActiveTab('requests')}
+          className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
+            activeTab === 'requests' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
           }`}
         >
-          <Clock className="w-4 h-4" />
-          <span>Menunggu Persetujuan</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
-            {pendingCount}
-          </span>
+          <ListChecks className="h-4 w-4" aria-hidden="true" />
+          {messages.requestsTab}
         </button>
-
-        <button
-          onClick={() => setFilterStatus('approved')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            filterStatus === 'approved'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          <span>Riwayat Disetujui</span>
-        </button>
-
-        <button
-          onClick={() => setFilterStatus('rejected')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            filterStatus === 'rejected'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <XCircle className="w-4 h-4" />
-          <span>Ditolak / Revisi</span>
-        </button>
-
-        <button
-          onClick={() => setFilterStatus('all')}
-          className={`pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            filterStatus === 'all'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <span>Semua</span>
-        </button>
-      </div>
-
-      {/* Approvals List */}
-      <div className="space-y-4">
-        {filteredApprovals.map((app) => (
-          <div
-            key={app.id}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-xs"
+        {canManageFlows && (
+          <button
+            type="button"
+            aria-pressed={activeTab === 'flows'}
+            onClick={() => setActiveTab('flows')}
+            className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
+              activeTab === 'flows' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+            }`}
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    {app.reference_number}
-                  </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                    {app.approval_level}
-                  </span>
-                  {app.urgency === 'urgent' && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-400">
-                      URGENT
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">{app.title}</h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Proyek: {app.project_name} • Diajukan oleh: {app.requester_name} ({app.requester_role})
-                </p>
-              </div>
+            <Settings2 className="h-4 w-4" aria-hidden="true" />
+            {messages.flowsTab}
+          </button>
+        )}
+      </nav>
 
-              <div className="text-left sm:text-right">
-                <span className="text-xs text-slate-400">Nilai Pengajuan:</span>
-                <p className="text-xl font-bold text-slate-900 dark:text-white">
-                  {formatRupiah(app.amount)}
-                </p>
-              </div>
-            </div>
-
-            {app.comments && (
-              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400">
-                <span className="font-bold text-slate-700 dark:text-slate-300">Catatan Pemohon:</span> {app.comments}
-              </div>
-            )}
-
-            {/* Actions for Pending */}
-            {app.status === 'pending' ? (
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <span className="text-xs text-slate-400">
-                  Diajukan: {formatDateIndo(app.submitted_at.split('T')[0])}
-                </span>
-
-                <Can module="approvals" action="approve">
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleReject(app.id)}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold rounded-xl text-xs transition"
-                    >
-                      <X className="w-4 h-4" />
-                      <span>Tolak / Minta Revisi</span>
-                    </button>
-                    <button
-                      onClick={() => handleApprove(app.id)}
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-xs transition shadow-sm"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>Setujui Pengajuan</span>
-                    </button>
-                  </div>
-                </Can>
-              </div>
-            ) : (
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs text-slate-400">
-                <span>
-                  Status:{' '}
-                  <strong className={app.status === 'approved' ? 'text-emerald-500' : 'text-rose-500'}>
-                    {app.status.toUpperCase()}
-                  </strong>
-                </span>
-                <span>Diproses oleh Direksi</span>
-              </div>
-            )}
+      {activeTab === 'flows' && canManageFlows ? (
+        flowsQuery.isPending ? (
+          <div className="grid gap-3">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-64 w-full" />
           </div>
-        ))}
-      </div>
-    </div>
+        ) : flowsQuery.isError ? (
+          <div className="grid gap-3 rounded-md border border-danger/30 bg-danger-bg p-4 text-sm text-danger" role="alert">
+            <p>{messages.loadFailed}</p>
+            <p>{flowsQuery.error instanceof Error ? flowsQuery.error.message : messages.loadFailed}</p>
+            <Button variant="outline" onClick={() => void flowsQuery.refetch()}>
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />{messages.retry}
+            </Button>
+          </div>
+        ) : (
+          <ApprovalFlowEditor organizationId={organizationId} flows={flowsQuery.data ?? []} />
+        )
+      ) : requestsQuery.isPending ? (
+        <div className="grid gap-3" aria-label={messages.loading}>
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      ) : requestsQuery.isError ? (
+        <div className="grid gap-3 rounded-md border border-danger/30 bg-danger-bg p-4 text-sm text-danger" role="alert">
+          <p>{messages.loadFailed}</p>
+          <p>{requestsQuery.error instanceof Error ? requestsQuery.error.message : messages.loadFailed}</p>
+          <Button variant="outline" onClick={() => void requestsQuery.refetch()}>
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />{messages.retry}
+          </Button>
+        </div>
+      ) : (
+        <section className="grid gap-4">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={messages.requestsTab}>
+            {([
+              [APPROVAL_STATUSES.pending, messages.pending, Clock3],
+              [APPROVAL_STATUSES.approved, messages.approved, CheckCircle2],
+              [APPROVAL_STATUSES.rejected, messages.rejected, XCircle],
+              ['all', messages.all, ListChecks],
+            ] as const).map(([status, label, Icon]) => (
+              <button
+                key={status}
+                type="button"
+                aria-pressed={filter === status}
+                onClick={() => setFilter(status)}
+                className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-medium ${
+                  filter === status
+                    ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-500'
+                    : 'border-border bg-surface text-muted hover:text-text'
+                }`}
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                {label}
+                {status === APPROVAL_STATUSES.pending && <span>{pendingCount}</span>}
+              </button>
+            ))}
+          </div>
+
+          {visibleRequests.length === 0 ? (
+            <EmptyState
+              title={messages.emptyTitle}
+              description={filter === APPROVAL_STATUSES.pending ? messages.emptyDescription : undefined}
+              icon={<ListChecks className="h-5 w-5" aria-hidden="true" />}
+            />
+          ) : (
+            <div className="grid gap-4">
+              {visibleRequests.map((request) => (
+                <ApprovalRequestCard
+                  key={request.id}
+                  request={request}
+                  currentUserId={requestsQuery.data.currentUserId}
+                  currentRole={currentMemberRole}
+                  members={members}
+                  hasApprovalPermission={hasApprovalPermission}
+                  onProcessed={refreshAfterDecision}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+    </main>
   );
-};
+}

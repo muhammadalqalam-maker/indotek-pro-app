@@ -18,7 +18,6 @@ type DailyReportEditorPanelProps = {
   isError: boolean;
   error: unknown;
   timezone?: TimezoneZone;
-  canApprove: boolean;
   editor: DailyReportEditorState;
   onRetry: () => void;
 };
@@ -49,15 +48,10 @@ export function DailyReportEditorPanel({
   isError,
   error,
   timezone,
-  canApprove,
   editor,
   onRetry,
 }: DailyReportEditorPanelProps) {
   const canSubmit = Boolean(editor.editable && editor.isOnline && !editor.isSaving);
-  const canApproveSelected = Boolean(
-    canApprove && editor.isOnline && !editor.isSaving
-    && report?.status === DAILY_REPORT_STATUSES.submitted,
-  );
 
   if (!projectId) {
     return <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">{messages.noReportsProject}</div>;
@@ -120,15 +114,12 @@ export function DailyReportEditorPanel({
       <DailyReportFormFields
         form={editor.form}
         editable={editor.editable && !editor.isSaving}
-        showApproverSignature={editor.showApproverSignature}
         pendingPhotos={editor.pendingPhotos}
         setPendingPhotos={editor.changePendingPhotos}
         photoPreviewUrls={editor.photoPreviewUrls}
         onRemovePhoto={editor.removePhoto}
         siteSignatureUrl={editor.siteSignatureUrl}
-        approverSignatureUrl={editor.approverSignatureUrl}
         onSiteSignatureChange={editor.onSiteSignatureChange}
-        onApproverSignatureChange={editor.onApproverSignatureChange}
       />
 
       {editor.form.formState.errors.root?.validation?.message && (
@@ -180,12 +171,7 @@ export function DailyReportEditorPanel({
               <Button type="submit" disabled={!canSubmit}>{messages.submit}</Button>
             </>
           )}
-          {report.status === DAILY_REPORT_STATUSES.submitted && canApprove && (
-            <Button type="button" onClick={() => void editor.approve()} disabled={!canApproveSelected}>
-              {messages.approve}
-            </Button>
-          )}
-          {!editor.editable && !canApproveSelected && (
+          {!editor.editable && (
             <span className="text-xs text-muted">{messages.readOnly}</span>
           )}
         </div>

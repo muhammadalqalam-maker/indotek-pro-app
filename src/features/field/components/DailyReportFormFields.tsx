@@ -4,7 +4,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { FileUploader } from '../../../components/ui/FileUploader';
 import { Input } from '../../../components/ui/Input';
-import { SignaturePad } from './SignaturePad';
+import { SignaturePad } from '../../../components/shared/SignaturePad';
 import { getMessages } from '../../../i18n';
 import type { DailyReportFormValues } from '../schemas/dailyReport.schema';
 
@@ -13,15 +13,12 @@ const messages = getMessages().fieldReports;
 type DailyReportFormFieldsProps = {
   form: UseFormReturn<DailyReportFormValues>;
   editable: boolean;
-  showApproverSignature: boolean;
   pendingPhotos: File[];
   setPendingPhotos: (files: File[]) => void;
   photoPreviewUrls: Record<string, string>;
   onRemovePhoto: (path: string) => void;
   siteSignatureUrl: string | null;
-  approverSignatureUrl: string | null;
   onSiteSignatureChange: (file: File | null) => void;
-  onApproverSignatureChange: (file: File | null) => void;
 };
 
 function Section({
@@ -56,15 +53,12 @@ function Section({
 export function DailyReportFormFields({
   form,
   editable,
-  showApproverSignature,
   pendingPhotos,
   setPendingPhotos,
   photoPreviewUrls,
   onRemovePhoto,
   siteSignatureUrl,
-  approverSignatureUrl,
   onSiteSignatureChange,
-  onApproverSignatureChange,
 }: DailyReportFormFieldsProps) {
   const manpower = useFieldArray({ control: form.control, name: 'manpower' });
   const equipment = useFieldArray({ control: form.control, name: 'equipment' });
@@ -274,19 +268,6 @@ export function DailyReportFormFields({
         savedSignatureUrl={siteSignatureUrl}
         onSignatureChange={onSiteSignatureChange}
       />
-      {showApproverSignature && (
-        <SignaturePad
-          label={messages.approvalSignature}
-          hint={messages.signatureHint}
-          clearLabel={messages.clearSignature}
-          savedLabel={messages.savedSignature}
-          typedNameLabel={messages.typedSignatureName}
-          useTypedNameLabel={messages.useTypedName}
-          processErrorLabel={messages.signatureProcessError}
-          savedSignatureUrl={approverSignatureUrl}
-          onSignatureChange={onApproverSignatureChange}
-        />
-      )}
     </div>
   );
 }

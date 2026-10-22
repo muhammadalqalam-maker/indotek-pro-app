@@ -63,17 +63,11 @@ export function DailyReportsWorkspace() {
   const canView = useCan('field_reports', 'view');
   const hasCreatePermission = useCan('field_reports', 'create');
   const hasEditPermission = useCan('field_reports', 'edit');
-  const hasApprovalPermission = useCan('field_reports', 'approve');
   const canCreate = Boolean(
     isSupabaseLive && authSession?.user.id && currentMemberRole === 'site_manager' && hasCreatePermission,
   );
   const canEdit = Boolean(
     isSupabaseLive && currentMemberRole === 'site_manager' && hasEditPermission,
-  );
-  const canApprove = Boolean(
-    isSupabaseLive
-    && ['owner', 'admin', 'project_manager'].includes(currentMemberRole ?? '')
-    && hasApprovalPermission,
   );
 
   useEffect(() => {
@@ -133,7 +127,6 @@ export function DailyReportsWorkspace() {
     details: activeDetails,
     defaultValues,
     canEdit,
-    canApprove,
     reportsKey,
   });
 
@@ -253,7 +246,6 @@ export function DailyReportsWorkspace() {
           isError={detailsQuery.isError && !offlineDetails}
           error={detailsQuery.error}
           timezone={currentOrg?.timezone as import('../../utils/format').TimezoneZone | undefined}
-          canApprove={canApprove}
           editor={editor}
           onRetry={() => void detailsQuery.refetch()}
         />

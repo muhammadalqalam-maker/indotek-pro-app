@@ -120,6 +120,20 @@ export async function createBoqRevision(
   return data;
 }
 
+export async function requestBoqApproval(
+  organizationId: string,
+  projectId: string,
+  versionId: string,
+): Promise<void> {
+  const { error } = await getBoqClient().rpc('request_boq_revision_approval', {
+    p_organization_id: organizationId,
+    p_project_id: projectId,
+    p_boq_version_id: versionId,
+    p_comment: '',
+  });
+  if (error) throw error;
+}
+
 export function toBoqDraftForm(
   version: BoqVersion | null,
   items: BoqItem[],

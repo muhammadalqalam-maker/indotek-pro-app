@@ -98,7 +98,6 @@ export function useOfflineDailyReportDrafts({
         values: dailyReportDraftSchema.parse(selectedDraft.payload),
         photoPreviewUrls,
         siteSignatureUrl,
-        approverSignatureUrl: null,
         syncVersion: selectedDraft.serverUpdatedAt ?? '',
       }
       : undefined

@@ -9,9 +9,7 @@ import {
   type DailyReportFormValues,
 } from '../schemas/dailyReport.schema';
 import {
-  approveDailyReport,
   submitDailyReport,
-  uploadDailyReportSignature,
 } from '../services/dailyReport.service';
 import { applyDailyReportValidationIssues } from '../utils/dailyReportValidation';
 
@@ -23,9 +21,7 @@ type UseDailyReportWorkflowActionsOptions = {
   reportId: string | null;
   form: UseFormReturn<DailyReportFormValues>;
   isOnline: boolean;
-  canApprove: boolean;
   hasSiteSignatureFile: boolean;
-  approverSignatureFile: File | null;
   persistDraft: (showValidation?: boolean) => Promise<boolean>;
   queryClient: QueryClient;
   reportsKey: QueryKey;
@@ -33,7 +29,6 @@ type UseDailyReportWorkflowActionsOptions = {
   setSaveError: Dispatch<SetStateAction<string>>;
   setSaveErrorDetail: Dispatch<SetStateAction<string>>;
   setActionFeedback: Dispatch<SetStateAction<string>>;
-  setApproverSignatureFile: Dispatch<SetStateAction<File | null>>;
 };
 
 function technicalError(error: unknown): string {
@@ -46,9 +41,7 @@ export function useDailyReportWorkflowActions({
   reportId,
   form,
   isOnline,
-  canApprove,
   hasSiteSignatureFile,
-  approverSignatureFile,
   persistDraft,
   queryClient,
   reportsKey,
@@ -56,7 +49,6 @@ export function useDailyReportWorkflowActions({
   setSaveError,
   setSaveErrorDetail,
   setActionFeedback,
-  setApproverSignatureFile,
 }: UseDailyReportWorkflowActionsOptions) {
   const invalidateReport = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: reportsKey });
@@ -110,47 +102,5 @@ export function useDailyReportWorkflowActions({
     setSaveErrorDetail,
   ]);
 
-  const approve = useCallback(async () => {
-    if (!canApprove || !isOnline || !organizationId || !projectId || !reportId || !approverSignatureFile) {
-      setSaveError(messages.approveError);
-      return;
-    }
-    setIsSaving(true);
-    setSaveError('');
-    setSaveErrorDetail('');
-    setActionFeedback('');
-    try {
-      const signaturePath = await uploadDailyReportSignature(
-        organizationId,
-        projectId,
-        reportId,
-        'approver',
-        approverSignatureFile,
-      );
-      await approveDailyReport(organizationId, projectId, reportId, signaturePath);
-      setApproverSignatureFile(null);
-      setActionFeedback(messages.approveSuccess);
-      await invalidateReport();
-    } catch (error: unknown) {
-      setSaveError(messages.approveError);
-      setSaveErrorDetail(technicalError(error));
-    } finally {
-      setIsSaving(false);
-    }
-  }, [
-    approverSignatureFile,
-    canApprove,
-    invalidateReport,
-    isOnline,
-    organizationId,
-    projectId,
-    reportId,
-    setActionFeedback,
-    setApproverSignatureFile,
-    setIsSaving,
-    setSaveError,
-    setSaveErrorDetail,
-  ]);
-
-  return { submit, approve };
+  return { submit };
 }

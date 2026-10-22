@@ -13,6 +13,7 @@ import {
   fetchBoqItems,
   fetchBoqWorkspace,
   saveBoqDraft,
+  requestBoqApproval,
   toBoqDraftForm,
 } from '../services/boq.service';
 import { BoqDraftEditor } from './BoqDraftEditor';
@@ -74,6 +75,26 @@ export function BoqPanel() {
     }) => {
       if (!organizationId || !projectId) throw new Error(messages.boqProjectMissing);
       return saveBoqDraft(organizationId, projectId, targetVersionId, values);
+    },
+  });
+  const approvalMutation = useMutation({
+    mutationFn: async () => {
+      if (!organizationId || !projectId || !selectedVersion) {
+        throw new Error(messages.boqProjectMissing);
+      }
+      await requestBoqApproval(organizationId, projectId, selectedVersion.id);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: workspaceKey }),
+        queryClient.invalidateQueries({ queryKey: ['approvals', organizationId] }),
+      ]);
+      setFeedback(messages.boqApprovalSubmitted);
+      setActionError('');
+    },
+    onError: (error: unknown) => {
+      setActionError(getErrorMessage(error, messages.boqRevisionCreateFailed));
+      setFeedback('');
     },
   });
 
@@ -305,6 +326,11 @@ export function BoqPanel() {
               totals={displayedTotals}
               canEdit={canEdit}
               messages={messages}
+              isRequestingApproval={approvalMutation.isPending}
+              onRequestApproval={() => {
+                setActionError('');
+                approvalMutation.mutate();
+              }}
               onEdit={() => {
                 setEditorOpen(true);
                 setFeedback('');

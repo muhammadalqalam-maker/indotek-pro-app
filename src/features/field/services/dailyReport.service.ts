@@ -1,6 +1,7 @@
 import { getSupabase } from '../../../lib/supabase';
 import type { Tables } from '../../../types/database';
 import {
+  DAILY_REPORT_STATUSES,
   dailyReportDraftSchema,
   dailyReportPhotoSchema,
   type DailyReportFormValues,
@@ -8,12 +9,18 @@ import {
 
 export type DailyReportRecord = Tables<'daily_reports'>;
 
+export type DailyReportPeriodEntry = {
+  report: DailyReportRecord;
+  manpower: Tables<'daily_report_manpower_entries'>[];
+  equipment: Tables<'daily_report_equipment_entries'>[];
+  materials: Tables<'daily_report_material_entries'>[];
+};
+
 export type DailyReportDetails = {
   report: DailyReportRecord;
   values: DailyReportFormValues;
   photoPreviewUrls: Record<string, string>;
   siteSignatureUrl: string | null;
-  approverSignatureUrl: string | null;
   syncVersion: string;
 };
 
@@ -56,6 +63,78 @@ export async function fetchDailyReports(
 
   if (error) throw error;
   return data;
+}
+
+export async function fetchDailyReportPeriod(
+  organizationId: string,
+  projectId: string,
+  startDate: string,
+  endDate: string,
+): Promise<DailyReportPeriodEntry[]> {
+  const client = getClient();
+  const { data: reports, error: reportsError } = await client
+    .from('daily_reports')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .eq('project_id', projectId)
+    .eq('status', DAILY_REPORT_STATUSES.approved)
+    .is('deleted_at', null)
+    .gte('report_date', startDate)
+    .lte('report_date', endDate)
+    .order('report_date', { ascending: true });
+
+  if (reportsError) throw reportsError;
+  if (reports.length === 0) return [];
+
+  const reportEntries = new Map<string, DailyReportPeriodEntry>(
+    reports.map((report) => [report.id, {
+      report,
+      manpower: [],
+      equipment: [],
+      materials: [],
+    }]),
+  );
+  const reportIds = reports.map(({ id }) => id);
+
+  for (let index = 0; index < reportIds.length; index += 10) {
+    const reportIdBatch = reportIds.slice(index, index + 10);
+    const [manpowerResult, equipmentResult, materialsResult] = await Promise.all([
+      client.from('daily_report_manpower_entries')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('project_id', projectId)
+        .in('report_id', reportIdBatch)
+        .is('deleted_at', null),
+      client.from('daily_report_equipment_entries')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('project_id', projectId)
+        .in('report_id', reportIdBatch)
+        .is('deleted_at', null),
+      client.from('daily_report_material_entries')
+        .select('*')
+        .eq('organization_id', organizationId)
+        .eq('project_id', projectId)
+        .in('report_id', reportIdBatch)
+        .is('deleted_at', null),
+    ]);
+
+    if (manpowerResult.error) throw manpowerResult.error;
+    if (equipmentResult.error) throw equipmentResult.error;
+    if (materialsResult.error) throw materialsResult.error;
+
+    for (const entry of manpowerResult.data) {
+      reportEntries.get(entry.report_id)?.manpower.push(entry);
+    }
+    for (const entry of equipmentResult.data) {
+      reportEntries.get(entry.report_id)?.equipment.push(entry);
+    }
+    for (const entry of materialsResult.data) {
+      reportEntries.get(entry.report_id)?.materials.push(entry);
+    }
+  }
+
+  return Array.from(reportEntries.values());
 }
 
 export async function fetchDailyReportSyncVersion(
@@ -197,16 +276,9 @@ export async function fetchDailyReportDetails(
           return ['site-manager-signature', data.signedUrl] as const;
         })]
       : []),
-    ...(reportResult.data.approver_signature_path
-      ? [storage.createSignedUrl(reportResult.data.approver_signature_path, 3600)
-        .then(({ data, error }) => {
-          if (error) throw error;
-          return ['approver-signature', data.signedUrl] as const;
-        })]
-      : []),
   ]);
   const photoPreviewUrls = Object.fromEntries(
-    signedPaths.filter(([key]) => key !== 'site-manager-signature' && key !== 'approver-signature'),
+    signedPaths.filter(([key]) => key !== 'site-manager-signature'),
   );
 
   return {
@@ -214,7 +286,6 @@ export async function fetchDailyReportDetails(
     values,
     photoPreviewUrls,
     siteSignatureUrl: signedPaths.find(([key]) => key === 'site-manager-signature')?.[1] ?? null,
-    approverSignatureUrl: signedPaths.find(([key]) => key === 'approver-signature')?.[1] ?? null,
     syncVersion: buildSyncVersion(
       reportResult.data.updated_at,
       manpowerResult.data,
@@ -265,7 +336,7 @@ export async function uploadDailyReportSignature(
   organizationId: string,
   projectId: string,
   reportId: string,
-  signer: 'site-manager' | 'approver',
+  signer: 'site-manager',
   file: File,
 ): Promise<string> {
   if (file.type !== 'image/png' || file.size > 2 * 1024 * 1024) {
@@ -289,21 +360,6 @@ export async function submitDailyReport(
     p_organization_id: organizationId,
     p_project_id: projectId,
     p_report_id: reportId,
-  });
-  if (error) throw error;
-}
-
-export async function approveDailyReport(
-  organizationId: string,
-  projectId: string,
-  reportId: string,
-  signaturePath: string,
-): Promise<void> {
-  const { error } = await getClient().rpc('approve_daily_report', {
-    p_organization_id: organizationId,
-    p_project_id: projectId,
-    p_report_id: reportId,
-    p_approver_signature_path: signaturePath,
   });
   if (error) throw error;
 }

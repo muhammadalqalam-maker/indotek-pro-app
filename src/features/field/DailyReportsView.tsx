@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { ClipboardList, TrendingUp } from 'lucide-react';
+import { ClipboardList, FileText, TrendingUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
+import { DailyReportPeriodPdfView } from './DailyReportPeriodPdfView';
 import { DailyReportsWorkspace } from './DailyReportsWorkspace';
 import { SCurveProgressView } from './SCurveProgressView';
 
 const messages = getMessages().fieldReports;
 
-type FieldTab = 'reports' | 'scurve';
+type FieldTab = 'reports' | 'periodPdf' | 'scurve';
 
 export function DailyReportsView() {
   const { projects, currentOrg, selectedProjectId } = useApp();
@@ -42,6 +43,16 @@ export function DailyReportsView() {
         <button
           type="button"
           role="tab"
+          aria-selected={activeTab === 'periodPdf'}
+          onClick={() => setActiveTab('periodPdf')}
+          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'periodPdf' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'}`}
+        >
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          {messages.periodPdfTab}
+        </button>
+        <button
+          type="button"
+          role="tab"
           aria-selected={activeTab === 'scurve'}
           onClick={() => setActiveTab('scurve')}
           className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'scurve' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'}`}
@@ -53,6 +64,14 @@ export function DailyReportsView() {
 
       {activeTab === 'reports' ? (
         <DailyReportsWorkspace />
+      ) : activeTab === 'periodPdf' ? (
+        activeProject ? (
+          <DailyReportPeriodPdfView project={activeProject} />
+        ) : (
+          <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">
+            {messages.noReportsProject}
+          </div>
+        )
       ) : activeProject ? (
         <SCurveProgressView projectId={activeProject.id} />
       ) : (

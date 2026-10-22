@@ -35,6 +35,8 @@ import { ProjectDocumentsTab } from './components/ProjectDocumentsTab';
 import { ProjectAddendumsTab } from './components/ProjectAddendumsTab';
 import { ProjectPlaceholderTab } from './components/ProjectPlaceholderTab';
 import { ProjectSummaryTab } from './components/ProjectSummaryTab';
+import { ProjectScheduleTab } from './components/ProjectScheduleTab';
+import { ProjectBudgetActualTab } from './components/ProjectBudgetActualTab';
 import { ProjectTeamTab } from './components/ProjectTeamTab';
 
 const messages = getMessages('id').projects;
@@ -142,11 +144,7 @@ export const ProjectDetailView: React.FC<{
           <ProjectAddendumsTab project={project} />
         </TabsContent>
         <TabsContent value="schedule">
-          <ProjectPlaceholderTab
-            title={messages.detailTabs.schedule}
-            description={messages.detail.schedulePlaceholder}
-            icon={<CalendarDays className="h-5 w-5" aria-hidden="true" />}
-          />
+          <ProjectScheduleTab project={project} />
         </TabsContent>
         <TabsContent value="boq">
           <ProjectPlaceholderTab
@@ -163,11 +161,7 @@ export const ProjectDetailView: React.FC<{
           />
         </TabsContent>
         <TabsContent value="costs">
-          <ProjectPlaceholderTab
-            title={messages.detailTabs.costs}
-            description={messages.detail.costsPlaceholder}
-            icon={<Receipt className="h-5 w-5" aria-hidden="true" />}
-          />
+          <ProjectBudgetActualTab project={project} />
         </TabsContent>
         <TabsContent value="documents">
           <ProjectDocumentsTab />

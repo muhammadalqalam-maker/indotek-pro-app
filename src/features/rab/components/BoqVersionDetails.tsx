@@ -1,4 +1,4 @@
-import { Save } from 'lucide-react';
+import { Send, Save } from 'lucide-react';
 import { Badge, Button, EmptyState } from '../../../components/ui';
 import { formatRupiah } from '../../../utils/format';
 import type { BoqDraftTotals } from '../boqCalculations';
@@ -16,6 +16,8 @@ type BoqVersionDetailsProps = {
   canEdit: boolean;
   messages: BoqMessages;
   onEdit: () => void;
+  onRequestApproval: () => void;
+  isRequestingApproval: boolean;
 };
 
 function getStatusLabel(version: BoqVersion, messages: BoqMessages) {
@@ -36,6 +38,8 @@ export function BoqVersionDetails({
   canEdit,
   messages,
   onEdit,
+  onRequestApproval,
+  isRequestingApproval,
 }: BoqVersionDetailsProps) {
   const divisions = items.filter((item) => item.item_type === 'division');
 
@@ -47,10 +51,16 @@ export function BoqVersionDetails({
           <Badge variant={version.status === 'approved' ? 'success' : 'neutral'}>{getStatusLabel(version, messages)}</Badge>
         </div>
         {canEdit && version.status === 'draft' && (
-          <Button onClick={onEdit}>
-            <Save className="h-4 w-4" aria-hidden="true" />
-            {messages.boqEditorTitle}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" onClick={onRequestApproval} disabled={isRequestingApproval}>
+              <Send className="h-4 w-4" aria-hidden="true" />
+              {isRequestingApproval ? messages.boqSubmittingApproval : messages.boqSubmitApproval}
+            </Button>
+            <Button onClick={onEdit}>
+              <Save className="h-4 w-4" aria-hidden="true" />
+              {messages.boqEditorTitle}
+            </Button>
+          </div>
         )}
       </div>
 
