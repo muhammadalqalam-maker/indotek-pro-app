@@ -519,12 +519,21 @@ export interface ClientInvoice {
   pph_amount: number; // PPh Final Konstruksi (1.75% or 2.65%)
   net_receivable: number;
   paid_amount?: number;
-  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
+  status: typeof CLIENT_INVOICE_STATUSES[keyof typeof CLIENT_INVOICE_STATUSES];
   payment_date?: string;
   payment_reference?: string;
   notes?: string;
   created_at: string;
 }
+
+export const CLIENT_INVOICE_STATUSES = {
+  draft: 'draft',
+  sent: 'sent',
+  partiallyPaid: 'partially_paid',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
 
 export interface ProjectPayable {
   id: string;
@@ -541,10 +550,17 @@ export interface ProjectPayable {
   due_date: string;
   amount: number;
   paid_amount: number;
-  status: 'sent' | 'partially_paid' | 'paid' | 'overdue';
+  status: typeof PROJECT_PAYABLE_STATUSES[keyof typeof PROJECT_PAYABLE_STATUSES];
   notes: string;
   created_at: string;
 }
+
+export const PROJECT_PAYABLE_STATUSES = {
+  sent: 'sent',
+  partiallyPaid: 'partially_paid',
+  paid: 'paid',
+  overdue: 'overdue',
+} as const;
 
 export interface CreateProjectPayableInput {
   organization_id: string;

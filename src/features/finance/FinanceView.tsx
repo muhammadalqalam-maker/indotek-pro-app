@@ -21,6 +21,7 @@ import { ProjectPayableDialog } from './components/ProjectPayableDialog';
 import { ProjectPayablePaymentDialog } from './components/ProjectPayablePaymentDialog';
 import { PayablesPanel } from './components/PayablesPanel';
 import { AgingSummary } from './components/AgingSummary';
+import { ProjectCashFlowForecast } from './components/ProjectCashFlowForecast';
 import type { CashAdvanceActionFormValues } from './schemas/cashbook.schema';
 import type { ProjectPayablePaymentValues } from './schemas/payable.schema';
 import { calculateAgingTotals } from './utils/payableAging';
@@ -123,6 +124,13 @@ export const FinanceView: React.FC = () => {
     const matchesProject = selectedProjectId === 'all' || request.project_id === selectedProjectId;
     return matchesSearch && matchesProject;
   });
+  const financeReportProjects = selectedProjectId === 'all'
+    ? projects
+    : projects.filter((project) => project.id === selectedProjectId);
+  const financeReportProjectIds = new Set(financeReportProjects.map((project) => project.id));
+  const reportCashTransactions = cashTransactions.filter((transaction) => financeReportProjectIds.has(transaction.project_id));
+  const reportInvoices = clientInvoices.filter((invoice) => financeReportProjectIds.has(invoice.project_id));
+  const reportPayables = projectPayables.filter((payable) => financeReportProjectIds.has(payable.project_id));
 
   // Financial KPIs
   const totalBilled = clientInvoices.reduce((acc, i) => acc + i.net_receivable, 0);
@@ -349,7 +357,7 @@ export const FinanceView: React.FC = () => {
           }`}
         >
           <TrendingUp className="w-4 h-4" />
-          <span>Estimasi Laba / Rugi Proyek</span>
+          <span>{messages.profitLossTab}</span>
         </button>
       </div>
 
@@ -708,50 +716,73 @@ export const FinanceView: React.FC = () => {
 
       {/* Tab: Laba Rugi Proyek */}
       {activeTab === 'profit_loss' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {projects.map((p) => {
-            const contractVal = calculateEffectiveProjectContractValue(p);
-            const realizedCost = p.realized_cost;
-            const grossProfit = contractVal - realizedCost;
-            const grossMargin = contractVal > 0 ? (grossProfit / contractVal) * 100 : 0;
+        <div className="space-y-6">
+          <ProjectCashFlowForecast
+            transactions={reportCashTransactions}
+            invoices={reportInvoices}
+            payables={reportPayables}
+            hasProjects={financeReportProjects.length > 0}
+            isLoading={isLoading}
+            error={organizationDataError}
+            onRetry={() => void reloadAllData()}
+          />
+          <section className="space-y-4">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-text">{messages.grossProfitEstimate}</h2>
+              <p className="text-sm text-muted">{messages.profitLossBasisNote}</p>
+            </div>
+            {financeReportProjects.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+                {messages.noProjectsForProfitLoss}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {financeReportProjects.map((p) => {
+                  const contractVal = calculateEffectiveProjectContractValue(p);
+                  const realizedCost = p.realized_cost;
+                  const grossProfit = contractVal - realizedCost;
+                  const grossMargin = contractVal > 0 ? (grossProfit / contractVal) * 100 : 0;
 
-            return (
-              <div
-                key={p.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4"
-              >
-                <div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    {p.code}
-                  </span>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">{p.name}</h3>
-                  <p className="text-xs text-slate-400">Klien: {p.client_name}</p>
-                </div>
+                  return (
+                    <div
+                      key={p.id}
+                      className="space-y-4 rounded-lg border border-border bg-surface p-4 shadow-xs sm:p-5"
+                    >
+                      <div>
+                        <span className="rounded-md bg-accent-500/10 px-2 py-0.5 text-xs font-semibold text-accent-600">
+                          {p.code}
+                        </span>
+                        <h3 className="mt-1.5 text-base font-semibold text-text">{p.name}</h3>
+                        <p className="text-sm text-muted">{p.client_name}</p>
+                      </div>
 
-                <div className="space-y-2.5 text-xs">
-                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-500">Nilai Kontrak (Revenue):</span>
-                    <span className="font-bold text-slate-900 dark:text-white">{formatRupiah(contractVal)}</span>
-                  </div>
-                  <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-500">Realisasi Biaya Aktual (HPP):</span>
-                    <span className="font-bold text-rose-500">{formatRupiah(realizedCost)}</span>
-                  </div>
-                  <div className="flex justify-between py-2 font-bold text-sm bg-slate-50 dark:bg-slate-950 px-3 rounded-xl border border-slate-100 dark:border-slate-800">
-                    <span className="text-slate-700 dark:text-slate-300">Estimasi Laba Kotor:</span>
-                    <span className={grossProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}>
-                      {formatRupiah(grossProfit)} ({formatPercent(grossMargin)})
-                    </span>
-                  </div>
-                </div>
+                      <dl className="space-y-2.5 text-sm">
+                        <div className="flex justify-between gap-3 border-b border-border py-1.5">
+                          <dt className="text-muted">{messages.effectiveContractValue}</dt>
+                          <dd className="font-semibold tabular-nums text-text">{formatRupiah(contractVal)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-3 border-b border-border py-1.5">
+                          <dt className="text-muted">{messages.recordedRealizedCost}</dt>
+                          <dd className="font-semibold tabular-nums text-danger">{formatRupiah(realizedCost)}</dd>
+                        </div>
+                        <div className="flex justify-between gap-3 rounded-md border border-border bg-surface-2 px-3 py-2 font-semibold">
+                          <dt className="text-text">{messages.grossProfitEstimate}</dt>
+                          <dd className={`text-right tabular-nums ${grossProfit >= 0 ? 'text-success' : 'text-danger'}`}>
+                            {formatRupiah(grossProfit)} ({formatPercent(grossMargin)})
+                          </dd>
+                        </div>
+                      </dl>
 
-                <div className="text-[11px] text-slate-400 flex justify-between">
-                  <span>Progres Fisik: {p.actual_progress}%</span>
-                  <span>Masa Kontrak: {formatDateIndo(p.end_date)}</span>
-                </div>
+                      <div className="flex justify-between gap-3 text-xs text-muted">
+                        <span>{messages.profitProgress}: {formatPercent(p.actual_progress)}</span>
+                        <span>{messages.contractPeriod}: {formatDateIndo(p.end_date)}</span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            )}
+          </section>
         </div>
       )}
 
