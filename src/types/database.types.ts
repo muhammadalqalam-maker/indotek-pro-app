@@ -3185,6 +3185,18 @@ export type Database = {
         Update: { id?: string; organization_id?: string; material_request_id?: string; inventory_item_id?: string; quantity?: number; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
         Relationships: []
       }
+      subcontractors: {
+        Row: { id: string; organization_id: string; code: string; company_name: string; trade_specialty: string; pic_name: string; phone: string; email: string; address: string; npwp: string; bank_name: string; bank_account_no: string; bank_account_name: string; is_active: boolean; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; code: string; company_name: string; trade_specialty: string; pic_name: string; phone: string; email?: string; address?: string; npwp?: string; bank_name?: string; bank_account_no?: string; bank_account_name?: string; is_active?: boolean; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; code?: string; company_name?: string; trade_specialty?: string; pic_name?: string; phone?: string; email?: string; address?: string; npwp?: string; bank_name?: string; bank_account_no?: string; bank_account_name?: string; is_active?: boolean; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
+      subcontracts: {
+        Row: { id: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent: number; status: string; notes: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; project_id: string; subcontractor_id: string; spk_number: string; work_description: string; contract_date: string; start_date: string; end_date: string; contract_amount: number; retention_percent?: number; status?: string; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; project_id?: string; subcontractor_id?: string; spk_number?: string; work_description?: string; contract_date?: string; start_date?: string; end_date?: string; contract_amount?: number; retention_percent?: number; status?: string; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
       purchase_requests: {
         Row: {
           created_at: string
@@ -4268,6 +4280,14 @@ export type Database = {
           p_organization_id: string
           p_project_id: string
         }
+        Returns: string
+      }
+      save_subcontractor: {
+        Args: { p_organization_id: string; p_subcontractor_id: string | null; p_code: string; p_company_name: string; p_trade_specialty: string; p_pic_name: string; p_phone: string; p_email: string; p_address: string; p_npwp: string; p_bank_name: string; p_bank_account_no: string; p_bank_account_name: string }
+        Returns: string
+      }
+      save_subcontract: {
+        Args: { p_organization_id: string; p_subcontract_id: string | null; p_project_id: string; p_subcontractor_id: string; p_spk_number: string; p_work_description: string; p_contract_date: string; p_start_date: string; p_end_date: string; p_contract_amount: number; p_retention_percent: number; p_status: string; p_notes: string }
         Returns: string
       }
       save_approval_flow: {
