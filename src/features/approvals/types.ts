@@ -6,6 +6,7 @@ export const APPROVAL_RESOURCE_TYPES = [
   'daily_report',
   'purchase_request',
   'purchase_order',
+  'material_request',
 ] as const;
 
 export const APPROVAL_STATUSES = {

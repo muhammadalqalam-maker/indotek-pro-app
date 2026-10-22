@@ -6,6 +6,9 @@ import { PurchaseOrder } from '../../types/database';
 import { VendorWorkspace } from './components/VendorWorkspace';
 import { ProcurementWorkflowWorkspace } from './components/ProcurementWorkflowWorkspace';
 import { GoodsReceiptWorkspace } from './components/GoodsReceiptWorkspace';
+import { MaterialRequestWorkspace } from './components/MaterialRequestWorkspace';
+import { fetchWarehouseData } from '../warehouse/services/warehouse.service';
+import type { WarehouseInventoryItem } from '../warehouse/types';
 import { PurchaseOrderDetailsDialog } from './components/PurchaseOrderDetailsDialog';
 import {
   ShoppingCart,
@@ -38,7 +41,15 @@ export const ProcurementView: React.FC = () => {
     reloadAllData,
   } = useApp();
 
-  const [activeSubTab, setActiveSubTab] = useState<'po' | 'pr' | 'vendors' | 'grn'>('po');
+  const [activeSubTab, setActiveSubTab] = useState<'po' | 'pr' | 'material' | 'vendors' | 'grn'>('po');
+  const [inventoryItems, setInventoryItems] = useState<WarehouseInventoryItem[]>([]);
+
+  React.useEffect(() => {
+    if (!currentOrg || !isSupabaseLive) return;
+    void fetchWarehouseData(currentOrg.id, selectedProjectId)
+      .then(({ inventoryItems: items }) => setInventoryItems(items))
+      .catch(() => setInventoryItems([]));
+  }, [currentOrg, isSupabaseLive, selectedProjectId]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPOForDetail, setSelectedPOForDetail] = useState<PurchaseOrder | null>(null);
@@ -166,6 +177,18 @@ export const ProcurementView: React.FC = () => {
           <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
             {purchaseRequests.length}
           </span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubTab('material')}
+          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+            activeSubTab === 'material'
+              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>Permintaan Material</span>
         </button>
 
         <button
@@ -314,6 +337,17 @@ export const ProcurementView: React.FC = () => {
             onOrdersChanged={reloadAllData}
           />
         ) : null
+      )}
+
+      {/* Tab: Permintaan Material */}
+      {activeSubTab === 'material' && currentOrg && (
+        <MaterialRequestWorkspace
+          organizationId={currentOrg.id}
+          projects={projects}
+          projectId={selectedProjectId}
+          currentRole={currentRole}
+          inventoryItems={inventoryItems}
+        />
       )}
 
       {/* Tab: Penerimaan Barang (GRN) */}

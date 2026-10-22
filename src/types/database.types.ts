@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -3173,6 +3173,18 @@ export type Database = {
           },
         ]
       }
+      material_requests: {
+        Row: { id: string; organization_id: string; project_id: string; request_number: string; request_date: string; required_date: string; requester_id: string; location_name: string; purpose: string; status: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; project_id: string; request_number: string; request_date?: string; required_date: string; requester_id?: string; location_name: string; purpose: string; status?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; project_id?: string; request_number?: string; request_date?: string; required_date?: string; requester_id?: string; location_name?: string; purpose?: string; status?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
+      material_request_items: {
+        Row: { id: string; organization_id: string; material_request_id: string; inventory_item_id: string; quantity: number; notes: string; created_by: string; created_at: string; updated_at: string; deleted_at: string | null }
+        Insert: { id?: string; organization_id: string; material_request_id: string; inventory_item_id: string; quantity: number; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Update: { id?: string; organization_id?: string; material_request_id?: string; inventory_item_id?: string; quantity?: number; notes?: string; created_by?: string; created_at?: string; updated_at?: string; deleted_at?: string | null }
+        Relationships: []
+      }
       purchase_requests: {
         Row: {
           created_at: string
@@ -4078,6 +4090,10 @@ export type Database = {
           p_purchase_request_id: string
           p_vendor_quote_id: string
         }
+        Returns: string
+      }
+      create_material_request: {
+        Args: { p_organization_id: string; p_project_id: string; p_required_date: string; p_location_name: string; p_purpose: string; p_items: Json }
         Returns: string
       }
       create_purchase_request: {

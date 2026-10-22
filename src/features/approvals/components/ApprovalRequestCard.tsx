@@ -22,6 +22,7 @@ function resourceLabel(type: string): string {
   if (type === 'project_addendum') return messages.typeAddendum;
   if (type === 'purchase_request') return messages.typePurchaseRequest;
   if (type === 'purchase_order') return messages.typePurchaseOrder;
+  if (type === 'material_request') return messages.typeMaterialRequest;
   return messages.typeDailyReport;
 }
 

@@ -3,6 +3,8 @@ import type { GoodsReceiptNote, PurchaseOrder, PurchaseRequest } from '../../../
 import type { Tables } from '../../../types/database.types';
 import type {
   CreatePurchaseRequestInput,
+  CreateMaterialRequestInput,
+  MaterialRequest,
   CreateGoodsReceiptInput,
   CreateVendorQuoteInput,
   ProcurementPurchaseRequest,
@@ -180,6 +182,65 @@ export async function createPurchaseRequest(input: CreatePurchaseRequestInput): 
     p_urgency: input.urgency,
     p_comment: input.comment,
     p_items: input.items,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchMaterialRequests(
+  organizationId: string,
+  projectId: string,
+): Promise<MaterialRequest[]> {
+  const client = getClient();
+  let requestQuery = client.from('material_requests')
+    .select('*')
+    .eq('organization_id', organizationId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+  if (projectId !== 'all') requestQuery = requestQuery.eq('project_id', projectId);
+  const { data: requests, error } = await requestQuery;
+  if (error) throw error;
+  if (requests.length === 0) return [];
+
+  const requestIds = requests.map((request) => request.id);
+  const [itemsResult, inventoryResult, profilesResult, projectsResult] = await Promise.all([
+    client.from('material_request_items').select('*').eq('organization_id', organizationId).in('material_request_id', requestIds).is('deleted_at', null),
+    client.from('inventory_items').select('id, item_code, item_name, unit').eq('organization_id', organizationId).is('deleted_at', null),
+    client.from('profiles').select('id, full_name').in('id', [...new Set(requests.map((request) => request.requester_id))]),
+    client.from('projects').select('id, name').in('id', [...new Set(requests.map((request) => request.project_id))]),
+  ]);
+  if (itemsResult.error) throw itemsResult.error;
+  if (inventoryResult.error) throw inventoryResult.error;
+  if (profilesResult.error) throw profilesResult.error;
+  if (projectsResult.error) throw projectsResult.error;
+  const inventory = new Map(inventoryResult.data.map((item) => [item.id, item]));
+  const names = new Map(profilesResult.data.map((profile) => [profile.id, profile.full_name]));
+  const projects = new Map(projectsResult.data.map((project) => [project.id, project.name]));
+  const itemsByRequest = new Map<string, MaterialRequest['items']>();
+  for (const item of itemsResult.data) {
+    const stockItem = inventory.get(item.inventory_item_id);
+    if (!stockItem) continue;
+    const lines = itemsByRequest.get(item.material_request_id) ?? [];
+    lines.push({ id: item.id, inventory_item_id: item.inventory_item_id, item_code: stockItem.item_code, item_name: stockItem.item_name, unit: stockItem.unit, quantity: toNumber(item.quantity), notes: item.notes });
+    itemsByRequest.set(item.material_request_id, lines);
+  }
+  return requests.map((request) => ({
+    ...request,
+    project_name: projects.get(request.project_id) ?? request.project_id,
+    requester_name: names.get(request.requester_id) ?? request.requester_id,
+    status: request.status as MaterialRequest['status'],
+    items: itemsByRequest.get(request.id) ?? [],
+  }));
+}
+
+export async function createMaterialRequest(input: CreateMaterialRequestInput): Promise<string> {
+  const { data, error } = await getClient().rpc('create_material_request', {
+    p_organization_id: input.organizationId,
+    p_project_id: input.projectId,
+    p_required_date: input.requiredDate,
+    p_location_name: input.locationName,
+    p_purpose: input.purpose,
+    p_items: input.items.map((item) => ({ inventory_item_id: item.inventoryItemId, quantity: item.quantity, notes: item.notes })),
   });
   if (error) throw error;
   return data;

@@ -84,6 +84,43 @@ export interface CreateVendorQuoteInput {
   items: VendorQuoteLine[];
 }
 
+export type MaterialRequestStatus = 'submitted' | 'approved' | 'rejected' | 'fulfilled' | 'cancelled';
+
+export interface MaterialRequestItem {
+  id: string;
+  inventory_item_id: string;
+  item_code: string;
+  item_name: string;
+  unit: string;
+  quantity: number;
+  notes: string;
+}
+
+export interface MaterialRequest {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  project_name: string;
+  request_number: string;
+  request_date: string;
+  required_date: string;
+  requester_id: string;
+  requester_name: string;
+  location_name: string;
+  purpose: string;
+  status: MaterialRequestStatus;
+  items: MaterialRequestItem[];
+}
+
+export interface CreateMaterialRequestInput {
+  organizationId: string;
+  projectId: string;
+  requiredDate: string;
+  locationName: string;
+  purpose: string;
+  items: Array<{ inventoryItemId: string; quantity: number; notes: string }>;
+}
+
 export interface CreateGoodsReceiptInput {
   organizationId: string;
   purchaseOrderId: string;

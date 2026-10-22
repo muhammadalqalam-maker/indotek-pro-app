@@ -17,6 +17,7 @@ const resourceLabels: Record<ApprovalResourceType, string> = {
   daily_report: messages.typeDailyReport,
   purchase_request: messages.typePurchaseRequest,
   purchase_order: messages.typePurchaseOrder,
+  material_request: messages.typeMaterialRequest,
 };
 const roles = Object.entries(ROLE_LABELS);
 
