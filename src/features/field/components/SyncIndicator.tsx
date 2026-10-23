@@ -12,8 +12,9 @@ type SyncIndicatorProps = {
 export function SyncIndicator({ isOnline, onRetry }: SyncIndicatorProps) {
   const draftCount = useOfflineQueueStore((s) => s.draftCount);
   const photoCount = useOfflineQueueStore((s) => s.photoCount);
+  const attendanceCount = useOfflineQueueStore((s) => s.attendanceCount);
   const syncStatus = useOfflineQueueStore((s) => s.syncStatus);
-  const count = draftCount + photoCount;
+  const count = draftCount + photoCount + attendanceCount;
 
   const status = !isOnline
     ? 'offline'

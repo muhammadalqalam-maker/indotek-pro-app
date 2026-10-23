@@ -106,7 +106,7 @@ interface IndotekOfflineDB extends DBSchema {
 }
 
 const DB_NAME = 'indotek-offline';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let _db: IDBPDatabase<IndotekOfflineDB> | null = null;
 
@@ -114,14 +114,20 @@ export async function getOfflineDb(): Promise<IDBPDatabase<IndotekOfflineDB>> {
   if (_db) return _db;
   _db = await openDB<IndotekOfflineDB>(DB_NAME, DB_VERSION, {
     upgrade(db) {
-      const draftStore = db.createObjectStore('draftQueue', { keyPath: 'reportId' });
-      draftStore.createIndex('byOrg', 'organizationId');
+      if (!db.objectStoreNames.contains('draftQueue')) {
+        const draftStore = db.createObjectStore('draftQueue', { keyPath: 'reportId' });
+        draftStore.createIndex('byOrg', 'organizationId');
+      }
 
-      const photoStore = db.createObjectStore('photoQueue', { keyPath: 'id' });
-      photoStore.createIndex('byReport', 'reportId');
+      if (!db.objectStoreNames.contains('photoQueue')) {
+        const photoStore = db.createObjectStore('photoQueue', { keyPath: 'id' });
+        photoStore.createIndex('byReport', 'reportId');
+      }
 
-      const conflictStore = db.createObjectStore('conflictLog', { keyPath: 'reportId' });
-      conflictStore.createIndex('byResolution', 'resolution');
+      if (!db.objectStoreNames.contains('conflictLog')) {
+        const conflictStore = db.createObjectStore('conflictLog', { keyPath: 'reportId' });
+        conflictStore.createIndex('byResolution', 'resolution');
+      }
     },
   });
   return _db;

@@ -1,5 +1,6 @@
 import { FileText } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '../../../components/ui';
+import { useApp } from '../../../context/AppContext';
 import { getMessages } from '../../../i18n';
 import type { ProjectDocument } from '../../../types/database';
 
@@ -15,10 +16,23 @@ const documentCategories = [
   'Laporan K3 & Lingkungan',
 ] satisfies readonly ProjectDocument['category'][];
 
-export function ProjectDocumentsTab() {
+export function ProjectDocumentsTab({ projectId }: { projectId: string }) {
+  const { setActiveTab, setSelectedProjectId } = useApp();
+
   return (
     <section className="space-y-4">
-      <p className="text-sm text-muted">{messages.detail.documentIntro}</p>
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted">{messages.detail.documentIntro}</p>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setSelectedProjectId(projectId);
+            setActiveTab('documents');
+          }}
+        >
+          {messages.detail.openDocumentRepository}
+        </Button>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {documentCategories.map((category) => (
           <Card key={category}>
@@ -29,7 +43,7 @@ export function ProjectDocumentsTab() {
               <CardTitle className="text-sm">{messages.documentCategories[category]}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted">{messages.detail.documentPlaceholder}</p>
+              <p className="text-sm text-muted">{messages.detail.documentCategoryDescription}</p>
             </CardContent>
           </Card>
         ))}

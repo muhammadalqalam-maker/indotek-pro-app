@@ -11,11 +11,28 @@ import type {
 
 type InventoryRow = Database['public']['Tables']['inventory_items']['Row'];
 type MovementRow = Database['public']['Tables']['stock_movements']['Row'];
+type RecordStockMovementArgs = Omit<
+  Database['public']['Functions']['record_stock_movement']['Args'],
+  'p_source_inventory_item_id' | 'p_destination_inventory_item_id'
+> & {
+  p_source_inventory_item_id: string | null;
+  p_destination_inventory_item_id: string | null;
+};
+type WarehouseDatabase = Omit<Database, 'public'> & {
+  public: Omit<Database['public'], 'Functions'> & {
+    Functions: Omit<Database['public']['Functions'], 'record_stock_movement'> & {
+      record_stock_movement: {
+        Args: RecordStockMovementArgs;
+        Returns: Database['public']['Functions']['record_stock_movement']['Returns'];
+      };
+    };
+  };
+};
 
-function getClient(): SupabaseClient<Database> {
+function getClient(): SupabaseClient<WarehouseDatabase> {
   const client = getSupabase();
   if (!client) throw new Error('Data gudang memerlukan koneksi Supabase.');
-  return client as SupabaseClient<Database>;
+  return client as SupabaseClient<WarehouseDatabase>;
 }
 
 function parseMovementType(value: string): WarehouseMovementType {

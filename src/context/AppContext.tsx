@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Organization,
   Project,
@@ -24,12 +25,8 @@ import {
   CreateCashAdvanceRequestInput,
   CreateProjectCashTransactionInput,
   FieldWorker,
-  DailyAttendance,
-  EquipmentAsset,
   SafetyIncident,
   ToolboxMeeting,
-  PunchListItem,
-  ProjectDocument,
 } from '../types/database';
 import type { ProjectPayablePaymentValues } from '../features/finance/schemas/payable.schema';
 import {
@@ -90,13 +87,8 @@ import {
   payCashAdvance,
   settleCashAdvance,
   fetchFieldWorkers,
-  fetchDailyAttendance,
-  fetchEquipmentAssets,
   fetchSafetyIncidents,
   fetchToolboxMeetings,
-  fetchPunchList,
-  updatePunchListStatus,
-  fetchDocuments,
 } from '../services/dataService';
 import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
 import type { CreateGoodsReceiptInput } from '../features/procurement/types';
@@ -127,6 +119,7 @@ import {
   type PermissionOverrides,
 } from '../features/permissions/services/permission.service';
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
+import { clearHrCacheForUser } from '../features/hr/services/hrOfflineStorage';
 import type { Session } from '@supabase/supabase-js';
 import { authMessages as messages, memberMessages, organizationMessages } from '../i18n/id';
 import { getMessages } from '../i18n';
@@ -256,12 +249,8 @@ interface AppContextType {
   cashTransactions: ProjectCashTransaction[];
   kasbonList: KasbonReimbursement[];
   fieldWorkers: FieldWorker[];
-  dailyAttendances: DailyAttendance[];
-  equipmentAssets: EquipmentAsset[];
   safetyIncidents: SafetyIncident[];
   toolboxMeetings: ToolboxMeeting[];
-  punchList: PunchListItem[];
-  documents: ProjectDocument[];
 
   // Module Handlers
   handleCreateVendor: (data: VendorInput) => Promise<Vendor>;
@@ -286,8 +275,6 @@ interface AppContextType {
   handleDecideCashAdvance: (id: string, decision: CashAdvanceDecision, comment: string) => Promise<KasbonReimbursement>;
   handlePayCashAdvance: (id: string, paymentMethod: CashPaymentMethod, reference: string) => Promise<KasbonReimbursement>;
   handleSettleCashAdvance: (id: string, settledAmount: number, notes: string) => Promise<KasbonReimbursement>;
-  handleUpdatePunchListStatus: (id: string, status: PunchListItem['status']) => Promise<PunchListItem>;
-
   // Project Actions
   handleCreateProject: (project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) => Promise<Project>;
   handleUpdateProject: (id: string, updates: Partial<Project>) => Promise<Project>;
@@ -311,6 +298,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const queryClient = useQueryClient();
+
   // Theme
   const [isDark, setIsDark] = useState<boolean>(() => {
     const saved = localStorage.getItem('indotek_theme');
@@ -412,12 +401,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cashTransactions, setCashTransactions] = useState<ProjectCashTransaction[]>([]);
   const [kasbonList, setKasbonList] = useState<KasbonReimbursement[]>([]);
   const [fieldWorkers, setFieldWorkers] = useState<FieldWorker[]>([]);
-  const [dailyAttendances, setDailyAttendances] = useState<DailyAttendance[]>([]);
-  const [equipmentAssets, setEquipmentAssets] = useState<EquipmentAsset[]>([]);
   const [safetyIncidents, setSafetyIncidents] = useState<SafetyIncident[]>([]);
   const [toolboxMeetings, setToolboxMeetings] = useState<ToolboxMeeting[]>([]);
-  const [punchList, setPunchList] = useState<PunchListItem[]>([]);
-  const [documents, setDocuments] = useState<ProjectDocument[]>([]);
   const [permissionOverrides, setPermissionOverrides] = useState<PermissionOverrides>({});
   const [permissionsLoading, setPermissionsLoading] = useState(false);
   const [permissionsError, setPermissionsError] = useState('');
@@ -451,15 +436,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCashTransactions([]);
     setKasbonList([]);
     setFieldWorkers([]);
-    setDailyAttendances([]);
-    setEquipmentAssets([]);
     setSafetyIncidents([]);
     setToolboxMeetings([]);
-    setPunchList([]);
-    setDocuments([]);
   };
 
   const [authSession, setAuthSession] = useState<Session | null>(null);
+  const previousAuthUserId = useRef('');
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
   const [authNotice, setAuthNotice] = useState('');
@@ -471,6 +453,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ? 'update_password'
       : 'forgot_password';
   });
+
+  useEffect(() => {
+    const currentUserId = authSession?.user.id ?? '';
+    const previousUserId = previousAuthUserId.current;
+    if (previousUserId && previousUserId !== currentUserId) {
+      queryClient.clear();
+      void clearHrCacheForUser(previousUserId).catch((error: unknown) => {
+        setAuthError(error instanceof Error ? error.message : messages.authFailure);
+      });
+    }
+    previousAuthUserId.current = currentUserId;
+  }, [authSession?.user.id, queryClient]);
 
   const setAuthMode = (mode: AuthMode) => {
     setAuthModeState(mode);
@@ -850,12 +844,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ctxs,
         ksb,
         wrks,
-        att,
-        eqs,
         incs,
         tbm,
-        pnch,
-        docs,
       ] = await Promise.all([
         fetchProjects(currentOrg.id),
         fetchAuditLogs(currentOrg.id),
@@ -874,12 +864,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetchCashTransactions(currentOrg.id, selectedProjectId),
         fetchKasbonList(currentOrg.id, selectedProjectId),
         fetchFieldWorkers(currentOrg.id, selectedProjectId),
-        fetchDailyAttendance(currentOrg.id, '2026-10-16', selectedProjectId),
-        fetchEquipmentAssets(currentOrg.id),
         fetchSafetyIncidents(currentOrg.id, selectedProjectId),
         fetchToolboxMeetings(currentOrg.id, selectedProjectId),
-        fetchPunchList(currentOrg.id, selectedProjectId),
-        fetchDocuments(currentOrg.id, selectedProjectId),
       ]);
 
       let boqData: Awaited<ReturnType<typeof fetchProjectBOQ>> = null;
@@ -914,12 +900,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setCashTransactions(ctxs);
       setKasbonList(ksb);
       setFieldWorkers(wrks);
-      setDailyAttendances(att);
-      setEquipmentAssets(eqs);
       setSafetyIncidents(incs);
       setToolboxMeetings(tbm);
-      setPunchList(pnch);
-      setDocuments(docs);
       setActiveBoq(boqData);
       setBoqItems(boqItemData);
       setDailyReports(reportData);
@@ -1180,12 +1162,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
-  const handleUpdatePunchListStatus = async (id: string, status: PunchListItem['status']) => {
-    const updated = await updatePunchListStatus(id, status);
-    setPunchList((prev) => prev.map((p) => (p.id === id ? updated : p)));
-    return updated;
-  };
-
   // Fase 2 Handlers
   const handleAddBOQItem = async (item: any) => {
     const created = await addBOQItem(item);
@@ -1433,12 +1409,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         cashTransactions,
         kasbonList,
         fieldWorkers,
-        dailyAttendances,
-        equipmentAssets,
         safetyIncidents,
         toolboxMeetings,
-        punchList,
-        documents,
         handleCreateVendor,
         handleUpdateVendor,
         handleArchiveVendor,
@@ -1456,7 +1428,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handleDecideCashAdvance,
         handlePayCashAdvance,
         handleSettleCashAdvance,
-        handleUpdatePunchListStatus,
         handleCreateProject,
         handleUpdateProject,
         handleDeleteProject,

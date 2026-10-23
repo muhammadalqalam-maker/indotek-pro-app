@@ -38,11 +38,9 @@ import {
   CreateProjectCashTransactionInput,
   CashPaymentMethod,
   FieldWorker,
-  DailyAttendance,
   EquipmentAsset,
   SafetyIncident,
   ToolboxMeeting,
-  PunchListItem,
   ProjectDocument,
   ApprovalItem,
 } from '../types/database';
@@ -65,11 +63,9 @@ import {
   INITIAL_CASH_TRANSACTIONS,
   INITIAL_KASBON,
   INITIAL_FIELD_WORKERS,
-  INITIAL_DAILY_ATTENDANCES,
   INITIAL_EQUIPMENT_ASSETS,
   INITIAL_SAFETY_INCIDENTS,
   INITIAL_TOOLBOX_MEETINGS,
-  INITIAL_PUNCH_LIST,
   INITIAL_DOCUMENTS,
   INITIAL_APPROVALS,
 } from './mockDataModules';
@@ -113,11 +109,9 @@ const KEY_INVOICES = `${STORAGE_PREFIX}invoices`;
 const KEY_CASH_TRANSACTIONS = `${STORAGE_PREFIX}cash_transactions`;
 const KEY_KASBON = `${STORAGE_PREFIX}kasbon`;
 const KEY_WORKERS = `${STORAGE_PREFIX}workers`;
-const KEY_ATTENDANCE = `${STORAGE_PREFIX}attendance`;
 const KEY_EQUIPMENT = `${STORAGE_PREFIX}equipment`;
 const KEY_INCIDENTS = `${STORAGE_PREFIX}incidents`;
 const KEY_TOOLBOX = `${STORAGE_PREFIX}toolbox`;
-const KEY_PUNCH_LIST = `${STORAGE_PREFIX}punch_list`;
 const KEY_DOCUMENTS = `${STORAGE_PREFIX}documents`;
 const KEY_APPROVALS = `${STORAGE_PREFIX}approvals`;
 
@@ -155,11 +149,9 @@ export function initLocalStorage(): void {
     [KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS],
     [KEY_KASBON, INITIAL_KASBON],
     [KEY_WORKERS, INITIAL_FIELD_WORKERS],
-    [KEY_ATTENDANCE, INITIAL_DAILY_ATTENDANCES],
     [KEY_EQUIPMENT, INITIAL_EQUIPMENT_ASSETS],
     [KEY_INCIDENTS, INITIAL_SAFETY_INCIDENTS],
     [KEY_TOOLBOX, INITIAL_TOOLBOX_MEETINGS],
-    [KEY_PUNCH_LIST, INITIAL_PUNCH_LIST],
     [KEY_DOCUMENTS, INITIAL_DOCUMENTS],
     [KEY_APPROVALS, INITIAL_APPROVALS],
   ] as const;
@@ -194,11 +186,9 @@ export function resetDemoData(): void {
   setLocal(KEY_CASH_TRANSACTIONS, INITIAL_CASH_TRANSACTIONS);
   setLocal(KEY_KASBON, INITIAL_KASBON);
   setLocal(KEY_WORKERS, INITIAL_FIELD_WORKERS);
-  setLocal(KEY_ATTENDANCE, INITIAL_DAILY_ATTENDANCES);
   setLocal(KEY_EQUIPMENT, INITIAL_EQUIPMENT_ASSETS);
   setLocal(KEY_INCIDENTS, INITIAL_SAFETY_INCIDENTS);
   setLocal(KEY_TOOLBOX, INITIAL_TOOLBOX_MEETINGS);
-  setLocal(KEY_PUNCH_LIST, INITIAL_PUNCH_LIST);
   setLocal(KEY_DOCUMENTS, INITIAL_DOCUMENTS);
   setLocal(KEY_APPROVALS, INITIAL_APPROVALS);
 }
@@ -1492,12 +1482,6 @@ export async function fetchFieldWorkers(orgId: string, projectId?: string): Prom
   return list.filter((w) => w.organization_id === orgId && (!projectId || projectId === 'all' || w.project_id === projectId));
 }
 
-export async function fetchDailyAttendance(orgId: string, date: string, projectId?: string): Promise<DailyAttendance[]> {
-  initLocalStorage();
-  const list = getLocal<DailyAttendance[]>(KEY_ATTENDANCE, INITIAL_DAILY_ATTENDANCES);
-  return list.filter((a) => a.organization_id === orgId && a.date === date && (!projectId || projectId === 'all' || a.project_id === projectId));
-}
-
 // -------------------------------------------------------------
 // PERALATAN & ASET
 // -------------------------------------------------------------
@@ -1520,23 +1504,6 @@ export async function fetchToolboxMeetings(orgId: string, projectId?: string): P
   initLocalStorage();
   const list = getLocal<ToolboxMeeting[]>(KEY_TOOLBOX, INITIAL_TOOLBOX_MEETINGS);
   return list.filter((t) => t.organization_id === orgId && (!projectId || projectId === 'all' || t.project_id === projectId));
-}
-
-export async function fetchPunchList(orgId: string, projectId?: string): Promise<PunchListItem[]> {
-  initLocalStorage();
-  const list = getLocal<PunchListItem[]>(KEY_PUNCH_LIST, INITIAL_PUNCH_LIST);
-  return list.filter((p) => p.organization_id === orgId && (!projectId || projectId === 'all' || p.project_id === projectId));
-}
-
-export async function updatePunchListStatus(id: string, status: PunchListItem['status']): Promise<PunchListItem> {
-  const list = getLocal<PunchListItem[]>(KEY_PUNCH_LIST, INITIAL_PUNCH_LIST);
-  const target = list.find((p) => p.id === id);
-  if (target) {
-    target.status = status;
-    setLocal(KEY_PUNCH_LIST, list);
-    return target;
-  }
-  throw new Error('Punch list item tidak ditemukan');
 }
 
 // -------------------------------------------------------------

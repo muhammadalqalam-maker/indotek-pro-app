@@ -706,6 +706,8 @@ export interface DailyAttendance {
   status: 'hadir' | 'lembur' | 'izin' | 'sakit' | 'alpa';
   work_hours: number;
   overtime_hours: number;
+  daily_wage_rate_snapshot?: number;
+  overtime_hourly_rate_snapshot?: number;
   daily_earnings: number;
 }
 
@@ -774,25 +776,6 @@ export interface ToolboxMeeting {
   presenter_name: string;
   attendees_count: number;
   key_points: string[];
-}
-
-export interface PunchListItem {
-  id: string;
-  organization_id: string;
-  project_id: string;
-  project_name: string;
-  code: string;
-  location_zone: string;
-  category: 'Arsitektur' | 'Struktur' | 'MEP' | 'Finishing';
-  defect_description: string;
-  assigned_to_subcon: string;
-  due_date: string;
-  severity: 'minor' | 'major' | 'critical';
-  status: 'open' | 'in_progress' | 'ready_for_inspection' | 'closed';
-  before_photo?: string;
-  after_photo?: string;
-  reported_by: string;
-  created_at: string;
 }
 
 // ==========================================

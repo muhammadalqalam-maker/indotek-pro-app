@@ -164,7 +164,7 @@ export const ProjectDetailView: React.FC<{
           <ProjectBudgetActualTab project={project} />
         </TabsContent>
         <TabsContent value="documents">
-          <ProjectDocumentsTab />
+          <ProjectDocumentsTab projectId={project.id} />
         </TabsContent>
         <TabsContent value="team">
           <ProjectTeamTab

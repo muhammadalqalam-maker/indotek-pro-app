@@ -1,162 +1,283 @@
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { Plus, Wrench } from 'lucide-react';
+import { Skeleton } from '../../components/ui';
+import { useToast } from '../../components/ui/Toast';
 import { useApp } from '../../context/AppContext';
-import { formatRupiah, formatDateIndo } from '../../utils/format';
-import { EquipmentAsset } from '../../types/database';
-import {
-  Wrench,
-  Truck,
-  Plus,
-  Search,
-  CheckCircle2,
-  AlertTriangle,
-  Clock,
-  Fuel,
-  Activity,
-  MapPin,
-  Calendar,
-} from 'lucide-react';
+import { getMessages } from '../../i18n';
+import { EquipmentAssetCard } from './components/EquipmentAssetCard';
+import { EquipmentAssetForm } from './components/EquipmentAssetForm';
+import { EquipmentMaintenanceCard } from './components/EquipmentMaintenanceCard';
+import { EquipmentMaintenanceForm } from './components/EquipmentMaintenanceForm';
+import { EquipmentSummaryPanel } from './components/EquipmentSummaryPanel';
+import { EquipmentUsageCard } from './components/EquipmentUsageCard';
+import { EquipmentUsageForm } from './components/EquipmentUsageForm';
+import { EquipmentWorkspaceTabs, type EquipmentTab } from './components/EquipmentWorkspaceTabs';
+import { useEquipmentWorkspace } from './hooks/useEquipmentWorkspace';
+import type { EquipmentAsset } from './types';
+import { getCurrentMonth, getLocalDate, getMonthRange } from './utils/equipmentDate';
+import { buildEquipmentSummary } from './utils/equipmentSummary';
 
-export const EquipmentView: React.FC = () => {
-  const { currentOrg, equipmentAssets, projects, selectedProjectId } = useApp();
+const messages = getMessages().equipment;
+
+export function EquipmentView() {
+  const {
+    currentOrg,
+    projects,
+    selectedProjectId,
+    isSupabaseLive,
+    can,
+    organizationDataError,
+  } = useApp();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<EquipmentTab>('assets');
+  const [month, setMonth] = useState(getCurrentMonth);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredAssets = equipmentAssets.filter((eq) => {
-    const matchSearch =
-      eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      eq.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      eq.brand_model.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchProject = selectedProjectId === 'all' || eq.assigned_project_id === selectedProjectId;
-    return matchSearch && matchProject;
+  const [assetForm, setAssetForm] = useState<EquipmentAsset | null | undefined>(undefined);
+  const [usageFormOpen, setUsageFormOpen] = useState(false);
+  const [maintenanceFormOpen, setMaintenanceFormOpen] = useState(false);
+  const period = useMemo(() => getMonthRange(month), [month]);
+  const workspace = useEquipmentWorkspace(
+    currentOrg?.id ?? '',
+    selectedProjectId,
+    period.start,
+    period.end,
+    isSupabaseLive,
+  );
+  const assets = workspace.query.data?.assets ?? [];
+  const usage = workspace.query.data?.usage ?? [];
+  const maintenance = workspace.query.data?.maintenance ?? [];
+  const today = getLocalDate();
+  const summary = useMemo(
+    () => buildEquipmentSummary(assets, usage, maintenance, today),
+    [assets, usage, maintenance, today],
+  );
+  const projectById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project.name])),
+    [projects],
+  );
+  const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
+  const search = searchTerm.trim().toLocaleLowerCase();
+  const filteredAssets = assets.filter((asset) => (
+    !search || [asset.code, asset.name, asset.brand_model, asset.category]
+      .some((value) => value.toLocaleLowerCase().includes(search))
+  ));
+  const filteredUsage = usage.filter((entry) => {
+    const asset = assetById.get(entry.equipment_id);
+    return !search || [
+      asset?.code ?? '',
+      asset?.name ?? '',
+      projectById.get(entry.project_id) ?? '',
+      entry.notes,
+    ].some((value) => value.toLocaleLowerCase().includes(search));
   });
+  const filteredMaintenance = maintenance.filter((entry) => {
+    const asset = assetById.get(entry.equipment_id);
+    return !search || [
+      asset?.code ?? '',
+      asset?.name ?? '',
+      entry.description,
+      projectById.get(entry.project_id ?? '') ?? '',
+    ].some((value) => value.toLocaleLowerCase().includes(search));
+  });
+  const canCreate = can('warehouse', 'create');
+  const canEdit = can('warehouse', 'edit');
+
+  const saveAsset = async (values: Parameters<typeof workspace.createAsset.mutateAsync>[0]) => {
+    if (assetForm) {
+      await workspace.updateAsset.mutateAsync({ equipmentId: assetForm.id, values });
+    } else {
+      await workspace.createAsset.mutateAsync(values);
+    }
+    setAssetForm(undefined);
+    toast({ title: messages.assetSaved, variant: 'success' });
+  };
+
+  const saveUsage = async (values: Parameters<typeof workspace.createUsage.mutateAsync>[0]) => {
+    await workspace.createUsage.mutateAsync(values);
+    setUsageFormOpen(false);
+    toast({ title: messages.usageSaved, variant: 'success' });
+  };
+
+  const saveMaintenance = async (values: Parameters<typeof workspace.createMaintenance.mutateAsync>[0]) => {
+    await workspace.createMaintenance.mutateAsync(values);
+    setMaintenanceFormOpen(false);
+    toast({ title: messages.maintenanceSaved, variant: 'success' });
+  };
+
+  if (!can('warehouse', 'view')) {
+    return <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">Akun Anda tidak memiliki izin untuk melihat peralatan.</section>;
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Peralatan & Aset Konstruksi
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              Modul J
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manajemen alat berat, peralatan angkat, genset, monitoring jam operasi, konsumsi BBM, dan jadwal maintenance
-          </p>
+    <section className="grid gap-5">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
+          <p className="mt-1 max-w-3xl text-sm text-muted">{messages.description}</p>
         </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Unit Alat</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{equipmentAssets.length}</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Asset terdaftar di sistem</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Kondisi Siap Operasi</p>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            {equipmentAssets.filter((e) => e.condition === 'Sangat Baik' || e.condition === 'Baik').length} Unit
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">100% kelayakan laik operasi</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Aset Internal Perusahaan</p>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-            {equipmentAssets.filter((e) => e.ownership === 'Internal Asset').length} Unit
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Inventaris PT Indotek</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Sewa / Rental Luar</p>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-            {equipmentAssets.filter((e) => e.ownership === 'Sewa / Rental').length} Unit
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Kontrak sewa berkala</p>
-        </div>
-      </div>
-
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Cari kode unit, model alat, atau nama..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-        />
-      </div>
-
-      {/* Grid of Equipment */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredAssets.map((eq) => (
-          <div
-            key={eq.id}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-xs"
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => setAssetForm(null)}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600"
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                    {eq.code}
-                  </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                    {eq.category}
-                  </span>
-                </div>
-                <h3 className="font-bold text-base text-slate-900 dark:text-white mt-1.5">{eq.name}</h3>
-                <p className="text-xs text-slate-400">{eq.brand_model}</p>
-              </div>
+            <Plus className="size-4" aria-hidden="true" />
+            {messages.addAsset}
+          </button>
+        )}
+      </header>
 
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-                {eq.condition}
-              </span>
-            </div>
+      <EquipmentSummaryPanel summary={summary} />
 
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-              <div>
-                <span className="text-slate-400">Status Kepemilikan:</span>
-                <p className="font-bold text-slate-900 dark:text-white mt-0.5">{eq.ownership}</p>
-              </div>
-              <div>
-                <span className="text-slate-400">Biaya / Sewa Harian:</span>
-                <p className="font-bold text-amber-600 dark:text-amber-400 mt-0.5">
-                  {formatRupiah(eq.daily_rental_rate)}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>
-                  Lokasi Site: <strong>{eq.assigned_project_name || 'Gudang Pusat'}</strong>
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>Total Jam Operasi: {eq.total_operating_hours} Jam</span>
-              </div>
-              {eq.fuel_consumption_rate && (
-                <div className="flex items-center gap-2">
-                  <Fuel className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>Konsumsi: {eq.fuel_consumption_rate}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-between text-xs text-slate-400">
-              <span>Servis Terakhir: {formatDateIndo(eq.last_maintenance_date)}</span>
-              <span className="font-medium text-slate-600 dark:text-slate-300">
-                Servis Berikutnya: {formatDateIndo(eq.next_maintenance_date)}
-              </span>
-            </div>
-          </div>
-        ))}
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <label className="grid gap-1.5 text-sm font-medium text-text">
+          {messages.search}
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
+          />
+        </label>
+        <label className="grid gap-1.5 text-sm font-medium text-text">
+          {messages.usageDate}
+          <input
+            type="month"
+            value={month}
+            onChange={(event) => setMonth(event.target.value || getCurrentMonth())}
+            className="min-h-11 rounded-md border border-border bg-surface px-3 text-base"
+          />
+        </label>
       </div>
-    </div>
+
+      <EquipmentWorkspaceTabs activeTab={activeTab} onChange={setActiveTab} />
+
+      {assetForm !== undefined && (
+        <EquipmentAssetForm
+          key={assetForm?.id ?? 'new'}
+          asset={assetForm}
+          projects={projects}
+          defaultProjectId={selectedProjectId === 'all' ? '' : selectedProjectId}
+          isSaving={workspace.createAsset.isPending || workspace.updateAsset.isPending}
+          onCancel={() => setAssetForm(undefined)}
+          onSave={saveAsset}
+        />
+      )}
+      {usageFormOpen && (
+        <EquipmentUsageForm
+          key={`${selectedProjectId}-${projects.length}`}
+          assets={assets}
+          projects={projects}
+          defaultProjectId={selectedProjectId === 'all' ? '' : selectedProjectId}
+          isSaving={workspace.createUsage.isPending}
+          onCancel={() => setUsageFormOpen(false)}
+          onSave={saveUsage}
+        />
+      )}
+      {maintenanceFormOpen && (
+        <EquipmentMaintenanceForm
+          key={assets.map((asset) => asset.id).join(':')}
+          assets={assets}
+          isSaving={workspace.createMaintenance.isPending}
+          onCancel={() => setMaintenanceFormOpen(false)}
+          onSave={saveMaintenance}
+        />
+      )}
+
+      {!isSupabaseLive ? (
+        <section role="alert" className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning-foreground">{messages.loadError}</section>
+      ) : !currentOrg ? (
+        <section role="alert" className="rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+          {organizationDataError || messages.loadError}
+        </section>
+      ) : workspace.query.isPending ? (
+        <div className="grid gap-3" aria-label={messages.loading}>
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      ) : workspace.query.isError ? (
+        <section role="alert" className="grid gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+          <p>{messages.loadError}</p>
+          <button type="button" onClick={() => void workspace.query.refetch()} className="min-h-11 w-fit rounded-md border border-current px-3 font-semibold">
+            {messages.retry}
+          </button>
+        </section>
+      ) : (
+        <section role="tabpanel" className="grid gap-3">
+          {activeTab === 'assets' && (
+            filteredAssets.length === 0 ? (
+              <div className="rounded-xl border border-border bg-surface p-6 text-center">
+                <Wrench className="mx-auto size-7 text-muted" aria-hidden="true" />
+                <p className="mt-2 text-sm font-semibold text-text">{messages.noAssets}</p>
+                {canCreate && (
+                  <button type="button" onClick={() => setAssetForm(null)} className="mt-4 min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white">
+                    {messages.addAsset}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {filteredAssets.map((asset) => (
+                  <EquipmentAssetCard
+                    key={asset.id}
+                    asset={asset}
+                    projectName={asset.assigned_project_id ? projectById.get(asset.assigned_project_id) ?? messages.unassigned : messages.unassigned}
+                    usage={usage}
+                    today={today}
+                    canEdit={canEdit}
+                    onEdit={() => setAssetForm(asset)}
+                  />
+                ))}
+              </div>
+            )
+          )}
+
+          {activeTab === 'usage' && (
+            <>
+              {canCreate && (
+                <button type="button" onClick={() => setUsageFormOpen((open) => !open)} disabled={projects.length === 0 || assets.length === 0} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60">
+                  <Plus className="size-4" aria-hidden="true" />
+                  {messages.recordUsage}
+                </button>
+              )}
+              {projects.length === 0 ? (
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noProjects}</p>
+              ) : filteredUsage.length === 0 ? (
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noUsage}</p>
+              ) : filteredUsage.map((entry) => (
+                <EquipmentUsageCard
+                  key={entry.id}
+                  entry={entry}
+                  assetName={assetById.get(entry.equipment_id)?.name ?? messages.equipment}
+                  projectName={projectById.get(entry.project_id) ?? messages.project}
+                />
+              ))}
+            </>
+          )}
+
+          {activeTab === 'maintenance' && (
+            <>
+              {canCreate && (
+                <button type="button" onClick={() => setMaintenanceFormOpen((open) => !open)} disabled={assets.length === 0} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60">
+                  <Plus className="size-4" aria-hidden="true" />
+                  {messages.recordMaintenance}
+                </button>
+              )}
+              {filteredMaintenance.length === 0 ? (
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noMaintenance}</p>
+              ) : filteredMaintenance.map((entry) => (
+                <EquipmentMaintenanceCard
+                  key={entry.id}
+                  entry={entry}
+                  assetName={assetById.get(entry.equipment_id)?.name ?? messages.equipment}
+                  projectName={entry.project_id ? projectById.get(entry.project_id) ?? messages.project : messages.unassigned}
+                />
+              ))}
+            </>
+          )}
+        </section>
+      )}
+    </section>
   );
-};
+}

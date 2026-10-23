@@ -28,6 +28,24 @@ export const INVITABLE_MEMBER_ROLES = [
   'client_viewer',
 ] as const satisfies readonly Exclude<UserRole, 'owner'>[];
 
+export const HR_WORKER_MANAGEMENT_ROLES: readonly UserRole[] = [
+  'owner',
+  'admin',
+  'project_manager',
+];
+
+export const HR_WORKFORCE_ACCESS_ROLES: readonly UserRole[] = [
+  ...HR_WORKER_MANAGEMENT_ROLES,
+  'site_manager',
+];
+
+export const PUNCH_LIST_CLOSURE_ROLES: readonly UserRole[] = [
+  'owner',
+  'admin',
+  'project_manager',
+  'safety_officer',
+];
+
 export type InvitableMemberRole = (typeof INVITABLE_MEMBER_ROLES)[number];
 
 export type AppModule =
@@ -102,7 +120,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<AppModule, AppAction[]>> 
     procurement: ['view', 'approve'],
     warehouse: ['view'],
     finance: ['view', 'create', 'edit', 'approve'],
-    safety: ['view'],
+    safety: ['view', 'create', 'edit', 'approve'],
     approvals: ['view', 'approve'],
     users: ['view', 'create', 'edit', 'delete', 'approve'],
     settings: ['view', 'edit'],
@@ -128,7 +146,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Record<AppModule, AppAction[]>> 
     procurement: ['view', 'create', 'approve'],
     warehouse: ['view'],
     finance: ['view', 'create'],
-    safety: ['view', 'approve'],
+    safety: ['view', 'create', 'edit', 'approve'],
     approvals: ['view', 'approve'],
     users: ['view'],
     settings: ['view'],

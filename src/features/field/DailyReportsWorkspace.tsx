@@ -36,7 +36,7 @@ function todayInJakarta(): string {
 }
 
 export function DailyReportsWorkspace() {
-  const { flush, retry } = useOfflineSync();
+  const { flush, retry } = useOfflineSync({ autoSync: false });
   const {
     currentOrg,
     projects,

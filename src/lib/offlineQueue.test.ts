@@ -18,6 +18,7 @@ import {
   type OfflinePhotoQueueItem,
   type OfflineConflictItem,
 } from './offlineDb';
+import { useOfflineQueueStore } from '../stores/offlineQueue.store';
 
 const testOrgId = 'test-org-offline-queue';
 
@@ -116,6 +117,22 @@ describe('offline IndexedDB queue', () => {
       removeDraftFromQueue(otherUserDraft.reportId),
       removeDraftFromQueue(otherOrgDraft.reportId),
     ]);
+  });
+
+  test('clears visible queue counts when no user is signed in without deleting pending work', async () => {
+    const draft = makeDraft('logout-visibility-report');
+    await enqueueDraft(draft);
+    await useOfflineQueueStore.getState().refreshCounts(testOrgId, draft.userId);
+    assert.equal(useOfflineQueueStore.getState().draftCount, 1);
+
+    await useOfflineQueueStore.getState().refreshCounts('', '');
+    const state = useOfflineQueueStore.getState();
+    assert.equal(state.draftCount, 0);
+    assert.equal(state.photoCount, 0);
+    assert.equal(state.attendanceCount, 0);
+    assert.equal(state.conflicts.length, 0);
+    assert.equal((await getDraftQueue(testOrgId, draft.userId)).length, 1);
+    await removeDraftFromQueue(draft.reportId);
   });
 
   test('photo queue preserves blobs and supports report lookup', async () => {

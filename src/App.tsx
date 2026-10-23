@@ -16,6 +16,7 @@ import { ShieldAlert } from 'lucide-react';
 import { ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
+import { useOfflineSync } from './hooks/useOfflineSync';
 
 const CreateProjectModal = lazy(() => import('./features/projects/CreateProjectModal').then((module) => ({ default: module.CreateProjectModal })));
 const DashboardView = lazy(() => import('./features/dashboard/DashboardView').then((module) => ({ default: module.DashboardView })));
@@ -54,6 +55,8 @@ function ViewLoadingFallback() {
 }
 
 function MainApp() {
+  useOfflineSync();
+
   const {
     activeTab,
     activeProjectDetailId,

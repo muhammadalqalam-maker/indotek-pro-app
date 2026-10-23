@@ -7,12 +7,14 @@ import {
   type OfflinePhotoQueueItem,
   type OfflineConflictItem,
 } from '../lib/offlineDb';
+import { getAttendanceQueue } from '../features/hr/services/hrOfflineStorage';
 
 export type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict';
 
 type OfflineQueueState = {
   draftCount: number;
   photoCount: number;
+  attendanceCount: number;
   conflicts: OfflineConflictItem[];
   syncStatus: SyncStatus;
   lastSyncError: string | null;
@@ -26,20 +28,36 @@ type OfflineQueueState = {
 export const useOfflineQueueStore = create<OfflineQueueState>((set) => ({
   draftCount: 0,
   photoCount: 0,
+  attendanceCount: 0,
   conflicts: [],
   syncStatus: 'idle',
   lastSyncError: null,
   revision: 0,
 
   refreshCounts: async (organizationId, userId) => {
-    const [drafts, photos, conflicts] = await Promise.all([
+    if (!organizationId || !userId) {
+      set((state) => ({
+        draftCount: 0,
+        photoCount: 0,
+        attendanceCount: 0,
+        conflicts: [],
+        syncStatus: 'idle',
+        lastSyncError: null,
+        revision: state.revision + 1,
+      }));
+      return;
+    }
+
+    const [drafts, photos, attendances, conflicts] = await Promise.all([
       getDraftQueue(organizationId, userId),
       getPhotoQueue(organizationId, userId),
+      getAttendanceQueue(organizationId, userId),
       getPendingConflicts(organizationId, userId),
     ]);
     set((state) => ({
       draftCount: drafts.length,
       photoCount: photos.length,
+      attendanceCount: attendances.length,
       conflicts,
       syncStatus: conflicts.length > 0 ? 'conflict' : 'idle',
       revision: state.revision + 1,
@@ -52,11 +70,14 @@ export const useOfflineQueueStore = create<OfflineQueueState>((set) => ({
 }));
 
 export function selectQueueTotal(state: OfflineQueueState): number {
-  return state.draftCount + state.photoCount;
+  return state.draftCount + state.photoCount + state.attendanceCount;
 }
 
 export function selectHasPending(state: OfflineQueueState): boolean {
-  return state.draftCount > 0 || state.photoCount > 0 || state.conflicts.length > 0;
+  return state.draftCount > 0
+    || state.photoCount > 0
+    || state.attendanceCount > 0
+    || state.conflicts.length > 0;
 }
 
 export function selectQueuedDrafts(

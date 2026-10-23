@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -12,22 +12,31 @@ import {
   resetFailedQueue,
 } from '../lib/offlineDb';
 import {
+  getAttendanceQueue,
+  removeAttendanceFromQueue,
+  resetFailedAttendanceQueue,
+  updateAttendanceQueueItem,
+} from '../features/hr/services/hrOfflineStorage';
+import {
   saveDailyReportDraft,
   uploadDailyReportPhoto,
   uploadDailyReportSignature,
   fetchDailyReportSyncVersion,
 } from '../features/field/services/dailyReport.service';
 import { useOfflineQueueStore } from '../stores/offlineQueue.store';
+import { upsertDailyAttendance } from '../features/hr/services/hr.service';
 
 const MAX_ATTEMPTS = 5;
 const SYNC_INTERVAL_MS = 15_000;
+let syncInProgress = false;
 
 /**
  * Hook global sinkronisasi offline.
  * Dipasang satu kali di root aplikasi atau AppContext.
  * Ketika online, flush semua item di antrian IndexedDB ke Supabase.
  */
-export function useOfflineSync() {
+export function useOfflineSync(options: { autoSync?: boolean } = {}) {
+  const { autoSync = true } = options;
   const { authSession, currentOrg } = useApp();
   const queryClient = useQueryClient();
   const userId = authSession?.user.id ?? '';
@@ -35,11 +44,9 @@ export function useOfflineSync() {
   const refreshCounts = useOfflineQueueStore((s) => s.refreshCounts);
   const setSyncStatus = useOfflineQueueStore((s) => s.setSyncStatus);
   const setLastSyncError = useOfflineQueueStore((s) => s.setLastSyncError);
-  const syncLock = useRef(false);
-
   const flush = useCallback(async () => {
-    if (syncLock.current || !navigator.onLine || !organizationId || !userId) return;
-    syncLock.current = true;
+    if (syncInProgress || !navigator.onLine || !organizationId || !userId) return;
+    syncInProgress = true;
     setSyncStatus('syncing');
     setLastSyncError(null);
 
@@ -178,11 +185,44 @@ export function useOfflineSync() {
           });
         }
       }
+
+      const attendanceQueue = await getAttendanceQueue(organizationId, userId);
+      let syncedAttendance = false;
+      for (const item of attendanceQueue) {
+        if (item.attempts >= MAX_ATTEMPTS) {
+          hadError = true;
+          continue;
+        }
+        try {
+          await upsertDailyAttendance(
+            item.organizationId,
+            item.projectId,
+            item.attendanceDate,
+            [item.record],
+          );
+          await removeAttendanceFromQueue(item.key);
+          syncedAttendance = true;
+          await queryClient.invalidateQueries({
+            queryKey: ['hr-attendance', item.organizationId],
+          });
+        } catch (err) {
+          hadError = true;
+          await updateAttendanceQueueItem(item.key, {
+            attempts: item.attempts + 1,
+            lastError: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+      if (syncedAttendance) {
+        await queryClient.invalidateQueries({
+          queryKey: ['hr-weekly-wages', organizationId],
+        });
+      }
     } catch (err) {
       hadError = true;
       setLastSyncError(err instanceof Error ? err.message : String(err));
     } finally {
-      syncLock.current = false;
+      syncInProgress = false;
       await refreshCounts(organizationId, userId);
       if (!hadError) {
         await queryClient.invalidateQueries({
@@ -205,18 +245,20 @@ export function useOfflineSync() {
 
   // Flush saat kembali online
   useEffect(() => {
+    if (!autoSync) return;
     const onOnline = () => void flush();
     window.addEventListener('online', onOnline);
     return () => window.removeEventListener('online', onOnline);
-  }, [flush]);
+  }, [autoSync, flush]);
 
   // Flush periodik saat online
   useEffect(() => {
+    if (!autoSync) return;
     const id = window.setInterval(() => {
       if (navigator.onLine) void flush();
     }, SYNC_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, [flush]);
+  }, [autoSync, flush]);
 
   // Muat hitungan awal dari IndexedDB
   useEffect(() => {
@@ -226,6 +268,7 @@ export function useOfflineSync() {
   const retry = useCallback(async () => {
     if (!organizationId || !userId) return;
     await resetFailedQueue(organizationId, userId);
+    await resetFailedAttendanceQueue(organizationId, userId);
     await refreshCounts(organizationId, userId);
     await flush();
   }, [flush, organizationId, refreshCounts, userId]);

@@ -1134,6 +1134,86 @@ export type Database = {
           },
         ]
       }
+      daily_attendance: {
+        Row: {
+          attendance_date: string
+          created_at: string
+          created_by: string
+          daily_wage_rate_snapshot: number
+          deleted_at: string | null
+          id: string
+          organization_id: string
+          overtime_hourly_rate_snapshot: number
+          overtime_hours: number
+          project_id: string
+          status: string
+          updated_at: string
+          work_hours: number
+          worker_id: string
+        }
+        Insert: {
+          attendance_date: string
+          created_at?: string
+          created_by?: string
+          daily_wage_rate_snapshot?: number
+          deleted_at?: string | null
+          id?: string
+          organization_id: string
+          overtime_hourly_rate_snapshot?: number
+          overtime_hours?: number
+          project_id: string
+          status: string
+          updated_at?: string
+          work_hours?: number
+          worker_id: string
+        }
+        Update: {
+          attendance_date?: string
+          created_at?: string
+          created_by?: string
+          daily_wage_rate_snapshot?: number
+          deleted_at?: string | null
+          id?: string
+          organization_id?: string
+          overtime_hourly_rate_snapshot?: number
+          overtime_hours?: number
+          project_id?: string
+          status?: string
+          updated_at?: string
+          work_hours?: number
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_attendance_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_attendance_org_project_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "daily_attendance_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_attendance_worker_fkey"
+            columns: ["organization_id", "project_id", "worker_id"]
+            isOneToOne: false
+            referencedRelation: "field_workers"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+        ]
+      }
       daily_report_equipment: {
         Row: {
           active_hours: number
@@ -1705,6 +1785,318 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_assets: {
+        Row: {
+          assigned_project_id: string | null
+          brand_model: string
+          category: string
+          code: string
+          condition: string
+          created_at: string
+          created_by: string
+          daily_rental_rate: number
+          deleted_at: string | null
+          fuel_consumption_rate: string
+          id: string
+          last_maintenance_date: string | null
+          name: string
+          next_maintenance_date: string | null
+          organization_id: string
+          ownership: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_project_id?: string | null
+          brand_model?: string
+          category: string
+          code: string
+          condition?: string
+          created_at?: string
+          created_by?: string
+          daily_rental_rate?: number
+          deleted_at?: string | null
+          fuel_consumption_rate?: string
+          id?: string
+          last_maintenance_date?: string | null
+          name: string
+          next_maintenance_date?: string | null
+          organization_id: string
+          ownership: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_project_id?: string | null
+          brand_model?: string
+          category?: string
+          code?: string
+          condition?: string
+          created_at?: string
+          created_by?: string
+          daily_rental_rate?: number
+          deleted_at?: string | null
+          fuel_consumption_rate?: string
+          id?: string
+          last_maintenance_date?: string | null
+          name?: string
+          next_maintenance_date?: string | null
+          organization_id?: string
+          ownership?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_assets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_assets_organization_id_assigned_project_id_fkey"
+            columns: ["organization_id", "assigned_project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "equipment_assets_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_maintenance_logs: {
+        Row: {
+          cost_amount: number
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string
+          equipment_id: string
+          id: string
+          maintenance_date: string
+          next_maintenance_date: string | null
+          organization_id: string
+          project_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          cost_amount?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description: string
+          equipment_id: string
+          id?: string
+          maintenance_date: string
+          next_maintenance_date?: string | null
+          organization_id: string
+          project_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cost_amount?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          equipment_id?: string
+          id?: string
+          maintenance_date?: string
+          next_maintenance_date?: string | null
+          organization_id?: string
+          project_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_maintenance_logs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_maintenance_logs_organization_id_equipment_id_fkey"
+            columns: ["organization_id", "equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_assets"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "equipment_maintenance_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_maintenance_logs_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      equipment_usage_entries: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          equipment_id: string
+          fuel_cost_amount: number
+          fuel_liters: number
+          id: string
+          notes: string
+          operating_hours: number
+          organization_id: string
+          project_id: string
+          rental_cost_snapshot: number
+          updated_at: string
+          usage_date: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          equipment_id: string
+          fuel_cost_amount?: number
+          fuel_liters?: number
+          id?: string
+          notes?: string
+          operating_hours: number
+          organization_id: string
+          project_id: string
+          rental_cost_snapshot?: number
+          updated_at?: string
+          usage_date: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          equipment_id?: string
+          fuel_cost_amount?: number
+          fuel_liters?: number
+          id?: string
+          notes?: string
+          operating_hours?: number
+          organization_id?: string
+          project_id?: string
+          rental_cost_snapshot?: number
+          updated_at?: string
+          usage_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_usage_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_usage_entries_organization_id_equipment_id_fkey"
+            columns: ["organization_id", "equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_assets"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "equipment_usage_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_usage_entries_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      field_workers: {
+        Row: {
+          created_at: string
+          created_by: string
+          daily_wage_rate: number
+          deleted_at: string | null
+          full_name: string
+          id: string
+          nik: string
+          organization_id: string
+          origin_city: string | null
+          overtime_hourly_rate: number
+          phone: string | null
+          project_id: string
+          role_trade: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          daily_wage_rate?: number
+          deleted_at?: string | null
+          full_name: string
+          id?: string
+          nik: string
+          organization_id: string
+          origin_city?: string | null
+          overtime_hourly_rate?: number
+          phone?: string | null
+          project_id: string
+          role_trade: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          daily_wage_rate?: number
+          deleted_at?: string | null
+          full_name?: string
+          id?: string
+          nik?: string
+          organization_id?: string
+          origin_city?: string | null
+          overtime_hourly_rate?: number
+          phone?: string | null
+          project_id?: string
+          role_trade?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_workers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_workers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_workers_project_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -2667,6 +3059,150 @@ export type Database = {
           },
         ]
       }
+      project_documents: {
+        Row: {
+          access_roles: Database["public"]["Enums"]["user_role_type"][]
+          category: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          document_number: string
+          expires_on: string | null
+          id: string
+          organization_id: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          access_roles?: Database["public"]["Enums"]["user_role_type"][]
+          category: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_number: string
+          expires_on?: string | null
+          id?: string
+          organization_id: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          access_roles?: Database["public"]["Enums"]["user_role_type"][]
+          category?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_number?: string
+          expires_on?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_documents_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      project_document_versions: {
+        Row: {
+          content_type: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          document_id: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id: string
+          organization_id: string
+          project_id: string
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_id: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id?: string
+          organization_id: string
+          project_id: string
+          updated_at?: string
+          version_number?: number
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_id?: string
+          file_name?: string
+          file_path?: string
+          file_size_bytes?: number
+          id?: string
+          organization_id?: string
+          project_id?: string
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_document_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_document_id_fkey"
+            columns: ["organization_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "project_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       project_addendums: {
         Row: {
           addendum_number: string
@@ -3400,6 +3936,104 @@ export type Database = {
           },
         ]
       }
+      punch_list_items: {
+        Row: {
+          after_photo_path: string | null
+          assigned_to_subcon: string
+          before_photo_path: string
+          category: string
+          closed_at: string | null
+          closed_by: string | null
+          code: string
+          created_at: string
+          created_by: string
+          defect_description: string
+          deleted_at: string | null
+          due_date: string
+          id: string
+          location_zone: string
+          organization_id: string
+          project_id: string
+          reported_by: string
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          after_photo_path?: string | null
+          assigned_to_subcon: string
+          before_photo_path: string
+          category: string
+          closed_at?: string | null
+          closed_by?: string | null
+          code: string
+          created_at?: string
+          created_by?: string
+          defect_description: string
+          deleted_at?: string | null
+          due_date: string
+          id?: string
+          location_zone: string
+          organization_id: string
+          project_id: string
+          reported_by: string
+          severity: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          after_photo_path?: string | null
+          assigned_to_subcon?: string
+          before_photo_path?: string
+          category?: string
+          closed_at?: string | null
+          closed_by?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string
+          defect_description?: string
+          deleted_at?: string | null
+          due_date?: string
+          id?: string
+          location_zone?: string
+          organization_id?: string
+          project_id?: string
+          reported_by?: string
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "punch_list_items_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_list_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_list_items_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "punch_list_items_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       purchase_order_items: {
         Row: {
           created_at: string
@@ -3757,6 +4391,76 @@ export type Database = {
           },
         ]
       }
+      qc_inspections: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          id: string
+          inspection_date: string
+          inspector_name: string
+          items: Json
+          location: string
+          organization_id: string
+          overall_notes: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          inspection_date: string
+          inspector_name: string
+          items: Json
+          location: string
+          organization_id: string
+          overall_notes?: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          inspection_date?: string
+          inspector_name?: string
+          items?: Json
+          location?: string
+          organization_id?: string
+          overall_notes?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qc_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_inspections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qc_inspections_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       roles_permissions: {
         Row: {
           action: string
@@ -3795,6 +4499,158 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      safety_incidents: {
+        Row: {
+          category: string
+          corrective_action: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string
+          id: string
+          immediate_action: string
+          incident_date: string
+          incident_number: string
+          location: string
+          organization_id: string
+          project_id: string
+          reporter_name: string
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          corrective_action?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          immediate_action: string
+          incident_date: string
+          incident_number: string
+          location: string
+          organization_id: string
+          project_id: string
+          reporter_name: string
+          severity: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          corrective_action?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          immediate_action?: string
+          incident_date?: string
+          incident_number?: string
+          location?: string
+          organization_id?: string
+          project_id?: string
+          reporter_name?: string
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_incidents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_incidents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_incidents_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      safety_inspections: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          id: string
+          inspection_date: string
+          inspector_name: string
+          items: Json
+          location: string
+          organization_id: string
+          overall_notes: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          inspection_date: string
+          inspector_name: string
+          items: Json
+          location: string
+          organization_id: string
+          overall_notes?: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          inspection_date?: string
+          inspector_name?: string
+          items?: Json
+          location?: string
+          organization_id?: string
+          overall_notes?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_inspections_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_inspections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "safety_inspections_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -4367,6 +5223,73 @@ export type Database = {
           },
         ]
       }
+      toolbox_meetings: {
+        Row: {
+          attendees_count: number
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          id: string
+          key_points: string[]
+          meeting_date: string
+          organization_id: string
+          presenter_name: string
+          project_id: string
+          topic: string
+          updated_at: string
+        }
+        Insert: {
+          attendees_count: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          key_points: string[]
+          meeting_date: string
+          organization_id: string
+          presenter_name: string
+          project_id: string
+          topic: string
+          updated_at?: string
+        }
+        Update: {
+          attendees_count?: number
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          id?: string
+          key_points?: string[]
+          meeting_date?: string
+          organization_id?: string
+          presenter_name?: string
+          project_id?: string
+          topic?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "toolbox_meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_meetings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "toolbox_meetings_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
       vendor_evaluations: {
         Row: {
           comment: string
@@ -4838,11 +5761,115 @@ export type Database = {
           },
         ]
       }
+      worker_piecework_entries: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          description: string
+          id: string
+          organization_id: string
+          project_id: string
+          quantity: number
+          total_amount: number | null
+          unit: string
+          unit_rate: number
+          updated_at: string
+          work_date: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description: string
+          id?: string
+          organization_id: string
+          project_id: string
+          quantity: number
+          total_amount?: number | null
+          unit: string
+          unit_rate: number
+          updated_at?: string
+          work_date: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          description?: string
+          id?: string
+          organization_id?: string
+          project_id?: string
+          quantity?: number
+          total_amount?: number | null
+          unit?: string
+          unit_rate?: number
+          updated_at?: string
+          work_date?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_piecework_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_piecework_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_piecework_project_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "worker_piecework_worker_fkey"
+            columns: ["organization_id", "project_id", "worker_id"]
+            isOneToOne: false
+            referencedRelation: "field_workers"
+            referencedColumns: ["organization_id", "project_id", "id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      create_project_document_with_version: {
+        Args: {
+          p_access_roles: Database["public"]["Enums"]["user_role_type"][]
+          p_category: string
+          p_content_type: string
+          p_document_id: string
+          p_expires_on: string | null
+          p_file_name: string
+          p_file_path: string
+          p_file_size_bytes: number
+          p_organization_id: string
+          p_project_id: string
+          p_title: string
+          p_version_id: string
+          p_document_number: string
+        }
+        Returns: string
+      }
+
+      can_delete_unlinked_project_document_upload: {
+        Args: { target_file_path: string; target_owner_id: string }
+        Returns: boolean
+      }
+
       accept_organization_invitation: {
         Args: { p_email: string; p_invitation_id: string; p_user_id: string }
         Returns: {
@@ -5213,6 +6240,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      record_equipment_maintenance: {
+        Args: {
+          p_cost_amount: number
+          p_description: string
+          p_equipment_id: string
+          p_maintenance_date: string
+          p_next_maintenance_date?: string
+          p_organization_id: string
+        }
+        Returns: string
+      }
       record_project_boq_expense: {
         Args: {
           p_amount: number
@@ -5238,7 +6276,7 @@ export type Database = {
       }
       record_stock_movement: {
         Args: {
-          p_destination_inventory_item_id: string | null
+          p_destination_inventory_item_id: string
           p_movement_date: string
           p_movement_type: string
           p_notes: string
@@ -5246,7 +6284,7 @@ export type Database = {
           p_quantity: number
           p_recipient_or_supplier: string
           p_reference_doc: string
-          p_source_inventory_item_id: string | null
+          p_source_inventory_item_id: string
         }
         Returns: string
       }
