@@ -20,7 +20,7 @@ const settingsTabs = [
   { id: 'audit', labelKey: 'auditTitle', icon: Activity },
 ] as const;
 
-export function SettingsView({ onOpenSupabaseModal }: { onOpenSupabaseModal: () => void }) {
+export function SettingsView() {
   const { members } = useApp();
   const messages = getMessages().settings;
   const [activeTab, setActiveTab] = useState<SettingsTab>('company');
@@ -55,7 +55,7 @@ export function SettingsView({ onOpenSupabaseModal }: { onOpenSupabaseModal: () 
         })}
       </nav>
 
-      {activeTab === 'company' && <CompanyProfilePanel onOpenSupabaseModal={onOpenSupabaseModal} />}
+      {activeTab === 'company' && <CompanyProfilePanel />}
       {activeTab === 'team' && <TeamMembersPanel />}
       {activeTab === 'roles' && <RolePermissionsPanel />}
       {activeTab === 'numbering' && <DocumentNumberingPanel />}

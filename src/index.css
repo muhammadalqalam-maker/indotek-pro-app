@@ -127,6 +127,32 @@ select {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.safe-area-main {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+.safe-area-sidebar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 1023px) {
+  .safe-area-topbar {
+    padding-top: calc(0.5rem + env(safe-area-inset-top));
+  }
+}
+
+@media (max-width: 639px) {
+  .safe-area-sidebar {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+@media (min-width: 640px) {
+  .safe-area-main {
+    padding-bottom: 2rem;
+  }
+}
+
 code, pre, kbd, samp {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
 }

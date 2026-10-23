@@ -61,13 +61,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                       dismiss(item.id);
                       item.action?.onClick();
                     }}
-                    className="mt-2 min-h-8 rounded-md px-2 text-xs font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current"
+                    className="mt-2 min-h-12 rounded-md px-2 text-xs font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current sm:min-h-8"
                   >
                     {item.action.label}
                   </button>
                 )}
               </div>
-              <button type="button" onClick={() => dismiss(item.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded-md hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current" aria-label={messages.close}>
+              <button type="button" onClick={() => dismiss(item.id)} className="grid min-h-12 min-w-12 shrink-0 place-items-center rounded-md hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current sm:h-8 sm:w-8 sm:min-h-0 sm:min-w-0" aria-label={messages.close}>
                 <X className="h-4 w-4" />
               </button>
             </div>

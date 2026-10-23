@@ -122,7 +122,7 @@ export const MobileBottomNav: React.FC<{
             type="button"
             onClick={() => handleNav('dashboard')}
             aria-current={activeTab === 'dashboard' ? 'page' : undefined}
-            className={`flex min-h-11 min-w-12 flex-col items-center justify-center gap-1 text-[10px] font-semibold transition ${
+            className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
               activeTab === 'dashboard' ? 'text-accent-600' : 'text-muted'
             }`}
           >
@@ -136,7 +136,7 @@ export const MobileBottomNav: React.FC<{
             type="button"
             onClick={() => handleNav('projects')}
             aria-current={activeTab === 'projects' ? 'page' : undefined}
-            className={`flex min-h-11 min-w-12 flex-col items-center justify-center gap-1 text-[10px] font-semibold transition ${
+            className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
               activeTab === 'projects' ? 'text-accent-600' : 'text-muted'
             }`}
           >
@@ -164,7 +164,7 @@ export const MobileBottomNav: React.FC<{
             type="button"
             onClick={() => handleNav('approvals')}
             aria-current={activeTab === 'approvals' ? 'page' : undefined}
-            className={`flex min-h-11 min-w-12 flex-col items-center justify-center gap-1 text-[10px] font-semibold transition ${
+            className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
               activeTab === 'approvals' ? 'text-accent-600' : 'text-muted'
             }`}
           >
@@ -179,7 +179,7 @@ export const MobileBottomNav: React.FC<{
             setFabMenuOpen(false);
             onToggleMobileDrawer();
           }}
-          className="flex min-h-11 min-w-12 flex-col items-center justify-center gap-1 text-[10px] font-semibold text-muted transition"
+          className="flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold text-muted transition"
           aria-label={shellMessages.openMenu}
           aria-expanded={isMenuOpen}
           aria-controls="app-sidebar"

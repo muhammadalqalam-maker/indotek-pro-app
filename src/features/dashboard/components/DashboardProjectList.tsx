@@ -22,7 +22,7 @@ export function DashboardProjectList({
   openProjectLabel: (projectName: string) => string;
 }) {
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle as="h2">{title}</CardTitle>
       </CardHeader>

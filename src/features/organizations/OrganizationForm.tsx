@@ -222,7 +222,7 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
           {errors.logo && <p id="organization-logo-error" className="mt-1 text-xs text-red-600">{errors.logo.message}</p>}
           {logoPreview && <img src={logoPreview} alt={messages.logoPreview} className="mt-3 h-20 w-20 rounded-lg border border-slate-200 object-contain p-2 dark:border-slate-700" />}
           <p className="mt-1 text-xs text-slate-500">{messages.logoCompress}</p>
-          {!isSupabaseLive && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{messages.uploadNeedsSupabase}</p>}
+          {!isSupabaseLive && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{messages.uploadUnavailable}</p>}
         </div>
 
         <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end dark:border-slate-800">

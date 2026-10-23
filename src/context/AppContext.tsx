@@ -132,8 +132,7 @@ export type NavigationTab =
   | 'documents'
   | 'approvals'
   | 'reports'
-  | 'settings'
-  | 'guide';
+  | 'settings';
 
 export type AuthMode = 'sign_in' | 'sign_up' | 'forgot_password' | 'update_password';
 const AUTH_RECOVERY_STORAGE_KEY = 'indotek_auth_recovery';
@@ -157,7 +156,6 @@ interface AppContextType {
   requestPasswordReset: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  refreshConnectionStatus: () => void;
 
   // Active Context
   currentOrg: Organization | null;
@@ -314,10 +312,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => setIsDark((prev) => !prev);
 
   // Supabase live status
-  const [isSupabaseLive, setIsSupabaseLive] = useState<boolean>(() => isSupabaseConfigured());
-  const refreshConnectionStatus = () => {
-    setIsSupabaseLive(isSupabaseConfigured());
-  };
+  const isSupabaseLive = isSupabaseConfigured();
 
 
   // Organizations & current org
@@ -528,7 +523,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthError('');
     setAuthNotice('');
     if (!supabase) {
-      setAuthError(messages.supabaseMissing);
+      setAuthError(messages.serviceUnavailable);
       return;
     }
     if (authMode !== 'sign_in' && authMode !== 'sign_up') {
@@ -570,7 +565,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthError('');
     setAuthNotice('');
     if (!supabase) {
-      setAuthError(messages.supabaseMissing);
+      setAuthError(messages.serviceUnavailable);
       return;
     }
     setAuthBusy(true);
@@ -598,7 +593,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthError('');
     setAuthNotice('');
     if (!supabase) {
-      setAuthError(messages.supabaseMissing);
+      setAuthError(messages.serviceUnavailable);
       return;
     }
     if (!authSession || sessionStorage.getItem(AUTH_RECOVERY_STORAGE_KEY) !== 'true') {
@@ -628,7 +623,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const signOut = async () => {
     const supabase = getSupabase();
     if (!supabase) {
-      setAuthError(messages.supabaseMissing);
+      setAuthError(messages.serviceUnavailable);
       return;
     }
     setAuthError('');
@@ -1316,7 +1311,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         requestPasswordReset,
         updatePassword,
         signOut,
-        refreshConnectionStatus,
         currentOrg,
         organizations,
         organizationsLoading,

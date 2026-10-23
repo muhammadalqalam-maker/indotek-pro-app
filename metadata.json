@@ -1,6 +1,0 @@
-{
-  "name": "Indotek Pro",
-  "description": "Platform SaaS Manajemen Konstruksi Profesional untuk Kontraktor di Indonesia: Multi-tenant, Proyek, RAB, Lapangan, Keuangan, dan Pengadaan.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

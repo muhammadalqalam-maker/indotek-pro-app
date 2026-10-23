@@ -12,3 +12,24 @@ coverage/
 .aistudio/
 playwright-report/
 test-results/
+
+# Local AI coding-tool configuration, not application source
+.agents/
+.augment/
+.claude/
+.codebuddy/
+.codewhale/
+.continue/
+.cursor/
+.factory/
+.gemini/
+.hermes/
+.kilocode/
+.kiro/
+.opencode/
+.qoder/
+.roo/
+.trae/
+.warp/
+.windsurf/
+agent-skills/

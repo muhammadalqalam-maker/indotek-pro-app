@@ -33,7 +33,7 @@ Platform manajemen konstruksi untuk PT. Indotek Karya Nusantara. Frontend React,
    npm run dev
    ```
 
-   Buka URL yang ditampilkan Vite (default `http://localhost:3000`). Jika Supabase belum dikonfigurasi, aplikasi dapat berjalan dalam mode demo lokal; data mode demo disimpan di browser dan bukan data tenant Supabase. Jangan gunakan mode demo untuk data operasional.
+   Buka URL yang ditampilkan Vite (default `http://localhost:3000`). Jika Supabase belum dikonfigurasi, aplikasi development dapat berjalan dalam mode demo lokal; data demo bukan data operasional dan tidak disimpan ke tenant Supabase. Build production gagal tertutup dan tidak menampilkan data demo jika konfigurasi backend tidak tersedia. Jangan gunakan mode demo untuk data operasional.
 
 ## Migrasi database
 

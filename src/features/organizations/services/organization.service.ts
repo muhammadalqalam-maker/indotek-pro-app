@@ -53,7 +53,7 @@ export async function uploadOrganizationLogo(
   file: File,
 ): Promise<Organization> {
   const supabase = getSupabase();
-  if (!supabase) throw new Error(messages.supabaseUploadRequired);
+  if (!supabase) throw new Error(messages.uploadUnavailable);
 
   const blob = await compressLogo(file);
   const path = `${organizationId}/${crypto.randomUUID()}.webp`;

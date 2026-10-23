@@ -79,7 +79,6 @@ export const NAVIGATION_MODULES: Record<string, AppModule> = {
   approvals: 'approvals',
   reports: 'dashboard',
   settings: 'settings',
-  guide: 'settings',
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {

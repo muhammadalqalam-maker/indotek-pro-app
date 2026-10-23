@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useApp, NavigationTab } from '../../context/AppContext';
 import { Can } from '../shared/Can';
 import { NAVIGATION_MODULES } from '../../utils/permissions';
@@ -14,7 +14,6 @@ import {
   DollarSign,
   ShieldAlert,
   Settings,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
   Building2,
@@ -41,7 +40,88 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsMobileOpen,
 }) => {
   const { activeTab, setActiveTab, projects, currentOrg, closeProjectDetail } = useApp();
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => window.matchMedia('(max-width: 639px)').matches,
+  );
+  const sidebarRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
   const isNavigationCollapsed = isCollapsed && !isMobileOpen;
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia('(max-width: 639px)');
+    const syncMobileViewport = (event: MediaQueryListEvent) => {
+      setIsMobileViewport(event.matches);
+      if (!event.matches) {
+        returnFocusRef.current = null;
+        setIsMobileOpen(false);
+      }
+    };
+
+    mobileViewport.addEventListener('change', syncMobileViewport);
+    return () => mobileViewport.removeEventListener('change', syncMobileViewport);
+  }, [setIsMobileOpen]);
+
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar || !isMobileViewport) return;
+
+    if (isMobileOpen) {
+      const activeElement = document.activeElement;
+      if (activeElement instanceof HTMLElement && !sidebar.contains(activeElement)) {
+        returnFocusRef.current = activeElement;
+      }
+      closeButtonRef.current?.focus();
+      return;
+    }
+
+    const returnFocus = returnFocusRef.current;
+    returnFocusRef.current = null;
+    returnFocus?.focus();
+  }, [isMobileOpen, isMobileViewport]);
+
+  useEffect(() => {
+    if (!isMobileViewport || !isMobileOpen) return;
+
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleMobileDrawerKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsMobileOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const sidebar = sidebarRef.current;
+      if (!sidebar) return;
+
+      const focusableElements = Array.from(
+        sidebar.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.tabIndex >= 0 && element.getClientRects().length > 0);
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements.at(-1);
+      if (!firstElement || !lastElement) return;
+
+      const activeElement = document.activeElement;
+      if (event.shiftKey && (activeElement === firstElement || !sidebar.contains(activeElement))) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && (activeElement === lastElement || !sidebar.contains(activeElement))) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleMobileDrawerKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleMobileDrawerKeyDown);
+      document.body.style.overflow = previousBodyOverflow;
+    };
+  }, [isMobileOpen, isMobileViewport, setIsMobileOpen]);
 
   const handleNav = (tab: NavigationTab) => {
     setActiveTab(tab);
@@ -188,14 +268,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           badge: null,
           onClick: () => handleNav('settings'),
         },
-        {
-          id: 'guide',
-          label: 'Panduan Setup Supabase',
-          icon: BookOpen,
-          active: activeTab === 'guide',
-          badge: null,
-          onClick: () => handleNav('guide'),
-        },
       ],
     },
   ];
@@ -206,16 +278,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm sm:hidden animate-in fade-in duration-200"
+          aria-hidden="true"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
 
       {/* Sidebar Container */}
       <aside
+        ref={sidebarRef}
         id="app-sidebar"
-        role="navigation"
+        role={isMobileViewport && isMobileOpen ? 'dialog' : 'navigation'}
         aria-label={shellMessages.sidebarNavigation}
-        className={`fixed bottom-0 left-0 top-28 z-40 flex flex-col border-r border-white/10 bg-primary-900 text-white transition-all duration-300 ease-in-out lg:top-16 ${
+        aria-modal={isMobileViewport && isMobileOpen ? true : undefined}
+        aria-hidden={isMobileViewport ? !isMobileOpen : undefined}
+        inert={isMobileViewport && !isMobileOpen}
+        className={`safe-area-sidebar fixed bottom-0 left-0 top-0 z-40 flex flex-col border-r border-white/10 bg-primary-900 text-white transition-all duration-300 ease-in-out sm:top-28 lg:top-16 ${
           isMobileOpen ? 'w-72 translate-x-0' : '-translate-x-full sm:translate-x-0'
         } ${isCollapsed ? 'sm:w-18' : 'sm:w-64'}`}
       >
@@ -228,8 +305,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </div>
           <button
+            ref={closeButtonRef}
             onClick={() => setIsMobileOpen(false)}
-            className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-lg text-white/70 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             aria-label={shellMessages.closeMenu}
           >
             <X className="w-5 h-5" />
@@ -254,7 +332,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         onClick={item.onClick}
                         title={isNavigationCollapsed ? item.label : undefined}
                         aria-current={item.active ? 'page' : undefined}
-                        className={`relative flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 ${
+                        className={`relative flex min-h-12 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium transition group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 ${
                           item.active
                             ? 'bg-white/10 font-bold text-white before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-accent-500'
                             : 'text-white/75 hover:bg-white/10 hover:text-white'
@@ -300,7 +378,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="mx-auto flex min-h-11 min-w-11 items-center justify-center rounded-lg text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
+            className="mx-auto flex min-h-12 min-w-12 items-center justify-center rounded-lg text-white/70 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500"
             aria-label={isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}

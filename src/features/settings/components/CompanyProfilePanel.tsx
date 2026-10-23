@@ -27,7 +27,7 @@ function getProfileValues(organization: Organization): CompanyProfileInput {
   };
 }
 
-export function CompanyProfilePanel({ onOpenSupabaseModal }: { onOpenSupabaseModal: () => void }) {
+export function CompanyProfilePanel() {
   const { currentOrg, updateCurrentOrganization, isSupabaseLive } = useApp();
   const { toast } = useToast();
   const messages = getMessages().settings;
@@ -137,11 +137,6 @@ export function CompanyProfilePanel({ onOpenSupabaseModal }: { onOpenSupabaseMod
             </h2>
             <p className="mt-1 text-sm text-muted">{messages.companyProfileHint}</p>
           </div>
-          {!isSupabaseLive && (
-            <Button type="button" variant="outline" size="sm" onClick={onOpenSupabaseModal}>
-              {messages.configureSupabase}
-            </Button>
-          )}
         </div>
 
         {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.permissionReadOnly}</p>}
@@ -178,7 +173,7 @@ export function CompanyProfilePanel({ onOpenSupabaseModal }: { onOpenSupabaseMod
         <h2 id="company-logo-title" className="text-base font-semibold text-text">{messages.companyLogo}</h2>
         {!canEdit && <p className="mt-1 text-sm text-muted">{messages.permissionReadOnly}</p>}
         <p className="mt-1 text-sm text-muted">
-          {messages.companyLogoHint}{!isSupabaseLive ? ` ${messages.logoRequiresSupabase}` : ''}
+          {messages.companyLogoHint}{!isSupabaseLive ? ` ${messages.logoUploadUnavailable}` : ''}
         </p>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="grid h-20 w-28 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-surface-2">

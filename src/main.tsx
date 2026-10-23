@@ -3,10 +3,8 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { initializeObservability } from './lib/observability';
-import { validateSupabaseConfig } from './lib/supabase';
 
 initializeObservability();
-void validateSupabaseConfig();
 
 const queryClient = new QueryClient();
 

@@ -28,14 +28,12 @@ const ApprovalsView = lazy(() => import('./features/approvals/ApprovalsView').th
 const ReportsAnalyticsView = lazy(() => import('./features/reports/ReportsAnalyticsView').then((module) => ({ default: module.ReportsAnalyticsView })));
 const SettingsView = lazy(() => import('./features/settings/SettingsView').then((module) => ({ default: module.SettingsView })));
 const OrganizationInvitationInbox = lazy(() => import('./features/settings/OrganizationInvitationInbox').then((module) => ({ default: module.OrganizationInvitationInbox })));
-const SetupGuideView = lazy(() => import('./features/guide/SetupGuideView').then((module) => ({ default: module.SetupGuideView })));
 const OrganizationOnboardingPage = lazy(() => import('./features/organizations/OrganizationOnboardingPage').then((module) => ({ default: module.OrganizationOnboardingPage })));
 const TopNavbar = lazy(() => import('./components/layout/TopNavbar').then((module) => ({ default: module.TopNavbar })));
 const Sidebar = lazy(() => import('./components/layout/Sidebar').then((module) => ({ default: module.Sidebar })));
 const MobileBottomNav = lazy(() => import('./components/layout/MobileBottomNav').then((module) => ({ default: module.MobileBottomNav })));
 const CommandPalette = lazy(() => import('./components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
 const OfflineIndicator = lazy(() => import('./components/pwa/OfflineIndicator').then((module) => ({ default: module.OfflineIndicator })));
-const SupabaseConnectionModal = lazy(() => import('./components/modals/SupabaseConnectionModal').then((module) => ({ default: module.SupabaseConnectionModal })));
 const CreateOrgModal = lazy(() => import('./components/modals/CreateOrgModal').then((module) => ({ default: module.CreateOrgModal })));
 const OfflineSyncBridge = lazy(() => import('./components/pwa/OfflineSyncBridge').then((module) => ({ default: module.OfflineSyncBridge })));
 
@@ -105,7 +103,6 @@ function MainApp() {
   }, []);
 
   // Modals
-  const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
   const [isCreateOrgModalOpen, setIsCreateOrgModalOpen] = useState(false);
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
@@ -121,6 +118,17 @@ function MainApp() {
     setProjectToEdit(project);
     setIsCreateProjectModalOpen(true);
   };
+
+  if (import.meta.env.PROD && !isSupabaseLive) {
+    return (
+      <main className="grid min-h-screen place-items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
+        <section className="w-full max-w-md space-y-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{messages.appName}</h1>
+          <p role="alert" className="text-sm text-slate-600 dark:text-slate-300">{messages.applicationUnavailableDescription}</p>
+        </section>
+      </main>
+    );
+  }
 
   if (isSupabaseLive && authLoading) {
     return (
@@ -210,7 +218,6 @@ function MainApp() {
       {/* Top Navbar */}
       <Suspense fallback={null}>
         <TopNavbar
-          onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
           onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
           isMobileSidebarOpen={isMobileSidebarOpen}
@@ -259,7 +266,7 @@ function MainApp() {
         {/* Content View Container */}
         <main
           aria-busy={isLoading}
-          className={`mx-auto min-w-0 max-w-7xl flex-1 px-3 pt-4 pb-20 transition-all duration-300 ease-in-out sm:px-6 sm:pb-8 md:px-8 ${
+          className={`safe-area-main mx-auto min-w-0 max-w-7xl flex-1 px-3 pt-4 transition-all duration-300 ease-in-out sm:px-6 md:px-8 ${
             isSidebarCollapsed ? 'sm:ml-18' : 'sm:ml-64'
           }`}
         >
@@ -339,11 +346,7 @@ function MainApp() {
             <Suspense fallback={<ViewLoadingFallback />}><ReportsAnalyticsView /></Suspense>
           ) : activeTab === 'settings' ? (
             <Suspense fallback={<ViewLoadingFallback />}>
-              <SettingsView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
-            </Suspense>
-          ) : activeTab === 'guide' ? (
-            <Suspense fallback={<ViewLoadingFallback />}>
-              <SetupGuideView onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)} />
+              <SettingsView />
             </Suspense>
           ) : (
             <Suspense fallback={<ViewLoadingFallback />}>
@@ -373,13 +376,6 @@ function MainApp() {
       </Suspense>
 
       {/* Modals */}
-      <Suspense fallback={null}>
-        <SupabaseConnectionModal
-          isOpen={isSupabaseModalOpen}
-          onClose={() => setIsSupabaseModalOpen(false)}
-        />
-      </Suspense>
-
       <Suspense fallback={null}>
         <CreateOrgModal
           isOpen={isCreateOrgModalOpen}

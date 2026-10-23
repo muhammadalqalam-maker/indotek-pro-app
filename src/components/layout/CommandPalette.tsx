@@ -217,16 +217,6 @@ export const CommandPalette: React.FC = () => {
       },
     },
     {
-      tab: 'guide' as NavigationTab,
-      title: 'Buka Panduan Setup Supabase & Vercel',
-      category: 'Navigasi',
-      icon: BookOpen,
-      action: () => {
-        setActiveTab('guide');
-        setCommandPaletteOpen(false);
-      },
-    },
-    {
       title: isDark ? 'Ganti ke Tema Terang (Light Mode)' : 'Ganti ke Tema Gelap (Dark Mode)',
       category: 'Tampilan',
       icon: isDark ? Sun : Moon,

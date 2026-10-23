@@ -194,7 +194,7 @@ export const DashboardView: React.FC<{
 
           <DashboardInsights projects={periodProjects} metrics={metrics} />
 
-          <section className="grid gap-4 lg:grid-cols-2">
+          <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <DashboardProjectList
               title={messages.attentionTitle}
               emptyMessage={messages.noAttention}

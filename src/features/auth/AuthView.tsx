@@ -98,7 +98,6 @@ export function AuthView() {
           <p className="text-sm font-semibold uppercase tracking-widest text-primary-500">{messages.appName}</p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{title}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
-          <p className="mt-2 text-xs text-slate-400">{messages.demoNotice}</p>
         </header>
 
         {authMode === 'update_password' && !authSession ? (
