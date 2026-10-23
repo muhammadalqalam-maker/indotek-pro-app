@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { commonMessages } from '../../i18n/id';
+import { captureAppError, recordImportantEvent } from '../../lib/observability';
 import { ErrorState } from '../ui/ErrorState';
 
 type AppErrorBoundaryProps = {
@@ -22,6 +23,8 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    recordImportantEvent('app.error_boundary', 'failed');
+    captureAppError(error);
     this.props.onError?.(error, errorInfo);
   }
 

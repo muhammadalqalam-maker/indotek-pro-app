@@ -5,6 +5,7 @@ const baseURL = 'http://127.0.0.1:4177';
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: 'list',
@@ -21,6 +22,7 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: 'https://e2e-test.supabase.co',
       VITE_SUPABASE_ANON_KEY: 'e2e-test-anon-key-not-a-credential',
+      VITE_SENTRY_DSN: 'https://0123456789abcdef0123456789abcdef@o0.ingest.sentry.io/1',
     },
   },
 });

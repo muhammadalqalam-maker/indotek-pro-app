@@ -29,6 +29,7 @@ import {
   ToolboxMeeting,
 } from '../types/database';
 import type { ProjectPayablePaymentValues } from '../features/finance/schemas/payable.schema';
+import { recordImportantEvent } from '../lib/observability';
 import {
   createProjectPayable as createProjectPayableRecord,
   fetchPayableSubcontractors,
@@ -535,6 +536,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     setAuthBusy(true);
+    const eventName = authMode === 'sign_up' ? 'auth.sign_up' : 'auth.sign_in';
+    recordImportantEvent(eventName, 'started');
     try {
       const result = authMode === 'sign_up'
         ? await supabase.auth.signUp({
@@ -547,10 +550,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (authMode === 'sign_up' && !result.data.session) {
         setAuthModeState('sign_in');
         setAuthNotice(messages.signupSuccess);
+        recordImportantEvent(eventName, 'succeeded');
       } else if (authMode === 'sign_in' && !result.data.session) {
         setAuthError(messages.noSession);
+        recordImportantEvent(eventName, 'failed');
+      } else {
+        recordImportantEvent(eventName, 'succeeded');
       }
     } catch (error: unknown) {
+      recordImportantEvent(eventName, 'failed');
       setAuthError(authErrorMessage(error));
     } finally {
       setAuthBusy(false);
@@ -566,6 +574,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     setAuthBusy(true);
+    recordImportantEvent('auth.password_reset', 'started');
     try {
       const redirectTo = new URL(window.location.origin);
       redirectTo.searchParams.set('auth', 'reset');
@@ -575,7 +584,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (error) throw error;
       setAuthNotice(messages.resetNotice);
       setAuthModeState('sign_in');
+      recordImportantEvent('auth.password_reset', 'succeeded');
     } catch (error: unknown) {
+      recordImportantEvent('auth.password_reset', 'failed');
       setAuthError(authErrorMessage(error));
     } finally {
       setAuthBusy(false);
@@ -595,6 +606,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     setAuthBusy(true);
+    recordImportantEvent('auth.password_update', 'started');
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
@@ -604,7 +616,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       window.history.replaceState(window.history.state, '', url);
       setAuthModeState('sign_in');
       setAuthNotice(messages.passwordUpdated);
+      recordImportantEvent('auth.password_update', 'succeeded');
     } catch (error: unknown) {
+      recordImportantEvent('auth.password_update', 'failed');
       setAuthError(authErrorMessage(error));
     } finally {
       setAuthBusy(false);
@@ -618,11 +632,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
     setAuthError('');
+    recordImportantEvent('auth.sign_out', 'started');
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       sessionStorage.removeItem(AUTH_RECOVERY_STORAGE_KEY);
+      recordImportantEvent('auth.sign_out', 'succeeded');
     } catch (error: unknown) {
+      recordImportantEvent('auth.sign_out', 'failed');
       setAuthError(authErrorMessage(error));
     }
   };
