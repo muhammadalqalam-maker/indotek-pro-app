@@ -9,8 +9,12 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
   return <div className={cn('flex flex-col gap-1.5 p-4 sm:p-5', className)} {...props} />;
 }
 
-export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return <h3 className={cn('text-base font-semibold leading-snug text-text', className)} {...props} />;
+type CardTitleProps = HTMLAttributes<HTMLHeadingElement> & {
+  as?: 'h2' | 'h3' | 'h4';
+};
+
+export function CardTitle({ as: Heading = 'h3', className, ...props }: CardTitleProps) {
+  return <Heading className={cn('text-base font-semibold leading-snug text-text', className)} {...props} />;
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {

@@ -11,9 +11,9 @@ type AuthFormValues = {
   confirmPassword: string;
 };
 
-const fieldClassName = 'mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-3 text-base text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:text-white';
-const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60';
-const linkButtonClassName = 'min-h-11 w-full text-sm text-blue-700 hover:underline dark:text-blue-400';
+const fieldClassName = 'mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-3 text-base text-slate-900 outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-white dark:focus-visible:ring-offset-slate-900';
+const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900';
+const linkButtonClassName = 'min-h-11 w-full rounded-md text-sm text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-blue-400 dark:focus-visible:ring-offset-slate-900';
 
 export function AuthView() {
   const {
@@ -28,7 +28,7 @@ export function AuthView() {
     requestPasswordReset,
     updatePassword,
   } = useApp();
-  const { register, handleSubmit, setError, clearErrors, reset, formState: { errors } } = useForm<AuthFormValues>({
+  const { register, handleSubmit, setError, setFocus, clearErrors, reset, formState: { errors } } = useForm<AuthFormValues>({
     defaultValues: { email: '', password: '', confirmPassword: '' },
   });
 
@@ -38,12 +38,15 @@ export function AuthView() {
   }, [authMode, clearErrors, reset]);
 
   const applyValidationErrors = (issues: z.ZodIssue[]) => {
+    let firstInvalidField: keyof AuthFormValues | null = null;
     for (const issue of issues) {
       const field = issue.path[0];
       if (field === 'email' || field === 'password' || field === 'confirmPassword') {
         setError(field, { type: 'validate', message: issue.message });
+        firstInvalidField ??= field;
       }
     }
+    if (firstInvalidField) setFocus(firstInvalidField);
   };
 
   const onSubmit = async (values: AuthFormValues) => {
@@ -61,6 +64,7 @@ export function AuthView() {
       const parsed = emailSchema.safeParse(values.email);
       if (!parsed.success) {
         setError('email', { type: 'validate', message: parsed.error.issues[0]?.message ?? messages.emailInvalid });
+        setFocus('email');
         return;
       }
       await requestPasswordReset(parsed.data);
@@ -91,7 +95,7 @@ export function AuthView() {
     <main className="min-h-screen grid place-items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
       <section className="w-full max-w-md space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         <header>
-          <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">{messages.appName}</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary-500">{messages.appName}</p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{title}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
           <p className="mt-2 text-xs text-slate-400">{messages.demoNotice}</p>
@@ -122,6 +126,7 @@ export function AuthView() {
                   inputMode="email"
                   aria-invalid={Boolean(errors.email)}
                   aria-describedby={errors.email ? 'auth-email-error' : undefined}
+                  aria-required="true"
                   disabled={authBusy}
                 />
                 {errors.email && <span id="auth-email-error" className="mt-1 block text-xs text-red-600">{errors.email.message}</span>}
@@ -139,6 +144,7 @@ export function AuthView() {
                   autoComplete={authMode === 'sign_in' ? 'current-password' : 'new-password'}
                   aria-invalid={Boolean(errors.password)}
                   aria-describedby={errors.password ? 'auth-password-error' : undefined}
+                  aria-required="true"
                   disabled={authBusy}
                 />
                 {errors.password && <span id="auth-password-error" className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}
@@ -157,6 +163,7 @@ export function AuthView() {
                     autoComplete="new-password"
                     aria-invalid={Boolean(errors.password)}
                     aria-describedby={errors.password ? 'auth-password-error' : undefined}
+                    aria-required="true"
                     disabled={authBusy}
                   />
                   {errors.password && <span id="auth-password-error" className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}
@@ -171,6 +178,7 @@ export function AuthView() {
                     autoComplete="new-password"
                     aria-invalid={Boolean(errors.confirmPassword)}
                     aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
+                    aria-required="true"
                     disabled={authBusy}
                   />
                   {errors.confirmPassword && <span id="auth-confirm-password-error" className="mt-1 block text-xs text-red-600">{errors.confirmPassword.message}</span>}

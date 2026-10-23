@@ -24,7 +24,7 @@ export function DashboardProjectList({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle as="h2">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         {projects.length === 0 ? (

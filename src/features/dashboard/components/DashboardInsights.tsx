@@ -68,7 +68,7 @@ export function DashboardInsights({
       <section className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
         <Card>
           <CardHeader>
-            <CardTitle>{messages.progressChart}</CardTitle>
+            <CardTitle as="h2">{messages.progressChart}</CardTitle>
             <p className="text-sm text-muted">{messages.progressChartDescription}</p>
           </CardHeader>
           <CardContent>
@@ -98,7 +98,7 @@ export function DashboardInsights({
 
         <Card>
           <CardHeader>
-            <CardTitle>{messages.projectStatus}</CardTitle>
+            <CardTitle as="h2">{messages.projectStatus}</CardTitle>
             <p className="text-sm text-muted">{messages.projectCount}: {metrics.projectCount}</p>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export function DashboardInsights({
 
       <Card>
         <CardHeader>
-          <CardTitle>{messages.budgetChart}</CardTitle>
+          <CardTitle as="h2">{messages.budgetChart}</CardTitle>
           <p className="text-sm text-muted">{messages.budgetChartDescription}</p>
         </CardHeader>
         <CardContent>

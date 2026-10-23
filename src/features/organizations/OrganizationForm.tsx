@@ -12,9 +12,9 @@ type OrganizationFormProps = {
   onCancel?: () => void;
 };
 
-const inputClassName = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2.5 text-base text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 dark:border-slate-700 dark:text-white';
-const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto';
-const secondaryButtonClassName = 'min-h-11 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
+const inputClassName = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2.5 text-base text-slate-900 outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-white dark:focus-visible:ring-offset-slate-900';
+const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900 sm:w-auto';
+const secondaryButtonClassName = 'min-h-11 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900';
 
 function errorMessage(error: unknown): string {
   if (!(error instanceof Error)) return messages.createFailure;
@@ -111,7 +111,7 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
   return (
     <section className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
       <header className="mb-6">
-        <p className="text-sm font-semibold uppercase tracking-widest text-blue-600">Indotek Pro</p>
+        <p className="text-sm font-semibold uppercase tracking-widest text-primary-500">Indotek Pro</p>
         <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
           {required ? messages.onboardingTitle : messages.createTitle}
         </h1>
