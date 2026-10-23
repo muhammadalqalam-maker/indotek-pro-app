@@ -88,8 +88,8 @@ export function DashboardInsights({
                     }}
                   />
                   <Legend />
-                  <Bar dataKey="planned" name={messages.plannedSeries} fill="var(--neutral)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="actual" name={messages.actualSeries} fill="var(--primary-500)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="planned" name={messages.plannedSeries} fill="var(--neutral)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <Bar dataKey="actual" name={messages.actualSeries} fill="var(--primary-500)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -150,8 +150,8 @@ export function DashboardInsights({
                   }}
                 />
                 <Legend />
-                <Bar dataKey="contractValue" name={messages.contractSeries} fill="var(--primary-500)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="realizedCost" name={messages.costSeries} fill="var(--accent-500)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="contractValue" name={messages.contractSeries} fill="var(--primary-500)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="realizedCost" name={messages.costSeries} fill="var(--accent-500)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>
