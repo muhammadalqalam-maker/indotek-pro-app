@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { formatDateIndo, formatPersen, formatPercent, formatRupiah, formatTanggal, formatVolume, parseRupiah } from './format.ts';
 import { getMessages } from '../i18n/index.ts';
+import { commonMessages, notificationMessages, shellMessages } from '../i18n/id.ts';
 
 describe('formatRupiah', () => {
   it('formats positive, negative, and fractional amounts using Indonesian separators', () => {
@@ -98,5 +99,23 @@ describe('locale dictionaries', () => {
     assert.equal(getMessages('en').shell.allProjects(3), 'All Projects (3)');
     assert.match(getMessages('en').dashboard.scopeNotice, /Tasks and approvals/);
     assert.equal(getMessages().common.save, 'Simpan');
+  });
+
+  it('keeps startup messages aligned with the Indonesian catalog', () => {
+    assert.deepEqual(commonMessages, getMessages('id').common);
+    assert.equal(shellMessages.home, getMessages('id').shell.home);
+    assert.equal(shellMessages.projects, getMessages('id').shell.projects);
+    assert.equal(shellMessages.approvals, getMessages('id').shell.approvals);
+    assert.equal(shellMessages.menu, getMessages('id').shell.menu);
+    assert.equal(shellMessages.openMenu, getMessages('id').shell.openMenu);
+    assert.equal(shellMessages.closeMenu, getMessages('id').shell.closeMenu);
+    assert.equal(shellMessages.sidebarNavigation, getMessages('id').shell.sidebarNavigation);
+    assert.equal(shellMessages.quickActions, getMessages('id').shell.quickActions);
+    assert.equal(shellMessages.primaryNavigation, getMessages('id').shell.primaryNavigation);
+    assert.equal(shellMessages.projectContext, getMessages('id').shell.projectContext);
+    assert.equal(shellMessages.allProjects(3), getMessages('id').shell.allProjects(3));
+    assert.equal(notificationMessages.loadError, getMessages('id').notifications.loadError);
+    assert.equal(notificationMessages.realtimeError, getMessages('id').notifications.realtimeError);
+    assert.equal(notificationMessages.organizationRequired, getMessages('id').notifications.organizationRequired);
   });
 });

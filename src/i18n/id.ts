@@ -1,5 +1,3 @@
-import { messagesByLocale } from './locales';
-
 export const authMessages = {
   appName: 'Indotek Pro',
   signInTitle: 'Masuk ke akun',
@@ -148,6 +146,32 @@ export const memberMessages = {
   memberRoleAria: 'Ubah role anggota',
 } as const;
 
+export const commonMessages = {
+  retry: 'Coba lagi',
+  cancel: 'Batal',
+  save: 'Simpan',
+  close: 'Tutup',
+  unexpectedErrorTitle: 'Terjadi kendala',
+  unexpectedErrorDescription: 'Aplikasi mengalami kendala tak terduga. Muat ulang aplikasi dan coba lagi.',
+  reloadApp: 'Muat ulang aplikasi',
+} as const;
+
 export const shellMessages = {
-  ...messagesByLocale.id.shell,
+  home: 'Beranda',
+  projects: 'Proyek',
+  approvals: 'Tugas',
+  menu: 'Menu',
+  openMenu: 'Buka menu navigasi',
+  closeMenu: 'Tutup navigasi',
+  sidebarNavigation: 'Navigasi aplikasi',
+  quickActions: 'Aksi cepat',
+  primaryNavigation: 'Navigasi utama',
+  projectContext: 'Konteks proyek',
+  allProjects: (count: number) => `Semua Proyek (${count})`,
+} as const;
+
+export const notificationMessages = {
+  loadError: 'Notifikasi gagal dimuat.',
+  realtimeError: 'Koneksi realtime notifikasi terputus.',
+  organizationRequired: 'Pilih organisasi aktif untuk memuat notifikasi.',
 } as const;

@@ -1,13 +1,6 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
-import { TopNavbar } from './components/layout/TopNavbar';
-import { Sidebar } from './components/layout/Sidebar';
-import { MobileBottomNav } from './components/layout/MobileBottomNav';
-import { CommandPalette } from './components/layout/CommandPalette';
-import { OfflineIndicator } from './components/pwa/OfflineIndicator';
-import { SupabaseConnectionModal } from './components/modals/SupabaseConnectionModal';
-import { CreateOrgModal } from './components/modals/CreateOrgModal';
-import { OrganizationInvitationInbox } from './features/settings/OrganizationInvitationInbox';
+import { AuthView } from './features/auth/AuthView';
 import { authMessages as messages, organizationMessages } from './i18n/id';
 import { Project } from './types/database';
 import { NAVIGATION_MODULES } from './utils/permissions';
@@ -16,7 +9,6 @@ import { ShieldAlert } from 'lucide-react';
 import { ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
-import { useOfflineSync } from './hooks/useOfflineSync';
 
 const CreateProjectModal = lazy(() => import('./features/projects/CreateProjectModal').then((module) => ({ default: module.CreateProjectModal })));
 const DashboardView = lazy(() => import('./features/dashboard/DashboardView').then((module) => ({ default: module.DashboardView })));
@@ -35,9 +27,17 @@ const DocumentsView = lazy(() => import('./features/documents/DocumentsView').th
 const ApprovalsView = lazy(() => import('./features/approvals/ApprovalsView').then((module) => ({ default: module.ApprovalsView })));
 const ReportsAnalyticsView = lazy(() => import('./features/reports/ReportsAnalyticsView').then((module) => ({ default: module.ReportsAnalyticsView })));
 const SettingsView = lazy(() => import('./features/settings/SettingsView').then((module) => ({ default: module.SettingsView })));
+const OrganizationInvitationInbox = lazy(() => import('./features/settings/OrganizationInvitationInbox').then((module) => ({ default: module.OrganizationInvitationInbox })));
 const SetupGuideView = lazy(() => import('./features/guide/SetupGuideView').then((module) => ({ default: module.SetupGuideView })));
-const AuthView = lazy(() => import('./features/auth/AuthView').then((module) => ({ default: module.AuthView })));
 const OrganizationOnboardingPage = lazy(() => import('./features/organizations/OrganizationOnboardingPage').then((module) => ({ default: module.OrganizationOnboardingPage })));
+const TopNavbar = lazy(() => import('./components/layout/TopNavbar').then((module) => ({ default: module.TopNavbar })));
+const Sidebar = lazy(() => import('./components/layout/Sidebar').then((module) => ({ default: module.Sidebar })));
+const MobileBottomNav = lazy(() => import('./components/layout/MobileBottomNav').then((module) => ({ default: module.MobileBottomNav })));
+const CommandPalette = lazy(() => import('./components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
+const OfflineIndicator = lazy(() => import('./components/pwa/OfflineIndicator').then((module) => ({ default: module.OfflineIndicator })));
+const SupabaseConnectionModal = lazy(() => import('./components/modals/SupabaseConnectionModal').then((module) => ({ default: module.SupabaseConnectionModal })));
+const CreateOrgModal = lazy(() => import('./components/modals/CreateOrgModal').then((module) => ({ default: module.CreateOrgModal })));
+const OfflineSyncBridge = lazy(() => import('./components/pwa/OfflineSyncBridge').then((module) => ({ default: module.OfflineSyncBridge })));
 
 function ViewLoadingFallback() {
   return (
@@ -55,8 +55,6 @@ function ViewLoadingFallback() {
 }
 
 function MainApp() {
-  useOfflineSync();
-
   const {
     activeTab,
     activeProjectDetailId,
@@ -192,10 +190,12 @@ function MainApp() {
     )) {
       return (
         <main className="grid min-h-screen place-items-center bg-slate-50 px-4 py-8 dark:bg-slate-950">
-          <OrganizationInvitationInbox
-            standalone
-            onContinueWithoutInvitations={() => setContinueToOrganizationSetup(true)}
-          />
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <OrganizationInvitationInbox
+              standalone
+              onContinueWithoutInvitations={() => setContinueToOrganizationSetup(true)}
+            />
+          </Suspense>
         </main>
       );
     }
@@ -204,13 +204,18 @@ function MainApp() {
 
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-150">
+      <Suspense fallback={null}>
+        <OfflineSyncBridge />
+      </Suspense>
       {/* Top Navbar */}
-      <TopNavbar
-        onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
-        onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
-        onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
-        isMobileSidebarOpen={isMobileSidebarOpen}
-      />
+      <Suspense fallback={null}>
+        <TopNavbar
+          onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
+          onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+          isMobileSidebarOpen={isMobileSidebarOpen}
+        />
+      </Suspense>
       {(authError || authNotice) && (
         <div className="mx-3 mt-3 flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm sm:mx-6 lg:mx-8 dark:border-slate-800 dark:bg-slate-900">
           {authError ? (
@@ -223,7 +228,9 @@ function MainApp() {
           </button>
         </div>
       )}
-      <OrganizationInvitationInbox />
+      <Suspense fallback={null}>
+        <OrganizationInvitationInbox />
+      </Suspense>
       {organizationDataError && (
         <div className="mx-3 mt-3 flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-white px-4 py-3 text-sm shadow-sm sm:mx-6 lg:mx-8 dark:border-red-900 dark:bg-slate-900">
           <p role="alert" className="text-red-700 dark:text-red-300">{organizationDataError}</p>
@@ -240,12 +247,14 @@ function MainApp() {
       {/* Main Layout Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar Navigation */}
-        <Sidebar
-          isCollapsed={isSidebarCollapsed}
-          setIsCollapsed={setIsSidebarCollapsed}
-          isMobileOpen={isMobileSidebarOpen}
-          setIsMobileOpen={setIsMobileSidebarOpen}
-        />
+        <Suspense fallback={null}>
+          <Sidebar
+            isCollapsed={isSidebarCollapsed}
+            setIsCollapsed={setIsSidebarCollapsed}
+            isMobileOpen={isMobileSidebarOpen}
+            setIsMobileOpen={setIsMobileSidebarOpen}
+          />
+        </Suspense>
 
         {/* Content View Container */}
         <main
@@ -345,28 +354,38 @@ function MainApp() {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav
-        onOpenCreateProject={handleOpenCreateProject}
-        onToggleMobileDrawer={() => setIsMobileSidebarOpen(true)}
-        isMenuOpen={isMobileSidebarOpen}
-      />
+      <Suspense fallback={null}>
+        <MobileBottomNav
+          onOpenCreateProject={handleOpenCreateProject}
+          onToggleMobileDrawer={() => setIsMobileSidebarOpen(true)}
+          isMenuOpen={isMobileSidebarOpen}
+        />
+      </Suspense>
 
       {/* Offline Status Pill */}
-      <OfflineIndicator />
+      <Suspense fallback={null}>
+        <OfflineIndicator />
+      </Suspense>
 
       {/* Global Command Palette */}
-      <CommandPalette />
+      <Suspense fallback={null}>
+        <CommandPalette />
+      </Suspense>
 
       {/* Modals */}
-      <SupabaseConnectionModal
-        isOpen={isSupabaseModalOpen}
-        onClose={() => setIsSupabaseModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <SupabaseConnectionModal
+          isOpen={isSupabaseModalOpen}
+          onClose={() => setIsSupabaseModalOpen(false)}
+        />
+      </Suspense>
 
-      <CreateOrgModal
-        isOpen={isCreateOrgModalOpen}
-        onClose={() => setIsCreateOrgModalOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <CreateOrgModal
+          isOpen={isCreateOrgModalOpen}
+          onClose={() => setIsCreateOrgModalOpen(false)}
+        />
+      </Suspense>
 
       {isCreateProjectModalOpen && (
         <Suspense fallback={null}>

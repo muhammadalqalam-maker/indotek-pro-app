@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { getMessages } from '../../i18n';
+import { commonMessages } from '../../i18n/id';
 import { ErrorState } from '../ui/ErrorState';
 
 type AppErrorBoundaryProps = {
@@ -12,7 +12,7 @@ type AppErrorBoundaryState = {
   resetKey: number;
 };
 
-const messages = getMessages('id').common;
+const messages = commonMessages;
 
 export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
   state: AppErrorBoundaryState = { error: null, resetKey: 0 };

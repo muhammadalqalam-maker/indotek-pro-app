@@ -1,13 +1,7 @@
+import { commonMessages, notificationMessages, shellMessages } from './id';
+
 const indonesianMessages = {
-  common: {
-    retry: 'Coba lagi',
-    cancel: 'Batal',
-    save: 'Simpan',
-    close: 'Tutup',
-    unexpectedErrorTitle: 'Terjadi kendala',
-    unexpectedErrorDescription: 'Aplikasi mengalami kendala tak terduga. Muat ulang aplikasi dan coba lagi.',
-    reloadApp: 'Muat ulang aplikasi',
-  },
+  common: commonMessages,
   finance: {
     cashbookTitle: 'Transaksi buku kas',
     cashbookDescription: 'Catat arus kas proyek. Transaksi baru menunggu verifikasi sebelum masuk ke saldo.',
@@ -183,19 +177,7 @@ const indonesianMessages = {
       payableDueDate: 'Jatuh tempo tidak boleh sebelum tanggal invoice.',
     },
   },
-  shell: {
-    home: 'Beranda',
-    projects: 'Proyek',
-    approvals: 'Tugas',
-    menu: 'Menu',
-    openMenu: 'Buka menu navigasi',
-    closeMenu: 'Tutup navigasi',
-    sidebarNavigation: 'Navigasi aplikasi',
-    quickActions: 'Aksi cepat',
-    primaryNavigation: 'Navigasi utama',
-    projectContext: 'Konteks proyek',
-    allProjects: (count: number) => `Semua Proyek (${count})`,
-  },
+  shell: shellMessages,
   vendorManagement: {
     title: 'Master vendor & evaluasi',
     description: 'Kelola rekanan organisasi dan catat kinerja pada setiap transaksi.',
@@ -1356,15 +1338,15 @@ const indonesianMessages = {
     noNotifications: 'Belum ada notifikasi.',
     noUnread: 'Semua notifikasi sudah dibaca.',
     loading: 'Memuat notifikasi',
-    loadError: 'Notifikasi gagal dimuat.',
+    loadError: notificationMessages.loadError,
     actionFailed: 'Perubahan notifikasi gagal disimpan.',
     retry: 'Coba lagi',
     realtimeConnected: 'Realtime tersambung',
     realtimeConnecting: 'Menghubungkan realtime…',
     realtimeUnavailable: 'Realtime tidak tersambung',
     realtimeDisabled: 'Mode demo',
-    realtimeError: 'Koneksi realtime notifikasi terputus.',
-    organizationRequired: 'Pilih organisasi aktif untuk memuat notifikasi.',
+    realtimeError: notificationMessages.realtimeError,
+    organizationRequired: notificationMessages.organizationRequired,
   },
   projects: {
     title: 'Manajemen Proyek',

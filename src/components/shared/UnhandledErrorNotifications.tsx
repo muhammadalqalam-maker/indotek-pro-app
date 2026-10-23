@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { getMessages } from '../../i18n';
+import { commonMessages } from '../../i18n/id';
 import { useToast } from '../ui/Toast';
 
-const messages = getMessages('id').common;
+const messages = commonMessages;
 const notificationCooldownMs = 3000;
 
 export function UnhandledErrorNotifications() {

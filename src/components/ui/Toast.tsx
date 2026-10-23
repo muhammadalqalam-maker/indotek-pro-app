@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AlertCircle, CheckCircle2, Info, X } from 'lucide-react';
-import { getMessages } from '../../i18n';
+import { commonMessages } from '../../i18n/id';
 import { cn } from './utils';
 
 export type ToastVariant = 'success' | 'error' | 'info';
@@ -10,7 +10,7 @@ type ToastItem = ToastInput & { id: number };
 type ToastContextValue = { toast: (input: ToastInput) => void };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
-const messages = getMessages('id').common;
+const messages = commonMessages;
 const variantClasses: Record<ToastVariant, string> = {
   success: 'border-success/30 bg-success-bg text-success',
   error: 'border-danger/30 bg-danger-bg text-danger',

@@ -54,12 +54,8 @@ import {
   addProjectAddendum,
   resetDemoData,
   fetchAHSPResources,
-  fetchAHSPTemplates,
-  fetchProjectBOQ,
-  fetchBOQItems,
   addBOQItem,
   updateBOQItemProgress,
-  fetchDailyReports,
   createDailyReport,
   fetchVendors,
   createVendor,
@@ -71,9 +67,6 @@ import {
   fetchPurchaseRequests,
   fetchGoodsReceipts,
   createGoodsReceipt,
-  fetchSubcontractors,
-  fetchSubconContracts,
-  fetchSubconOpnames,
   createSubconOpname,
   fetchClientInvoices,
   createClientInvoice,
@@ -86,17 +79,12 @@ import {
   decideCashAdvance,
   payCashAdvance,
   settleCashAdvance,
-  fetchFieldWorkers,
-  fetchSafetyIncidents,
-  fetchToolboxMeetings,
-} from '../services/dataService';
-import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
-import type { CreateGoodsReceiptInput } from '../features/procurement/types';
-import {
   fetchNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
-} from '../services/dataService';
+} from '../services/lazyDataService';
+import type { VendorInput } from '../features/procurement/schemas/vendor.schema';
+import type { CreateGoodsReceiptInput } from '../features/procurement/types';
 import {
   applyNotificationRealtimeEvent,
   subscribeToNotifications,
@@ -108,7 +96,7 @@ import {
   sendMemberInvitation,
   setOrganizationMemberStatus,
   updateOrganizationMemberRole,
-} from '../features/settings/services/member.service';
+} from '../features/settings/services/lazyMemberService';
 import {
   type MemberInvitationInput,
   type PendingOrganizationInvitation,
@@ -121,8 +109,12 @@ import {
 import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { clearHrCacheForUser } from '../features/hr/services/hrOfflineStorage';
 import type { Session } from '@supabase/supabase-js';
-import { authMessages as messages, memberMessages, organizationMessages } from '../i18n/id';
-import { getMessages } from '../i18n';
+import {
+  authMessages as messages,
+  memberMessages,
+  notificationMessages,
+  organizationMessages,
+} from '../i18n/id';
 
 export type NavigationTab =
   | 'dashboard'
@@ -292,7 +284,7 @@ interface AppContextType {
 
   // System
   reloadAllData: () => Promise<void>;
-  handleResetDemo: () => void;
+  handleResetDemo: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -826,85 +818,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLoading(true);
     setOrganizationDataError('');
     try {
+      const isSettingsTab = activeTab === 'settings';
+      const isRabTab = activeTab === 'rab';
+      const isProcurementTab = activeTab === 'procurement';
+      const isFinanceTab = activeTab === 'finance';
       const [
         projData,
         logData,
         resData,
-        ahspData,
         vnds,
         pos,
         prs,
         grns,
-        subcons,
-        scContracts,
-        scOpnames,
         invs,
         pbls,
         payableSubs,
         ctxs,
         ksb,
-        wrks,
-        incs,
-        tbm,
       ] = await Promise.all([
         fetchProjects(currentOrg.id),
-        fetchAuditLogs(currentOrg.id),
-        fetchAHSPResources(currentOrg.id),
-        fetchAHSPTemplates(currentOrg.id),
-        fetchVendors(currentOrg.id),
-        fetchPurchaseOrders(currentOrg.id, selectedProjectId),
-        fetchPurchaseRequests(currentOrg.id, selectedProjectId),
-        fetchGoodsReceipts(currentOrg.id, selectedProjectId),
-        fetchSubcontractors(currentOrg.id),
-        fetchSubconContracts(currentOrg.id, selectedProjectId),
-        fetchSubconOpnames(currentOrg.id, selectedProjectId),
-        fetchClientInvoices(currentOrg.id, selectedProjectId),
-        fetchProjectPayables(currentOrg.id, selectedProjectId),
-        fetchPayableSubcontractors(currentOrg.id),
-        fetchCashTransactions(currentOrg.id, selectedProjectId),
-        fetchKasbonList(currentOrg.id, selectedProjectId),
-        fetchFieldWorkers(currentOrg.id, selectedProjectId),
-        fetchSafetyIncidents(currentOrg.id, selectedProjectId),
-        fetchToolboxMeetings(currentOrg.id, selectedProjectId),
+        isSettingsTab ? fetchAuditLogs(currentOrg.id) : Promise.resolve([]),
+        isRabTab ? fetchAHSPResources(currentOrg.id) : Promise.resolve([]),
+        isProcurementTab || isFinanceTab ? fetchVendors(currentOrg.id) : Promise.resolve([]),
+        isProcurementTab ? fetchPurchaseOrders(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isProcurementTab ? fetchPurchaseRequests(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isProcurementTab ? fetchGoodsReceipts(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isFinanceTab ? fetchClientInvoices(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isFinanceTab ? fetchProjectPayables(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isFinanceTab ? fetchPayableSubcontractors(currentOrg.id) : Promise.resolve([]),
+        isFinanceTab ? fetchCashTransactions(currentOrg.id, selectedProjectId) : Promise.resolve([]),
+        isFinanceTab ? fetchKasbonList(currentOrg.id, selectedProjectId) : Promise.resolve([]),
       ]);
 
-      let boqData: Awaited<ReturnType<typeof fetchProjectBOQ>> = null;
-      let boqItemData: Awaited<ReturnType<typeof fetchBOQItems>> = [];
-      let reportData: Awaited<ReturnType<typeof fetchDailyReports>> = [];
-      const targetProjId = selectedProjectId !== 'all'
-        ? selectedProjectId
-        : projData[0]?.id;
-      if (targetProjId) {
-        [boqData, reportData] = await Promise.all([
-          fetchProjectBOQ(targetProjId),
-          fetchDailyReports(targetProjId),
-        ]);
-        if (boqData) boqItemData = await fetchBOQItems(boqData.id);
-      }
       if (requestId !== dataLoadRequestId.current) return;
 
       setProjects(projData);
       setAuditLogs(logData);
       setResources(resData);
-      setAhspTemplates(ahspData);
       setVendors(vnds);
       setPurchaseOrders(pos);
       setPurchaseRequests(prs);
       setGoodsReceipts(grns);
-      setSubcontractors(subcons);
-      setSubconContracts(scContracts);
-      setSubconOpnames(scOpnames);
       setClientInvoices(invs);
       setProjectPayables(pbls);
       setPayableSubcontractors(payableSubs);
       setCashTransactions(ctxs);
       setKasbonList(ksb);
-      setFieldWorkers(wrks);
-      setSafetyIncidents(incs);
-      setToolboxMeetings(tbm);
-      setActiveBoq(boqData);
-      setBoqItems(boqItemData);
-      setDailyReports(reportData);
     } catch (error: unknown) {
       if (requestId !== dataLoadRequestId.current) return;
       clearOrganizationData();
@@ -920,7 +879,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (currentOrg) {
       reloadAllData();
     }
-  }, [currentOrg?.id, selectedProjectId]);
+  }, [currentOrg?.id, selectedProjectId, activeTab]);
 
   const reloadNotifications = useCallback(async () => {
     const organizationId = currentOrg?.id;
@@ -958,7 +917,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     } catch (error: unknown) {
       if (requestId === notificationRequestId.current) {
-        setNotificationsError(error instanceof Error ? error.message : getMessages().notifications.loadError);
+        setNotificationsError(error instanceof Error ? error.message : notificationMessages.loadError);
       }
     } finally {
       if (requestId === notificationRequestId.current) setNotificationsLoading(false);
@@ -1014,7 +973,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else if (status === 'error' || status === 'closed') {
             if (hasConnected) disconnectedAfterConnection = true;
             if (status === 'error') {
-              setNotificationsRealtimeError(error || getMessages().notifications.realtimeError);
+              setNotificationsRealtimeError(error || notificationMessages.realtimeError);
             }
           }
         },
@@ -1022,7 +981,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error: unknown) {
       setNotificationsRealtimeStatus('error');
       setNotificationsRealtimeError(
-        error instanceof Error ? error.message : getMessages().notifications.realtimeError,
+        error instanceof Error ? error.message : notificationMessages.realtimeError,
       );
     }
     return () => unsubscribe?.();
@@ -1302,7 +1261,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleMarkRead = async (id: string) => {
-    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    if (!currentOrg) throw new Error(notificationMessages.organizationRequired);
     await markNotificationAsRead(id, currentOrg.id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
@@ -1310,13 +1269,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const handleMarkAllRead = async () => {
-    if (!currentOrg) throw new Error(getMessages().notifications.organizationRequired);
+    if (!currentOrg) throw new Error(notificationMessages.organizationRequired);
     await markAllNotificationsAsRead(currentOrg.id);
     setNotifications((previous) => previous.map((notification) => ({ ...notification, is_read: true })));
   };
 
-  const handleResetDemo = () => {
-    resetDemoData();
+  const handleResetDemo = async () => {
+    await resetDemoData();
     window.location.reload();
   };
 
