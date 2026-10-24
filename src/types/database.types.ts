@@ -3059,150 +3059,6 @@ export type Database = {
           },
         ]
       }
-      project_documents: {
-        Row: {
-          access_roles: Database["public"]["Enums"]["user_role_type"][]
-          category: string
-          created_at: string
-          created_by: string
-          deleted_at: string | null
-          document_number: string
-          expires_on: string | null
-          id: string
-          organization_id: string
-          project_id: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          access_roles?: Database["public"]["Enums"]["user_role_type"][]
-          category: string
-          created_at?: string
-          created_by?: string
-          deleted_at?: string | null
-          document_number: string
-          expires_on?: string | null
-          id?: string
-          organization_id: string
-          project_id: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          access_roles?: Database["public"]["Enums"]["user_role_type"][]
-          category?: string
-          created_at?: string
-          created_by?: string
-          deleted_at?: string | null
-          document_number?: string
-          expires_on?: string | null
-          id?: string
-          organization_id?: string
-          project_id?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_documents_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_documents_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_documents_organization_id_project_id_fkey"
-            columns: ["organization_id", "project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["organization_id", "id"]
-          },
-        ]
-      }
-      project_document_versions: {
-        Row: {
-          content_type: string
-          created_at: string
-          created_by: string
-          deleted_at: string | null
-          document_id: string
-          file_name: string
-          file_path: string
-          file_size_bytes: number
-          id: string
-          organization_id: string
-          project_id: string
-          updated_at: string
-          version_number: number
-        }
-        Insert: {
-          content_type: string
-          created_at?: string
-          created_by?: string
-          deleted_at?: string | null
-          document_id: string
-          file_name: string
-          file_path: string
-          file_size_bytes: number
-          id?: string
-          organization_id: string
-          project_id: string
-          updated_at?: string
-          version_number?: number
-        }
-        Update: {
-          content_type?: string
-          created_at?: string
-          created_by?: string
-          deleted_at?: string | null
-          document_id?: string
-          file_name?: string
-          file_path?: string
-          file_size_bytes?: number
-          id?: string
-          organization_id?: string
-          project_id?: string
-          updated_at?: string
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_document_versions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_document_versions_organization_id_document_id_fkey"
-            columns: ["organization_id", "document_id"]
-            isOneToOne: false
-            referencedRelation: "project_documents"
-            referencedColumns: ["organization_id", "id"]
-          },
-          {
-            foreignKeyName: "project_document_versions_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_document_versions_organization_id_project_id_fkey"
-            columns: ["organization_id", "project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["organization_id", "id"]
-          },
-        ]
-      }
       project_addendums: {
         Row: {
           addendum_number: string
@@ -3657,6 +3513,150 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_document_versions: {
+        Row: {
+          content_type: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          document_id: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id: string
+          organization_id: string
+          project_id: string
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_id: string
+          file_name: string
+          file_path: string
+          file_size_bytes: number
+          id?: string
+          organization_id: string
+          project_id: string
+          updated_at?: string
+          version_number?: number
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_id?: string
+          file_name?: string
+          file_path?: string
+          file_size_bytes?: number
+          id?: string
+          organization_id?: string
+          project_id?: string
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_document_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_document_id_fkey"
+            columns: ["organization_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "project_documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_document_versions_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
+          },
+        ]
+      }
+      project_documents: {
+        Row: {
+          access_roles: Database["public"]["Enums"]["user_role_type"][]
+          category: string
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          document_number: string
+          expires_on: string | null
+          id: string
+          organization_id: string
+          project_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          access_roles?: Database["public"]["Enums"]["user_role_type"][]
+          category: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_number: string
+          expires_on?: string | null
+          id?: string
+          organization_id: string
+          project_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          access_roles?: Database["public"]["Enums"]["user_role_type"][]
+          category?: string
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          document_number?: string
+          expires_on?: string | null
+          id?: string
+          organization_id?: string
+          project_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_documents_organization_id_project_id_fkey"
+            columns: ["organization_id", "project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["organization_id", "id"]
           },
         ]
       }
@@ -5846,30 +5846,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_project_document_with_version: {
-        Args: {
-          p_access_roles: Database["public"]["Enums"]["user_role_type"][]
-          p_category: string
-          p_content_type: string
-          p_document_id: string
-          p_expires_on: string | null
-          p_file_name: string
-          p_file_path: string
-          p_file_size_bytes: number
-          p_organization_id: string
-          p_project_id: string
-          p_title: string
-          p_version_id: string
-          p_document_number: string
-        }
-        Returns: string
-      }
-
-      can_delete_unlinked_project_document_upload: {
-        Args: { target_file_path: string; target_owner_id: string }
-        Returns: boolean
-      }
-
       accept_organization_invitation: {
         Args: { p_email: string; p_invitation_id: string; p_user_id: string }
         Returns: {
@@ -5908,6 +5884,10 @@ export type Database = {
           p_task_id: string
         }
         Returns: undefined
+      }
+      can_delete_unlinked_project_document_upload: {
+        Args: { target_file_path: string; target_owner_id: string }
+        Returns: boolean
       }
       create_boq_revision: {
         Args: {
@@ -6077,6 +6057,25 @@ export type Database = {
           p_reference?: string
           p_transaction_date: string
           p_type: string
+        }
+        Returns: string
+      }
+      create_project_document_with_version: {
+        Args: {
+          p_access_roles: Database["public"]["Enums"]["user_role_type"][]
+          p_category: string
+          p_content_type: string
+          p_document_id: string
+          p_document_number: string
+          // PostgreSQL accepts NULL for this nullable DATE input despite generated RPC types omitting it.
+          p_expires_on: string | null
+          p_file_name: string
+          p_file_path: string
+          p_file_size_bytes: number
+          p_organization_id: string
+          p_project_id: string
+          p_title: string
+          p_version_id: string
         }
         Returns: string
       }
