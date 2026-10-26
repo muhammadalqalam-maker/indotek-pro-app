@@ -34,7 +34,7 @@
 - [x] **T-UI.A.2** Pasang `tw-animate-css` (import di `index.css`) dan `class-variance-authority`. — 2026-10-26 — Dialog memakai fade + zoom; animasi masuk/keluar diverifikasi di browser (konten 200ms, overlay 150ms); typecheck, lint, build, unit test, e2e, dan baseline visual lulus.
 - [x] **T-UI.A.3** Token bridge di `index.css` sesuai DESIGN §2.7 (`@theme inline`, light + `.dark`), tanpa menambah warna atau menimpa radius. — 2026-10-26 — Primary dark (`#E8EDF5` pada `#0B1220`) kontras 15.93:1; typecheck, lint, build, unit test, dan 15 baseline visual lulus.
 - [x] **T-UI.A.4** Konfigurasikan `components.json` (`ui` → `@/components/shadcn`, CSS `src/index.css`, `cssVariables: true`). — 2026-10-27 — `shadcn info` memvalidasi alias; `add separator` membuat file hanya di `components/shadcn`, lalu dihapus. Tidak ada file di `components/ui/` yang berubah; typecheck, lint, build, unit test, e2e, dan 15 baseline visual lulus.
-- [ ] **T-UI.A.5** Aturan global `prefers-reduced-motion`; putuskan nasib paket `motion` (0 import saat ini) → hapus atau catat alasan pakai di Decision Log.
+- [x] **T-UI.A.5** Terapkan aturan global `prefers-reduced-motion` dan putuskan nasib paket `motion`. — 2026-10-27 — Motion dibuang karena tidak memiliki import source; durasi animasi/transisi dipersingkat global dan diuji di browser dengan `reduce`.
 
 ## FASE UI-B — Router (adapter)
 
@@ -74,7 +74,7 @@
 
 - [ ] **T-UI.F.1** Codemod ±749 kelas warna hard-coded ke token; daftar pengecualian bila ada.
 - [ ] **T-UI.F.2** Aksesibilitas, Lighthouse PWA, ukuran bundle sebelum/sesudah (peringatan chunk >500 kB tidak boleh bertambah).
-- [ ] **T-UI.F.3** Hapus kode mati (Sidebar lama, `DataTable` lama bila tak dipakai, paket Radix/`motion` tak terpakai); finalisasi DESIGN §13.
+- [ ] **T-UI.F.3** Hapus kode mati (Sidebar lama, `DataTable` lama bila tak dipakai, paket Radix tak terpakai); finalisasi DESIGN §13.
 - [ ] **T-UI.F.4** Uji PWA terpasang di HP asli (safe-area, bottom nav, Back); siapkan rilis menunggu persetujuan merge.
 
 ## Decision Log — Fase UI
@@ -85,6 +85,7 @@
 | D-UI-2 | Router: React Router v7 + adapter (bukan TanStack Router) | Disetujui — 2026-10-26 |
 | D-UI-3 | Dependensi UI: `tw-animate-css`, `class-variance-authority`, `@tanstack/react-table`, paket Radix tambahan; Sonner opsional | Disetujui — 2026-10-26 |
 | D-UI-4 | Komponen shadcn di `src/components/shadcn/`; barrel `components/ui` sebagai satu-satunya titik impor | Disetujui — 2026-10-26 |
+| D-UI-5 | Paket `motion` dihapus; tidak ada import source, animasi memakai CSS dan `tw-animate-css` | Disetujui — 2026-10-27 |
 
 ## Backlog / Temuan (Fase UI)
 

@@ -82,7 +82,7 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 ### 2.6 Z-index & Motion
 - Z-index: base 0 · sticky 20 · sidebar 30 · dropdown 40 · modal 50 · toast 60.
 - Default transisi Tailwind: 150ms, `cubic-bezier(.4,0,.2,1)`; gunakan nilai khusus per komponen sesuai tabel. Durasi 150ms untuk kelas animasi `tw-animate-css` tanpa modifier, easing `ease`.
-- Hormati `prefers-reduced-motion`: matikan animasi non-esensial.
+- Hormati `prefers-reduced-motion`: persingkat animasi/transisi non-esensial dan nonaktifkan scroll halus.
 
 **Spesifikasi motion** (diaudit terhadap source shadcn-admin v2.2.1; detail dan batasan ada di [laporan paritas](docs/ui/shadcn-admin-parity.md)):
 
@@ -97,7 +97,7 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 | Hover/fokus (tombol, baris, tab) | transisi warna/bayangan bila kelas `transition` digunakan | default 150ms | `cubic-bezier(.4,0,.2,1)` |
 | Skeleton | pulse | 2s berulang | `cubic-bezier(.4,0,.6,1)` |
 
-Tanpa animasi pada properti layout berat (`width`/`height` pada daftar panjang) selain yang di tabel. Semua animasi mati/dipersingkat di bawah `prefers-reduced-motion: reduce`.
+Tanpa animasi pada properti layout berat (`width`/`height` pada daftar panjang) selain yang di tabel. Di bawah `prefers-reduced-motion: reduce`, durasi animasi/transisi dibatasi menjadi `0.01ms`, delay dihapus, iterasi dibatasi satu kali, dan scroll halus dinonaktifkan.
 
 ### 2.7 Pemetaan Token shadcn ↔ Indotek
 
