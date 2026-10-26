@@ -115,12 +115,12 @@ Komponen shadcn memakai token semantik. Token itu **dipetakan ke token Indotek y
 | `--sidebar*` | light/dark: latar `--surface`, teks `--text`, item aktif `--surface-2` + `--text`; tanpa penanda amber (D-UI-1) |
 | `--chart-1..5` | `primary-500`, `accent-500`, `success`, `danger`, `neutral` |
 
-Amber brand tetap `accent-400/500/600` (bernomor), berdampingan dengan `accent` shadcn (tanpa nomor). Radius tetap §2.5 (`sm 6 / md 10 / lg 14 / xl 20`); jangan menimpa lewat `--radius`. Gunakan `text-muted-foreground` untuk teks sekunder; `bg-muted` dipetakan ke `--surface-2`.
+Implementasi bridge di `src/index.css` memetakan token ini lewat `@theme inline`; sumber warna tetap variabel yang sama pada `:root` dan `.dark`. Untuk primary dark, foreground `--text` (`#E8EDF5`) pada background `--bg` (`#0B1220`) memiliki kontras **15.93:1** (WCAG), di atas ambang 4.5:1. Amber brand tetap `accent-400/500/600` (bernomor), berdampingan dengan `accent` shadcn (tanpa nomor). Radius tetap §2.5 (`sm 6 / md 10 / lg 14 / xl 20`); jangan menimpa lewat `--radius`. Gunakan `text-muted-foreground` untuk teks sekunder; `bg-muted` dipetakan ke `--surface-2`.
 
 ## 3. Layout & Navigasi
 
 ### 3.1 Desktop (≥ 1024px)
-- **Sidebar kiri** (komponen shadcn `Sidebar`, `collapsible="icon"`): 256px expanded, 72px rail ikon, grup menu bisa dilipat, `Ctrl/Cmd+B` untuk toggle, status tersimpan. Latar mengikuti keputusan D-UI-1 (default: `primary-900`, teks terang, item aktif tint + penanda amber di kiri).
+- **Sidebar kiri** (komponen shadcn `Sidebar`, `collapsible="icon"`): 256px expanded, 72px rail ikon, grup menu bisa dilipat, `Ctrl/Cmd+B` untuk toggle, status tersimpan. Latar netral `--surface`, teks `--text`, item aktif `--surface-2` (D-UI-1).
 - **Top bar** 64px (bayangan tipis saat konten di-scroll): breadcrumb berbasis route, **pemilih proyek**, pencarian global (`Ctrl/Cmd+K` command palette), notifikasi, toggle tema, menu profil.
 - Area konten dengan header halaman (judul, deskripsi singkat, aksi utama di kanan).
 

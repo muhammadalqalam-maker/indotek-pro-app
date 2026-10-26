@@ -100,6 +100,38 @@
   --color-muted-foreground: var(--text-muted);
   --color-subtle: var(--text-subtle);
 
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--text);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--surface-2);
+  --color-secondary-foreground: var(--text);
+  --color-accent: var(--surface-2);
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--surface);
+  --color-input: var(--border-strong);
+  --color-ring: var(--text-muted);
+
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--text);
+  --color-sidebar-primary: var(--text);
+  --color-sidebar-primary-foreground: var(--bg);
+  --color-sidebar-accent: var(--surface-2);
+  --color-sidebar-accent-foreground: var(--text);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--text-muted);
+
+  --color-chart-1: var(--primary-500);
+  --color-chart-2: var(--accent-500);
+  --color-chart-3: var(--success);
+  --color-chart-4: var(--danger);
+  --color-chart-5: var(--neutral);
+
   --color-success: var(--success);
   --color-success-bg: var(--success-bg);
   --color-warning: var(--warning);
