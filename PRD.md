@@ -75,6 +75,22 @@ Izin per modul: `view / create / edit / approve / delete`, disimpan di tabel kon
 `approval_flows`, `approval_requests`, `approval_steps`,
 `notifications`, `audit_log`, `doc_number_sequences`.
 
+### 5.1 Struktur URL & Navigasi
+
+Navigasi area terautentikasi berbasis URL (React Router v7). Gate autentikasi, onboarding organisasi, dan undangan tetap di luar tabel route.
+
+| Route | Modul |
+|---|---|
+| `/dashboard` | Dashboard (default) |
+| `/projects`, `/projects/:projectId` | Daftar & detail proyek |
+| `/rab` | RAB, BOQ & AHSP |
+| `/field-reports` | Laporan lapangan & Kurva S |
+| `/procurement`, `/warehouse`, `/subcontractors` | Pengadaan, gudang, subkontraktor |
+| `/finance`, `/hr-manpower`, `/equipment`, `/safety-qc` | Keuangan, SDM, peralatan, K3/mutu |
+| `/documents`, `/approvals`, `/reports`, `/settings` | Dokumen, approval, laporan, pengaturan |
+
+Kebutuhan: tautan langsung dapat dibuka dan di-refresh; tombol Back/Forward (termasuk gestur Back di PWA Android) bekerja; halaman 403 dan 404 yang ramah; `/?tab=<id>` (shortcut PWA) diarahkan ke route baru; izin per route dicek seperti navigasi saat ini. Filter dan paginasi tabel disimpan di query string.
+
 ## 6. Kebutuhan Fungsional per Modul
 
 Setiap modul punya prioritas: **P0** = wajib untuk go-live internal, **P1** = penting, **P2** = nanti.
@@ -173,6 +189,8 @@ Setiap modul punya prioritas: **P0** = wajib untuk go-live internal, **P1** = pe
 | Lokalisasi | UI Bahasa Indonesia; struktur i18n siap bahasa Inggris |
 | Keandalan | Penanganan error terpusat, retry otomatis untuk sinkron |
 | Observabilitas | Audit log; hook untuk error tracking (mis. Sentry) |
+| Motion | Animasi hanya sesuai DESIGN §2.6; patuh `prefers-reduced-motion`; tanpa layout shift; tetap lancar di HP Android kelas menengah |
+| Navigasi | Berbasis URL (§5.1); Back/Forward berfungsi; deep link dapat di-refresh |
 
 ## 8. Aturan Bisnis Penting
 
@@ -231,3 +249,4 @@ Setiap modul punya prioritas: **P0** = wajib untuk go-live internal, **P1** = pe
 | 2026-10-19 | Halaman fitur dimuat sesuai kebutuhan dan vendor utama dipisah agar tidak ada chunk JavaScript produksi di atas 500 kB; tidak mengubah perilaku atau cakupan fitur. | Pengguna |
 | 2026-10-19 | Halaman detail proyek menyediakan Ringkasan dan Tim dari data proyek/penugasan organisasi; Dokumen memperlihatkan kategori tanpa mengklaim file tersimpan; Jadwal, BOQ, Progres, Biaya, dan Laporan tetap placeholder hingga modulnya tersedia. Sesuai persetujuan pengguna, akses Addendum/VO yang sebelumnya tersedia serta nilai kontrak efektif setelah VO ditangguhkan ke T-1.25. | Pengguna |
 | 2026-10-19 | Implementasi lokal T-1.25 menyediakan pembuatan Addendum/VO berstatus menunggu, persetujuan, hitung nilai/durasi kontrak efektif dari addendum approved, serta pemakaian nilai efektif pada dashboard, detail proyek, Finance, RAB, Kurva S, laporan, dan CSV. | Form serta workflow belum diverifikasi browser dengan sesi Supabase; migrasi integrity/audit belum diterapkan ke remote dan memerlukan persetujuan terpisah. |
+| 2026-10-26 | Redesign UI/UX bergaya shadcn-admin dimulai (Fase UI di TASK.md): navigasi berbasis URL (§5.1) dan kebutuhan non-fungsional motion/navigasi ditambahkan. Tidak mengubah cakupan fitur, skema, atau RLS. | Pengguna |

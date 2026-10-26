@@ -2,6 +2,8 @@
 
 Sumber kebenaran **tampilan & interaksi**. Semua UI wajib memakai token dan pola di sini. Dilarang menulis warna/ukuran/bayangan ad-hoc di komponen fitur.
 
+> **Referensi visual & interaksi:** [shadcn-admin](https://shadcn-admin.netlify.app/) (v2.x). Paritasnya dilacak di §13; penyimpangan yang disengaja (identitas brand, mobile lapangan, offline) tercatat di sana.
+
 ## 1. Karakter Visual
 
 **Modern, bersih, elegan, tepercaya** — seperti SaaS premium (Linear/Stripe/Notion) namun bernuansa konstruksi: navy yang kokoh, aksen amber/oranye, whitespace lega, hierarki jelas. Data padat tetap terbaca. Tidak ramai, tidak norak, tanpa gradien berlebihan.
@@ -15,7 +17,7 @@ Prinsip:
 
 ## 2. Design Tokens
 
-Implementasi sebagai CSS variables di `:root` dan `.dark`, dipetakan ke Tailwind (`tailwind.config`). Komponen hanya memakai token semantik (mis. `bg-surface`, `text-muted`), bukan hex.
+Implementasi sebagai CSS variables di `:root` dan `.dark`, dipetakan ke Tailwind v4 lewat `@theme inline` di `src/index.css` (CSS-first, tanpa `tailwind.config`). Komponen hanya memakai token semantik (mis. `bg-surface`, `text-muted`), bukan hex.
 
 ### 2.1 Warna Brand
 | Token | Light | Dark | Pemakaian |
@@ -82,11 +84,44 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 - Durasi: 120ms (hover), 200ms (transisi umum), 300ms (sheet/drawer). Easing `cubic-bezier(.2,.8,.2,1)`.
 - Hormati `prefers-reduced-motion`: matikan animasi non-esensial.
 
+**Spesifikasi motion** (nilai final disalin dari audit T-UI.0.2; bila berbeda, hasil audit yang menang):
+
+| Elemen | Efek | Masuk / Keluar | Easing |
+|---|---|---|---|
+| Dialog, AlertDialog | overlay fade; konten fade + zoom 95→100 | 200ms / 150ms | ease-out |
+| Sheet (kiri/kanan/bawah) | slide dari tepi | 300ms / 200ms | ease-out |
+| Dropdown, Popover, Select, Tooltip | fade + zoom 95→100 + geser 2px | 150ms / 100ms | ease-out |
+| Sidebar collapse/expand | lebar 256↔72px | 200ms | linear |
+| Grup menu (Collapsible) | tinggi + chevron berputar | 200ms | ease-out |
+| Toast | slide + fade | 200ms / 150ms | ease-out |
+| Hover/fokus (tombol, baris, tab) | warna/bayangan | 120ms | ease-out |
+| Skeleton | pulse | 2s berulang | ease-in-out |
+
+Tanpa animasi pada properti layout berat (`width`/`height` pada daftar panjang) selain yang di tabel. Semua animasi mati/dipersingkat di bawah `prefers-reduced-motion: reduce`.
+
+### 2.7 Pemetaan Token shadcn ↔ Indotek
+
+Komponen shadcn memakai token semantik. Token itu **dipetakan ke token Indotek yang sudah ada**, tidak menambah warna baru.
+
+| Token shadcn | Sumber (light / dark mengikuti token §2) |
+|---|---|
+| `--background` / `--foreground` | `--bg` / `--text` |
+| `--card`, `--popover` (+ `-foreground`) | `--surface` / `--text` |
+| `--primary` (+ `-foreground`) | light: `primary-700` + putih; dark: `primary-500` + teks gelap (cek kontras ≥ 4.5:1) |
+| `--secondary`, `--muted`, `--accent` | `--surface-2` (`accent` shadcn = latar hover, **bukan** amber brand) |
+| `--muted-foreground` | `--text-muted` |
+| `--destructive` | `--danger` |
+| `--border` / `--input` / `--ring` | `--border` / `--border-strong` / `primary-500` |
+| `--sidebar*` | default: latar `primary-900`, teks putih/85, item aktif putih/10 + penanda `accent-500` (keputusan D-UI-1) |
+| `--chart-1..5` | `primary-500`, `accent-500`, `success`, `danger`, `neutral` |
+
+Amber brand tetap `accent-400/500/600` (bernomor), berdampingan dengan `accent` shadcn (tanpa nomor). Radius tetap §2.5 (`sm 6 / md 10 / lg 14 / xl 20`); jangan menimpa lewat `--radius`. Kelas `text-muted` lama **tidak boleh dipakai** setelah T-UI.A.1; gunakan `text-muted-foreground`.
+
 ## 3. Layout & Navigasi
 
 ### 3.1 Desktop (≥ 1024px)
-- **Sidebar kiri** 264px (dapat di-collapse ke 72px ikon saja), latar `primary-900`, teks terang, item aktif berlatar tint + penanda aksen amber di kiri.
-- **Top bar** 64px: breadcrumb/judul, **pemilih proyek**, pencarian global (`Ctrl/Cmd+K` command palette), notifikasi, toggle tema, menu profil.
+- **Sidebar kiri** (komponen shadcn `Sidebar`, `collapsible="icon"`): 256px expanded, 72px rail ikon, grup menu bisa dilipat, `Ctrl/Cmd+B` untuk toggle, status tersimpan. Latar mengikuti keputusan D-UI-1 (default: `primary-900`, teks terang, item aktif tint + penanda amber di kiri).
+- **Top bar** 64px (bayangan tipis saat konten di-scroll): breadcrumb berbasis route, **pemilih proyek**, pencarian global (`Ctrl/Cmd+K` command palette), notifikasi, toggle tema, menu profil.
 - Area konten dengan header halaman (judul, deskripsi singkat, aksi utama di kanan).
 
 ### 3.2 Tablet (640–1023px)
@@ -102,11 +137,12 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 
 ## 4. Komponen Inti (di `components/ui`)
 
-Semua berbasis Radix + Tailwind, varian lewat `cva`.
+Semua berbasis Radix + Tailwind, varian lewat `cva`. Komponen baru berasal dari shadcn CLI ke `components/shadcn/`; kode fitur mengimpor lewat barrel `components/ui/index.ts` (AGENTS §7A).
 
 - **Button:** `primary`, `secondary`, `outline`, `ghost`, `destructive`, `accent`; ukuran `sm 32 / md 40 / lg 48`; state loading (spinner, disable). Mobile target ≥ 44px.
 - **Input/Textarea/Select/Combobox/DatePicker/NumberInput/CurrencyInput (Rp):** label di atas, helper text, error inline berwarna danger + ikon, prefix/suffix.
 - **Checkbox, Radio, Switch, Tabs, Accordion, Tooltip, Popover, Dropdown Menu.**
+- **Sidebar, Breadcrumb, Collapsible, Command, Sheet (kiri/kanan/bawah)** dari shadcn.
 - **Dialog/Modal** (desktop) & **Bottom Sheet** (mobile) dengan komponen adaptif yang sama.
 - **Card:** padding 16/20, border `--border`, radius `lg`, `shadow-xs`.
 - **Badge/StatusPill:** warna semantik + ikon kecil.
@@ -210,3 +246,29 @@ Header entitas (nama, status pill, metadata utama, aksi), lalu **Tabs** untuk se
 - [ ] Format Rupiah/tanggal/volume benar
 - [ ] Keyboard & fokus baik; kontras lulus
 - [ ] Microcopy Bahasa Indonesia, tombol berupa kata kerja
+
+## 13. Paritas dengan shadcn-admin
+
+Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari template, dengan alasan) · **Audit** (isi dari T-UI.0.2, lalu ubah statusnya).
+
+| Elemen | shadcn-admin | Indotek Pro | Status |
+|---|---|---|---|
+| Sidebar collapsible ke ikon | Ya | shadcn `Sidebar` | Rencana (UI-C) |
+| Sidebar di mobile | Sheet | Sheet **+ bottom nav + FAB** | Disengaja (pengguna lapangan) |
+| Grup menu bisa dilipat | Ya | Ya | Rencana (UI-C/D) |
+| Command palette ⌘K | Ya | Ada (kustom) + animasi | Rencana (UI-D) |
+| Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
+| Toast | Ya | Toast kustom + animasi | Audit |
+| Toggle tema | Ya | Ya (kunci `indotek_theme`) | Rencana (UI-C) |
+| Header: bayangan saat scroll, breadcrumb | Ya | Rencana | Audit |
+| Progress bar saat pindah route | Verifikasi | — | Audit |
+| Tabel: state di URL, filter facet, toolbar aksi massal | Ya | Rencana | Rencana (UI-E) |
+| Config drawer (varian layout/sidebar) | Ya | Tidak | Disengaja (di luar scope) |
+| RTL | Ya | Tidak | Disengaja |
+| Router | TanStack Router | React Router v7 | Disengaja (AGENTS §2) |
+| Auth | Clerk (sebagian) | Supabase Auth | Disengaja |
+| Ikon | Lucide | Lucide | Sama |
+| Warna | Netral | Navy + amber | Disengaja (D-UI-1) |
+| Indikator offline/sinkron, FAB, target sentuh 44px | Tidak ada | Ada | Disengaja |
+
+Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel ini (nama, alasan, tanggal).

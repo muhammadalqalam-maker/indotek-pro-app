@@ -5,9 +5,10 @@ Dokumen ini adalah **kontrak kerja** untuk setiap AI agent (Claude Code, Cline, 
 ## 0. Urutan Baca Wajib (setiap sesi baru)
 
 1. `AGENTS.md` (file ini)
-2. `TASK.md` — cari task aktif berikutnya
+2. `TASK.md` — cari task aktif berikutnya (sengaja dijaga ≤ 10 KB; riwayat ada di `docs/archive/`)
 3. `PRD.md` — untuk requirement fitur yang sedang dikerjakan
 4. `DESIGN.md` — untuk semua pekerjaan UI
+5. `docs/ui/shadcn-admin-parity.md` — hanya untuk task UI Fase D–E (hasil audit T-UI.0.2)
 
 **Hierarki sumber kebenaran jika ada konflik:** `PRD.md` (apa yang dibangun) > `DESIGN.md` (bagaimana tampilannya) > `TASK.md` (urutan kerja) > `AGENTS.md` (cara kerja). Jika menemukan konflik atau ambiguitas, **berhenti dan tanyakan**, jangan menebak.
 
@@ -19,29 +20,31 @@ Dokumen ini adalah **kontrak kerja** untuk setiap AI agent (Claude Code, Cline, 
 - Desktop dan mobile, bisa di-install ke layar utama HP (PWA).
 - Bahasa UI: Indonesia. Mata uang: Rupiah. PPN default 11% (configurable).
 
-> Konteks: build awal dimulai di Google AI Studio dan terhenti. Repo yang ada mungkin **belum lengkap atau mengandung kode tidak konsisten**. Jalankan **Fase 0 (Audit)** di `TASK.md` sebelum menambah fitur.
+> Konteks: Fase 0–5 sudah dikerjakan dan diarsipkan di `docs/archive/TASK-fase0-6.md` (**jangan dibaca kecuali diminta**; ukurannya besar dan memboroskan konteks). Fokus saat ini: **redesign UI/UX bergaya shadcn-admin** (Fase UI di `TASK.md`) sementara UAT/go-live (T-5.12) berjalan.
 
 ## 2. Tech Stack (TERKUNCI — jangan ganti tanpa persetujuan)
 
 | Lapisan | Pilihan |
 |---|---|
 | Bahasa | TypeScript (strict) |
-| Frontend | React 18 + Vite |
-| Styling | Tailwind CSS + komponen gaya shadcn/ui (Radix UI) |
-| Routing | React Router |
+| Frontend | React 19 + Vite |
+| Styling | Tailwind CSS v4 (CSS-first: `@theme inline` di `src/index.css`, tanpa `tailwind.config`) + shadcn/ui (Radix UI) + `class-variance-authority` + `tw-animate-css` |
+| Routing | React Router v7, berbasis URL (PRD §5.1); `activeTab` hanya adapter turunan URL |
 | Data fetching/cache | TanStack Query |
 | Form & validasi | React Hook Form + Zod |
 | State global ringan | Zustand |
 | Grafik | Recharts |
 | Ikon | lucide-react |
+| Tabel | `@tanstack/react-table` (setelah disetujui di Decision Log UI) |
+| Animasi | `tw-animate-css` + transisi CSS sesuai DESIGN §2.6; `motion` hanya dengan persetujuan di Decision Log |
 | Backend | **Supabase** (Postgres, Auth, Storage, Realtime, RLS, Edge Functions) |
 | Deploy | **Vercel** |
 | PWA | vite-plugin-pwa (Workbox) |
 | Offline storage | IndexedDB (mis. `idb`) |
-| Tanggal | date-fns (locale `id`) |
+| Tanggal | Helper `src/utils/format.ts` (`formatTanggal`, zona WIB/WITA/WIT) |
 | Ekspor | `exceljs`/`xlsx` untuk Excel, `@react-pdf/renderer` atau `jspdf` untuk PDF |
 
-**Dilarang:** Firebase, library UI lain (MUI, Ant, Chakra), CSS-in-JS, Redux, script dari CDN, dan dependensi baru tanpa alasan jelas. Jika perlu library baru, catat alasannya di `TASK.md` bagian *Keputusan* dan pilih yang kecil, terawat, dan tipenya lengkap.
+**Dilarang:** Firebase, library UI lain (MUI, Ant, Chakra; **shadcn/ui + Radix diizinkan**), CSS-in-JS, Redux, script dari CDN, dan dependensi baru tanpa alasan jelas. Jika perlu library baru, catat alasannya di `TASK.md` bagian *Keputusan* dan pilih yang kecil, terawat, dan tipenya lengkap.
 
 ## 3. Struktur Folder
 
@@ -54,14 +57,18 @@ Dokumen ini adalah **kontrak kerja** untuk setiap AI agent (Claude Code, Cline, 
 │  ├─ seed.sql
 │  └─ functions/              # Edge Functions (jika ada)
 ├─ src/
-│  ├─ app/                    # router, providers, layout shell
-│  ├─ components/ui/          # primitif design system (Button, Input, Dialog, ...)
-│  ├─ components/shared/      # komponen lintas fitur (DataTable, PageHeader, EmptyState, ...)
+│  ├─ routes/                 # tabel route + adapter URL↔activeTab (Fase UI-B)
+│  ├─ context/                # AppContext (provider global)
+│  ├─ components/ui/          # primitif legacy + BARREL index.ts (satu-satunya titik impor UI)
+│  ├─ components/shadcn/      # hasil `shadcn add` (catat modifikasi di DESIGN §13)
+│  ├─ components/layout/      # sidebar, header, bottom nav, command palette
+│  ├─ components/shared/      # komponen lintas fitur
+│  ├─ components/pwa/         # indikator offline, install prompt
 │  ├─ features/<modul>/       # components/ hooks/ services/ schemas/ types.ts pages/
-│  ├─ lib/                    # supabase client, utils, format (rupiah, tanggal), constants
-│  ├─ hooks/                  # hook global
-│  ├─ stores/                 # zustand
-│  ├─ types/                  # database.types.ts (hasil generate Supabase)
+│  ├─ services/               # akses data (Supabase + TanStack Query)
+│  ├─ lib/                    # supabase client, offline queue, observability
+│  ├─ utils/                  # format (rupiah, tanggal), permissions, kalkulasi
+│  ├─ hooks/  stores/  types/ # hook global, zustand, database.types.ts (generate Supabase)
 │  └─ i18n/                   # kamus id (siapkan en)
 ├─ .env.example
 ├─ vercel.json
@@ -77,7 +84,7 @@ Aturan: kode khusus fitur hanya boleh ada di `src/features/<modul>/`. Fitur tida
 - Semua akses data lewat **service/hook per fitur** (TanStack Query). Komponen UI tidak memanggil `supabase` langsung.
 - Semua form memakai React Hook Form + skema Zod; skema ditaruh di `schemas/`.
 - Tidak ada magic string untuk status/role; gunakan konstanta atau enum terpusat.
-- Format angka/uang/tanggal **hanya** lewat helper di `src/lib/format.ts` (`formatRupiah`, `formatTanggal`, `formatPersen`).
+- Format angka/uang/tanggal **hanya** lewat helper di `src/utils/format.ts` (`formatRupiah`, `formatTanggal`, `formatPersen`).
 - Nilai uang disimpan sebagai `numeric(18,2)` di database. Hitung di server/SQL bila memungkinkan; di klien gunakan helper aman untuk pembulatan.
 - Tidak ada data dummy hard-coded di komponen. Data contoh hanya lewat `supabase/seed.sql`.
 - Tidak ada `console.log` tertinggal. Error ditangani lewat penanganan error terpusat + toast.
@@ -113,6 +120,17 @@ Aturan: kode khusus fitur hanya boleh ada di `src/features/<modul>/`. Fitur tida
 - Mobile-first: uji di lebar 360px dan 1280px sebelum menandai selesai.
 - Teks UI dalam Bahasa Indonesia lewat kamus i18n, bukan string tersebar.
 
+### 7A. Aturan Redesign shadcn-admin (berlaku selama Fase UI)
+
+1. Redesign **hanya menyentuh tampilan**. Dilarang mengubah `supabase/`, `src/services/`, `src/lib/offline*`, skema/RLS, atau logika `AppContext` (kecuali adapter router di T-UI.B.1).
+2. Semua pekerjaan di branch `redesign/shadcn-admin`, diverifikasi lewat Vercel Preview. Dilarang merge ke `main` tanpa persetujuan pengguna. T-5.12 (UAT/go-live) tidak boleh terblokir oleh redesign.
+3. Komponen shadcn ditambah **hanya** lewat `npx shadcn@latest add <nama>` dengan alias `src/components/shadcn`. Dilarang menulis ulang komponen shadcn dari ingatan. Dilarang menimpa file di `src/components/ui/` (Windows tidak membedakan huruf besar/kecil: `button.tsx` akan menimpa `Button.tsx`).
+4. Kode fitur mengimpor UI hanya lewat barrel `components/ui`. Penggantian implementasi dilakukan di balik barrel dengan wrapper kompatibel (API lama tetap jalan); satu komponen per commit.
+5. Warna hanya lewat token (DESIGN §2.7). `text-muted` lama menjadi `text-muted-foreground` (T-UI.A.1); jangan memakai `bg-muted` sebelum T-UI.A.1 selesai.
+6. Animasi hanya yang tercantum di DESIGN §2.6/§13, dengan `prefers-reduced-motion` dihormati. Dilarang menambah animasi di luar paritas tanpa persetujuan.
+7. Satu halaman = satu commit + screenshot sebelum/sesudah (375 dan 1280px, light dan dark).
+8. Halaman offline-kritis (Laporan Lapangan, SDM/Absensi, upload foto) wajib diuji ulang dalam mode offline setelah diubah.
+
 ## 8. PWA & Offline
 
 - Manifest + service worker harus tetap valid dan lolos Lighthouse PWA.
@@ -147,6 +165,7 @@ Aturan: kode khusus fitur hanya boleh ada di `src/features/<modul>/`. Fitur tida
 - [ ] Loading / empty / error state ada; responsif 360px–1280px+
 - [ ] Sesuai `DESIGN.md` (token, komponen, dark mode)
 - [ ] Teks lewat i18n; format Rupiah/tanggal lewat helper
+- [ ] (Task UI) screenshot sebelum/sesudah dilampirkan; `prefers-reduced-motion` dan mode offline diuji bila relevan
 - [ ] `TASK.md` diperbarui
 
 ## 12. Daftar Larangan Ringkas
@@ -158,3 +177,6 @@ Aturan: kode khusus fitur hanya boleh ada di `src/features/<modul>/`. Fitur tida
 - Mengabaikan `DESIGN.md` atau menulis style ad-hoc
 - Mengerjakan fitur fase berikutnya sebelum fase aktif selesai
 - Menandai task selesai tanpa build/test lulus
+- Menjalankan `shadcn add` ke `src/components/ui/` atau menimpa komponen yang ada
+- Mengubah service, migrasi, RLS, atau antrean offline di dalam task UI
+- Merge Fase UI ke `main` tanpa persetujuan pengguna
