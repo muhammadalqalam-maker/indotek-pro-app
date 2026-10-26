@@ -1,5 +1,5 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, useLocation, useParams, useRoutes } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { BrowserRouter, Navigate, useLocation, useNavigationType, useParams, useRoutes } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthView } from './features/auth/AuthView';
@@ -102,6 +102,32 @@ function ViewLoadingFallback() {
       <div className="h-64 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
     </section>
   );
+}
+
+function RouteScrollRestoration() {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const positions = useRef(new Map<string, number>());
+
+  useEffect(() => {
+    const main = document.querySelector<HTMLElement>('main[aria-busy]');
+    if (!main) return;
+
+    const savePosition = () => positions.current.set(location.key, main.scrollTop);
+    main.addEventListener('scroll', savePosition, { passive: true });
+    return () => main.removeEventListener('scroll', savePosition);
+  }, [location.key]);
+
+  useLayoutEffect(() => {
+    const main = document.querySelector<HTMLElement>('main[aria-busy]');
+    if (!main) return;
+
+    main.scrollTop = navigationType === 'POP'
+      ? positions.current.get(location.key) ?? 0
+      : 0;
+  }, [location.key, navigationType]);
+
+  return null;
 }
 
 function MainApp() {
@@ -327,7 +353,8 @@ function MainApp() {
   if (location.pathname === '/') return <RootRouteRedirect />;
 
   return (
-    <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-150">
+    <div className="h-dvh overflow-hidden bg-bg text-text flex flex-col font-sans transition-colors duration-150">
+      <RouteScrollRestoration />
       <Suspense fallback={null}>
         <OfflineSyncBridge />
       </Suspense>
@@ -368,7 +395,7 @@ function MainApp() {
       )}
 
       {/* Main Layout Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Sidebar Navigation */}
         <Suspense fallback={null}>
           <Sidebar
@@ -382,7 +409,7 @@ function MainApp() {
         {/* Content View Container */}
         <main
           aria-busy={isLoading}
-          className={`safe-area-main mx-auto min-w-0 max-w-7xl flex-1 px-3 pt-4 transition-all duration-300 ease-in-out sm:px-6 md:px-8 ${
+          className={`safe-area-main mx-auto min-h-0 min-w-0 max-w-7xl flex-1 overflow-y-auto px-3 pt-4 transition-all duration-300 ease-in-out sm:px-6 md:px-8 ${
             isSidebarCollapsed ? 'sm:ml-18' : 'sm:ml-64'
           }`}
         >

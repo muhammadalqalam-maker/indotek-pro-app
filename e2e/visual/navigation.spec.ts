@@ -121,6 +121,44 @@ test('navigation routes load directly and remain available after refresh', async
   }
 });
 
+test('browser back and forward restore route and scroll position', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  const main = page.locator('main[aria-busy="false"]');
+  await main.evaluate((element) => {
+    const spacer = document.createElement('div');
+    spacer.setAttribute('aria-hidden', 'true');
+    spacer.style.height = '1200px';
+    element.append(spacer);
+  });
+  await main.evaluate((element) => { element.scrollTop = 400; });
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(400);
+
+  await page.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('button', { name: 'Pengaturan & Tim' }).click();
+  await expect(page).toHaveURL(`${localOrigin}/settings`);
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(0);
+  await main.evaluate((element) => { element.scrollTop = 250; });
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(250);
+
+  await page.goBack();
+  await expect(page).toHaveURL(`${localOrigin}/dashboard`);
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(400);
+
+  await page.goForward();
+  await expect(page).toHaveURL(`${localOrigin}/settings`);
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(250);
+});
+
 test('legacy home-screen shortcut URL redirects while retaining unrelated query parameters', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {
