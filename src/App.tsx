@@ -6,10 +6,12 @@ import { AuthView } from './features/auth/AuthView';
 import { authMessages as messages, organizationMessages } from './i18n/id';
 import { Project } from './types/database';
 import { NAVIGATION_MODULES } from './utils/permissions';
+import type { AppModule } from './utils/permissions';
 import { useCan } from './hooks/useCan';
 import { ShieldAlert } from 'lucide-react';
 import { ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
+import { RouteStatusPage } from './components/shared/RouteStatusPage';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
 import { getPathForTab, NAVIGATION_ROUTES, type NavigationTab } from './routes/navigation';
 
@@ -56,6 +58,14 @@ function ProjectDetailRoute({ onEdit, onBack }: {
   );
 }
 
+function RoutePermissionGuard({ module, children }: {
+  module: AppModule;
+  children: React.ReactNode;
+}) {
+  const canView = useCan(module, 'view');
+  return canView ? children : <RouteStatusPage status="forbidden" />;
+}
+
 function RootRouteRedirect() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -97,7 +107,6 @@ function ViewLoadingFallback() {
 function MainApp() {
   const location = useLocation();
   const {
-    activeTab,
     closeProjectDetail,
     isSupabaseLive,
     authLoading,
@@ -122,7 +131,6 @@ function MainApp() {
     reloadPermissions,
     can,
   } = useApp();
-  const canViewActiveTab = useCan(NAVIGATION_MODULES[activeTab], 'view');
   const [continueToOrganizationSetup, setContinueToOrganizationSetup] = useState(false);
 
   useEffect(() => {
@@ -206,7 +214,9 @@ function MainApp() {
       path,
       element: (
         <Suspense fallback={<ViewLoadingFallback />}>
-          {renderNavigationTab(tab)}
+          <RoutePermissionGuard module={NAVIGATION_MODULES[tab]}>
+            {renderNavigationTab(tab)}
+          </RoutePermissionGuard>
         </Suspense>
       ),
     })),
@@ -214,11 +224,13 @@ function MainApp() {
       path: '/projects/:projectId',
       element: (
         <Suspense fallback={<ViewLoadingFallback />}>
-          <ProjectDetailRoute onEdit={handleEditProject} onBack={closeProjectDetail} />
+          <RoutePermissionGuard module="projects">
+            <ProjectDetailRoute onEdit={handleEditProject} onBack={closeProjectDetail} />
+          </RoutePermissionGuard>
         </Suspense>
       ),
     },
-    { path: '*', element: <Navigate to="/dashboard" replace /> },
+    { path: '*', element: <RouteStatusPage status="not-found" /> },
   ];
 
   if (import.meta.env.PROD && !isSupabaseLive) {
@@ -397,12 +409,6 @@ function MainApp() {
               >
                 {organizationMessages.retry}
               </button>
-            </section>
-          ) : !canViewActiveTab ? (
-            <section className="mx-auto flex max-w-xl flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900" role="status">
-              <ShieldAlert className="h-8 w-8 text-slate-400" aria-hidden="true" />
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white">{organizationMessages.permissionDeniedTitle}</h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">{organizationMessages.permissionDeniedDescription}</p>
             </section>
           ) : (
             <AuthenticatedRouteViews routes={routes} />

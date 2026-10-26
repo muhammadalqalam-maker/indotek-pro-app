@@ -39,7 +39,7 @@
 ## FASE UI-B — Router (adapter)
 
 - [x] **T-UI.B.1** Route 1:1 dari tab (PRD §5.1) dengan React Router v7. `activeTab` diturunkan dari URL, `setActiveTab` memanggil `navigate`; `/?tab=` diarahkan; detail proyek ke `/projects/:projectId`. *Selesai bila:* 198 referensi `activeTab` tidak perlu diubah dan semua alur lama tetap jalan. — 2026-10-27 — Adapter terhubung ke 15 route, shortcut lama diarahkan, detail proyek dapat dibuka langsung/di-refresh; 18 tes visual (termasuk route refresh) lulus.
-- [ ] **T-UI.B.2** Guard izin per route, halaman 403/404, gate auth/onboarding tetap di luar router, cek `navigateFallback` PWA offline + rewrite Vercel. *Selesai bila:* refresh di setiap route berhasil, termasuk offline.
+- [x] **T-UI.B.2** Guard izin per route, halaman 403/404, gate auth/onboarding tetap di luar router, cek `navigateFallback` PWA offline + rewrite Vercel. *Selesai bila:* refresh di setiap route berhasil, termasuk offline. — 2026-10-27 — Guard memakai izin modul yang sudah ada; auth/onboarding tetap sebelum route view. 403/404 responsif dengan snapshot light/dark; Workbox offline fallback dan rewrite Vercel terverifikasi. Unit, 8 e2e, 21 visual, PWA offline, typecheck, lint, build lulus.
 - [ ] **T-UI.B.3** Perilaku Back/Forward dan restorasi scroll. *Selesai bila:* gestur Back di PWA Android terpasang kembali ke halaman sebelumnya, tidak menutup app.
 
 ## FASE UI-C — Shell

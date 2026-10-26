@@ -15,6 +15,13 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Masuk ke akun' })).toBeVisible();
 });
 
+test('authentication gate remains outside the route table for deep links', async ({ page }) => {
+  await page.goto('/settings');
+
+  await expect(page.getByRole('heading', { name: 'Masuk ke akun' })).toBeVisible();
+  await expect(page).toHaveURL(`${localOrigin}/settings`);
+});
+
 test('validates empty credentials and focuses the first invalid field', async ({ page }) => {
   await page.getByRole('button', { name: 'Masuk', exact: true }).click();
 

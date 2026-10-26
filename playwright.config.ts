@@ -4,7 +4,7 @@ const baseURL = 'http://127.0.0.1:4177';
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: '**/visual/**',
+  testIgnore: ['**/visual/**', '**/pwa/**'],
   fullyParallel: true,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),
