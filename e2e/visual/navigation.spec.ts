@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { NAVIGATION_MODULES } from '../../src/utils/permissions';
+import { getPathForTab, NAVIGATION_ROUTES, type NavigationTab } from '../../src/routes/navigation';
 
 const localOrigin = 'http://127.0.0.1:4178';
 
@@ -68,6 +69,9 @@ for (const tab of Object.keys(NAVIGATION_MODULES)) {
           await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
         }
 
+        const expectedPath = getPathForTab(tab as NavigationTab);
+        await expect(page).toHaveURL(new RegExp(`${expectedPath.replaceAll('/', '\\/')}$`));
+
         await page.addStyleTag({
           content: `
             *, *::before, *::after {
@@ -89,9 +93,66 @@ for (const tab of Object.keys(NAVIGATION_MODULES)) {
             timeout: 15_000,
           });
         }
+
       } finally {
         await context.close();
       }
     }
   });
 }
+
+test('navigation routes load directly and remain available after refresh', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  for (const { path } of NAVIGATION_ROUTES) {
+    await page.goto(path);
+    await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(`${localOrigin}${path}`);
+
+    await page.reload();
+    await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(`${localOrigin}${path}`);
+  }
+});
+
+test('legacy home-screen shortcut URL redirects while retaining unrelated query parameters', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/?tab=field_reports&source=shortcut');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(`${localOrigin}/field-reports?source=shortcut`);
+});
+
+test('project details have a refreshable project-specific URL', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/projects');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: /^Buka detail/ }).first().click();
+  await expect(page).toHaveURL(new RegExp(`${localOrigin.replaceAll('.', '\\.')}\\/projects\\/[^/]+$`));
+  await expect(page.getByRole('tablist')).toBeVisible();
+
+  const detailUrl = page.url();
+  await page.reload();
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page).toHaveURL(detailUrl);
+  await expect(page.getByRole('tablist')).toBeVisible();
+});

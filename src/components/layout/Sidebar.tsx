@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   setIsMobileOpen,
 }) => {
-  const { activeTab, setActiveTab, projects, currentOrg, closeProjectDetail } = useApp();
+  const { activeTab, setActiveTab, projects, currentOrg } = useApp();
   const [isMobileViewport, setIsMobileViewport] = useState(
     () => window.matchMedia('(max-width: 639px)').matches,
   );
@@ -125,7 +125,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleNav = (tab: NavigationTab) => {
     setActiveTab(tab);
-    closeProjectDetail();
     setIsMobileOpen(false);
   };
 

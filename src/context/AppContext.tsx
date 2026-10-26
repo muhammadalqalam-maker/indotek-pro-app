@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  getPathForTab,
+  getProjectDetailPath,
+  getProjectIdForPathname,
+  getTabForPathname,
+} from '../routes/navigation';
+import type { NavigationTab } from '../routes/navigation';
 import {
   Organization,
   Project,
@@ -117,22 +125,7 @@ import {
   organizationMessages,
 } from '../i18n/id';
 
-export type NavigationTab =
-  | 'dashboard'
-  | 'projects'
-  | 'rab'
-  | 'field_reports'
-  | 'procurement'
-  | 'warehouse'
-  | 'subcontractors'
-  | 'finance'
-  | 'hr_manpower'
-  | 'equipment'
-  | 'safety_qc'
-  | 'documents'
-  | 'approvals'
-  | 'reports'
-  | 'settings';
+export type { NavigationTab } from '../routes/navigation';
 
 export type AuthMode = 'sign_in' | 'sign_up' | 'forgot_password' | 'update_password';
 const AUTH_RECOVERY_STORAGE_KEY = 'indotek_auth_recovery';
@@ -289,6 +282,8 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Theme
@@ -334,12 +329,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
 
   // Navigation
-  const [activeTab, setActiveTab] = useState<NavigationTab>(() => {
-    const requestedTab = new URLSearchParams(window.location.search).get('tab');
-    const shortcutTabs: NavigationTab[] = ['projects', 'field_reports', 'approvals'];
-    return shortcutTabs.find((tab) => tab === requestedTab) ?? 'dashboard';
-  });
-  const [activeProjectDetailId, setActiveProjectDetailId] = useState<string | null>(null);
+  const activeTab = getTabForPathname(location.pathname);
+  const activeProjectDetailId = getProjectIdForPathname(location.pathname);
+  const setActiveTab = (tab: NavigationTab) => {
+    const path = getPathForTab(tab);
+    if (location.pathname !== path) navigate(path);
+  };
   const [isCommandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
   // Entities
@@ -647,7 +642,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dataLoadRequestId.current += 1;
       clearOrganizationData();
       setSelectedProjectId('all');
-      setActiveProjectDetailId(null);
       setOrganizations([]);
       setIsLoading(true);
       setOrganizationsLoading(true);
@@ -1161,7 +1155,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsLoading(true);
     setCurrentOrgIdState(id);
     setSelectedProjectId('all');
-    setActiveProjectDetailId(null);
+    if (activeProjectDetailId) navigate('/projects', { replace: true });
   };
 
   const setCurrentRole = (role: UserRole) => {
@@ -1184,7 +1178,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setOrganizationsError('');
     setCurrentOrgIdState(organization.id);
     setSelectedProjectId('all');
-    setActiveProjectDetailId(null);
+    if (activeProjectDetailId) navigate('/projects', { replace: true });
   };
 
   const updateCurrentOrganization = (organization: Organization) => {
@@ -1194,12 +1188,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const openProjectDetail = (projectId: string) => {
-    setActiveProjectDetailId(projectId);
-    setActiveTab('projects');
+    const path = getProjectDetailPath(projectId);
+    if (location.pathname !== path) navigate(path);
   };
 
   const closeProjectDetail = () => {
-    setActiveProjectDetailId(null);
+    if (activeProjectDetailId) navigate('/projects', { replace: true });
   };
 
   // Keyboard shortcut for Command Palette (Cmd+K or Ctrl+K)
@@ -1233,7 +1227,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await deleteProject(id, currentOrg.id);
     setProjects((prev) => prev.filter((p) => p.id !== id));
     if (activeProjectDetailId === id) {
-      setActiveProjectDetailId(null);
+      navigate('/projects', { replace: true });
     }
   };
 

@@ -1,4 +1,6 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, useLocation, useParams, useRoutes } from 'react-router-dom';
+import type { RouteObject } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthView } from './features/auth/AuthView';
 import { authMessages as messages, organizationMessages } from './i18n/id';
@@ -9,6 +11,7 @@ import { ShieldAlert } from 'lucide-react';
 import { ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
+import { getPathForTab, NAVIGATION_ROUTES, type NavigationTab } from './routes/navigation';
 
 const CreateProjectModal = lazy(() => import('./features/projects/CreateProjectModal').then((module) => ({ default: module.CreateProjectModal })));
 const DashboardView = lazy(() => import('./features/dashboard/DashboardView').then((module) => ({ default: module.DashboardView })));
@@ -37,6 +40,45 @@ const OfflineIndicator = lazy(() => import('./components/pwa/OfflineIndicator').
 const CreateOrgModal = lazy(() => import('./components/modals/CreateOrgModal').then((module) => ({ default: module.CreateOrgModal })));
 const OfflineSyncBridge = lazy(() => import('./components/pwa/OfflineSyncBridge').then((module) => ({ default: module.OfflineSyncBridge })));
 
+function ProjectDetailRoute({ onEdit, onBack }: {
+  onEdit: (project: Project) => void;
+  onBack: () => void;
+}) {
+  const { projectId } = useParams();
+  if (!projectId) return <Navigate to="/projects" replace />;
+  return (
+    <ProjectDetailView
+      key={projectId}
+      projectId={projectId}
+      onEdit={onEdit}
+      onBack={onBack}
+    />
+  );
+}
+
+function RootRouteRedirect() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const requestedTab = searchParams.get('tab');
+  const route = NAVIGATION_ROUTES.find(({ tab }) => tab === requestedTab);
+  searchParams.delete('tab');
+  const remainingSearch = searchParams.toString();
+
+  return (
+    <Navigate
+      replace
+      to={{
+        pathname: route ? getPathForTab(route.tab) : '/dashboard',
+        search: remainingSearch ? `?${remainingSearch}` : '',
+      }}
+    />
+  );
+}
+
+function AuthenticatedRouteViews({ routes }: { routes: RouteObject[] }) {
+  return useRoutes(routes);
+}
+
 function ViewLoadingFallback() {
   return (
     <section className="space-y-4" role="status" aria-busy="true" aria-label={organizationMessages.organizationDataLoading}>
@@ -53,9 +95,9 @@ function ViewLoadingFallback() {
 }
 
 function MainApp() {
+  const location = useLocation();
   const {
     activeTab,
-    activeProjectDetailId,
     closeProjectDetail,
     isSupabaseLive,
     authLoading,
@@ -118,6 +160,66 @@ function MainApp() {
     setProjectToEdit(project);
     setIsCreateProjectModalOpen(true);
   };
+
+  const renderNavigationTab = (tab: NavigationTab) => {
+    switch (tab) {
+      case 'dashboard':
+        return <DashboardView onOpenCreateProject={handleOpenCreateProject} />;
+      case 'projects':
+        return (
+          <ProjectListView
+            onOpenCreateProject={handleOpenCreateProject}
+            onEditProject={handleEditProject}
+          />
+        );
+      case 'rab':
+        return <RabBoqView />;
+      case 'field_reports':
+        return <DailyReportsView />;
+      case 'procurement':
+        return <ProcurementView />;
+      case 'warehouse':
+        return <WarehouseView />;
+      case 'subcontractors':
+        return <SubcontractorsView />;
+      case 'finance':
+        return <FinanceView />;
+      case 'hr_manpower':
+        return <HrManpowerView />;
+      case 'equipment':
+        return <EquipmentView />;
+      case 'safety_qc':
+        return <SafetyQcView />;
+      case 'documents':
+        return <DocumentsView />;
+      case 'approvals':
+        return <ApprovalsView />;
+      case 'reports':
+        return <ReportsAnalyticsView />;
+      case 'settings':
+        return <SettingsView />;
+    }
+  };
+
+  const routes: RouteObject[] = [
+    ...NAVIGATION_ROUTES.map(({ path, tab }) => ({
+      path,
+      element: (
+        <Suspense fallback={<ViewLoadingFallback />}>
+          {renderNavigationTab(tab)}
+        </Suspense>
+      ),
+    })),
+    {
+      path: '/projects/:projectId',
+      element: (
+        <Suspense fallback={<ViewLoadingFallback />}>
+          <ProjectDetailRoute onEdit={handleEditProject} onBack={closeProjectDetail} />
+        </Suspense>
+      ),
+    },
+    { path: '*', element: <Navigate to="/dashboard" replace /> },
+  ];
 
   if (import.meta.env.PROD && !isSupabaseLive) {
     return (
@@ -210,6 +312,8 @@ function MainApp() {
     return <Suspense fallback={<ViewLoadingFallback />}><OrganizationOnboardingPage /></Suspense>;
   }
 
+  if (location.pathname === '/') return <RootRouteRedirect />;
+
   return (
     <div className="min-h-screen bg-bg text-text flex flex-col font-sans transition-colors duration-150">
       <Suspense fallback={null}>
@@ -300,58 +404,8 @@ function MainApp() {
               <h1 className="text-lg font-bold text-slate-900 dark:text-white">{organizationMessages.permissionDeniedTitle}</h1>
               <p className="text-sm text-slate-500 dark:text-slate-400">{organizationMessages.permissionDeniedDescription}</p>
             </section>
-          ) : activeTab === 'projects' && activeProjectDetailId ? (
-            <Suspense fallback={<ViewLoadingFallback />}>
-            <ProjectDetailView
-              key={activeProjectDetailId}
-              projectId={activeProjectDetailId}
-              onEdit={handleEditProject}
-              onBack={closeProjectDetail}
-            />
-            </Suspense>
-          ) : activeTab === 'dashboard' ? (
-            <Suspense fallback={<ViewLoadingFallback />}>
-              <DashboardView onOpenCreateProject={handleOpenCreateProject} />
-            </Suspense>
-          ) : activeTab === 'projects' ? (
-            <Suspense fallback={<ViewLoadingFallback />}>
-            <ProjectListView
-              onOpenCreateProject={handleOpenCreateProject}
-              onEditProject={handleEditProject}
-            />
-            </Suspense>
-          ) : activeTab === 'rab' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><RabBoqView /></Suspense>
-          ) : activeTab === 'field_reports' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><DailyReportsView /></Suspense>
-          ) : activeTab === 'procurement' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><ProcurementView /></Suspense>
-          ) : activeTab === 'warehouse' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><WarehouseView /></Suspense>
-          ) : activeTab === 'subcontractors' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><SubcontractorsView /></Suspense>
-          ) : activeTab === 'finance' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><FinanceView /></Suspense>
-          ) : activeTab === 'hr_manpower' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><HrManpowerView /></Suspense>
-          ) : activeTab === 'equipment' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><EquipmentView /></Suspense>
-          ) : activeTab === 'safety_qc' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><SafetyQcView /></Suspense>
-          ) : activeTab === 'documents' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><DocumentsView /></Suspense>
-          ) : activeTab === 'approvals' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><ApprovalsView /></Suspense>
-          ) : activeTab === 'reports' ? (
-            <Suspense fallback={<ViewLoadingFallback />}><ReportsAnalyticsView /></Suspense>
-          ) : activeTab === 'settings' ? (
-            <Suspense fallback={<ViewLoadingFallback />}>
-              <SettingsView />
-            </Suspense>
           ) : (
-            <Suspense fallback={<ViewLoadingFallback />}>
-              <DashboardView onOpenCreateProject={handleOpenCreateProject} />
-            </Suspense>
+            <AuthenticatedRouteViews routes={routes} />
           )}
         </main>
       </div>
@@ -398,15 +452,17 @@ function MainApp() {
 
 export default function App() {
   return (
-    <AppErrorBoundary>
-      <AppProvider>
-        <ToastProvider>
-          <TooltipProvider>
-            <UnhandledErrorNotifications />
-            <MainApp />
-          </TooltipProvider>
-        </ToastProvider>
-      </AppProvider>
-    </AppErrorBoundary>
+    <BrowserRouter>
+      <AppErrorBoundary>
+        <AppProvider>
+          <ToastProvider>
+            <TooltipProvider>
+              <UnhandledErrorNotifications />
+              <MainApp />
+            </TooltipProvider>
+          </ToastProvider>
+        </AppProvider>
+      </AppErrorBoundary>
+    </BrowserRouter>
   );
 }

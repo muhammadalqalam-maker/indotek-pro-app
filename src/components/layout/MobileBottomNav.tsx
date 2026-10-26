@@ -19,7 +19,7 @@ export const MobileBottomNav: React.FC<{
   onToggleMobileDrawer: () => void;
   isMenuOpen: boolean;
 }> = ({ onOpenCreateProject, onToggleMobileDrawer, isMenuOpen }) => {
-  const { activeTab, setActiveTab, closeProjectDetail, can } = useApp();
+  const { activeTab, setActiveTab, can } = useApp();
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const hasQuickActions = can('projects', 'create')
     || can('field_reports', 'create')
@@ -36,7 +36,6 @@ export const MobileBottomNav: React.FC<{
 
   const handleNav = (tab: 'dashboard' | 'projects' | 'approvals') => {
     setActiveTab(tab);
-    if (tab === 'projects') closeProjectDetail();
   };
 
   return (
