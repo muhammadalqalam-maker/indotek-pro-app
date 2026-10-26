@@ -33,7 +33,7 @@
 - [x] **T-UI.A.1** Tabrakan token `muted`: tambahkan `--color-muted-foreground`, migrasikan kelas teks lama, lalu petakan `--color-muted` ke `--surface-2`. — 2026-10-26 — 594 kelas di 131 file; tidak ada sisa kelas lama atau perubahan baseline visual.
 - [x] **T-UI.A.2** Pasang `tw-animate-css` (import di `index.css`) dan `class-variance-authority`. — 2026-10-26 — Dialog memakai fade + zoom; animasi masuk/keluar diverifikasi di browser (konten 200ms, overlay 150ms); typecheck, lint, build, unit test, e2e, dan baseline visual lulus.
 - [x] **T-UI.A.3** Token bridge di `index.css` sesuai DESIGN §2.7 (`@theme inline`, light + `.dark`), tanpa menambah warna atau menimpa radius. — 2026-10-26 — Primary dark (`#E8EDF5` pada `#0B1220`) kontras 15.93:1; typecheck, lint, build, unit test, dan 15 baseline visual lulus.
-- [ ] **T-UI.A.4** `components.json` (alias `ui` → `@/components/shadcn`, CSS `src/index.css`, `cssVariables: true`). Uji `shadcn add separator` lalu hapus bila tak dipakai. *Selesai bila:* tidak ada file di `src/components/ui/` yang berubah.
+- [x] **T-UI.A.4** Konfigurasikan `components.json` (`ui` → `@/components/shadcn`, CSS `src/index.css`, `cssVariables: true`). — 2026-10-27 — `shadcn info` memvalidasi alias; `add separator` membuat file hanya di `components/shadcn`, lalu dihapus. Tidak ada file di `components/ui/` yang berubah; typecheck, lint, build, unit test, e2e, dan 15 baseline visual lulus.
 - [ ] **T-UI.A.5** Aturan global `prefers-reduced-motion`; putuskan nasib paket `motion` (0 import saat ini) → hapus atau catat alasan pakai di Decision Log.
 
 ## FASE UI-B — Router (adapter)
