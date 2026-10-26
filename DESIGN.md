@@ -272,3 +272,5 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Indikator offline/sinkron, FAB, target sentuh 44px | Tidak ada | Ada | Disengaja |
 
 Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel ini (nama, alasan, tanggal).
+
+- Komponen shell hasil `shadcn add` (Sidebar, Sheet, Tooltip, Separator, Collapsible, ScrollArea, Avatar, Breadcrumb, DropdownMenu, Skeleton, serta Button/Input pendukung) memakai helper `cn` yang sudah ada di `components/ui/utils`; variabel warna sidebar bawaan generator dihapus agar seluruhnya mengikuti token §2.7. — 2026-10-27
