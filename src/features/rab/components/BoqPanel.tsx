@@ -165,11 +165,11 @@ export function BoqPanel() {
   };
 
   if (!organizationId) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.boqOrganizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.boqOrganizationMissing}</p>;
   }
 
   if (!isSupabaseLive) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.boqOffline}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.boqOffline}</p>;
   }
 
   if (!project) {
@@ -305,7 +305,7 @@ export function BoqPanel() {
         />
       ) : (
         <>
-          {readOnly && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.boqReadOnly}</p>}
+          {readOnly && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted-foreground">{messages.boqReadOnly}</p>}
           {editorOpen ? (
             <BoqDraftEditor
               form={form}

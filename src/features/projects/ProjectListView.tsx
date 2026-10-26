@@ -168,7 +168,7 @@ export function ProjectListView({
         </Select>
       </section>
 
-      <p className="text-sm text-muted">{messages.projectCount(filteredProjects.length)}</p>
+      <p className="text-sm text-muted-foreground">{messages.projectCount(filteredProjects.length)}</p>
 
       {noProjectsYet || noMatchingProjects ? (
         <EmptyState
@@ -193,7 +193,7 @@ export function ProjectListView({
               <Card className="h-full">
                 <CardHeader className="flex-row items-start justify-between gap-3">
                   <div className="min-w-0 space-y-1">
-                    <p className="font-mono text-xs text-muted">{project.code}</p>
+                    <p className="font-mono text-xs text-muted-foreground">{project.code}</p>
                     <button
                       type="button"
                       onClick={() => openProjectDetail(project.id)}
@@ -209,7 +209,7 @@ export function ProjectListView({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm font-medium text-text">{project.client_name}</p>
-                  <div className="flex items-start gap-2 text-sm text-muted">
+                  <div className="flex items-start gap-2 text-sm text-muted-foreground">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <div className="min-w-0">
                       <p>{project.location_address}, {project.location_city}, {project.location_province}</p>
@@ -223,21 +223,21 @@ export function ProjectListView({
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
                     <span>{formatTanggal(project.start_date)} – {formatTanggal(project.end_date)}</span>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 rounded-md bg-surface-2 p-3">
                     <div>
-                      <dt className="text-xs text-muted">{messages.contractValue}</dt>
+                      <dt className="text-xs text-muted-foreground">{messages.contractValue}</dt>
                       <dd className="mt-1 text-sm font-semibold tabular-nums text-text">{formatRupiah(calculateEffectiveProjectContractValue(project))}</dd>
                     </div>
                     <div>
-                      <dt className="text-xs text-muted">{messages.retention}</dt>
+                      <dt className="text-xs text-muted-foreground">{messages.retention}</dt>
                       <dd className="mt-1 text-sm font-semibold tabular-nums text-text">{project.retention_percent}%</dd>
                     </div>
                   </dl>
-                  <div className="grid gap-1 text-xs text-muted">
+                  <div className="grid gap-1 text-xs text-muted-foreground">
                     <p>{messages.projectManager}: {project.project_manager_name || memberNames.get(project.project_manager_id ?? '') || messages.unassigned}</p>
                     <p>{messages.siteManager}: {project.site_manager_name || memberNames.get(project.site_manager_id ?? '') || messages.unassigned}</p>
                   </div>

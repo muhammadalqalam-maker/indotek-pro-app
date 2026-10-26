@@ -74,7 +74,7 @@ export function PurchaseRequestDialog({
           <h2 id="purchase-request-title" className="text-lg font-semibold text-text">
             {messages.requestFormTitle}
           </h2>
-          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </header>

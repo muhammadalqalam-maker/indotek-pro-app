@@ -55,7 +55,7 @@ export function BoqDraftEditor({
             <Input label={messages.boqProfit} type="number" min="0" max="100" step="0.01" inputMode="decimal" suffix="%" error={form.formState.errors.profit_percent?.message} disabled={readOnly} {...form.register('profit_percent')} />
             <Input label={messages.boqPpn} type="number" min="0" max="100" step="0.01" inputMode="decimal" suffix="%" error={form.formState.errors.ppn_percent?.message} disabled={readOnly} {...form.register('ppn_percent')} />
           </div>
-          {units.length === 0 && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.boqNoUnits}</p>}
+          {units.length === 0 && <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted-foreground">{messages.boqNoUnits}</p>}
         </section>
 
         <div className="grid gap-4">

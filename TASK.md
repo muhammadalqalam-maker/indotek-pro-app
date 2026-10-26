@@ -10,6 +10,11 @@
 - [!] **T-2.7 Impor/ekspor BOQ** — ditunda atas arahan pengguna (2026-10-20).
 - [ ] **T-6.1–T-6.4** SaaS (paket langganan, onboarding mandiri, penagihan, super-admin) — backlog.
 
+## Cara agent memilih task
+
+- Ambil satu task ID dari `TASK.md`: pilih task aktif teratas yang belum selesai, kecuali pengguna mengarahkan lain. Kerjakan hanya task tersebut.
+- Jika requirement task ambigu atau bertentangan, berhenti dan minta arahan sebelum melanjutkan.
+
 ## Aturan Fase UI
 
 - Branch `redesign/shadcn-admin`; verifikasi via Vercel Preview; **merge ke `main` hanya atas persetujuan pengguna**.
@@ -21,11 +26,11 @@
 
 - [x] **T-UI.0.1** Buat branch; tambahkan baseline screenshot Playwright (375/768/1280, light/dark) untuk setiap tab di `NAVIGATION_MODULES` (mode demo). — 2026-10-26 — Branch redesign sudah aktif; baseline 15 tab (90 screenshot) dan `npm run e2e:visual` lulus dua kali berturut-turut. Typecheck, lint, build, 198 unit test, dan 5 e2e lulus.
 - [x] **T-UI.0.2** Audit shadcn-admin v2.x: clone referensi `v2.2.1` di luar repo; rekam interaksi desktop/mobile; dokumentasikan perilaku, timing, kelas dan batasan source di `docs/ui/shadcn-admin-parity.md`; isi temuan *Audit* di DESIGN §13 dan nilai motion §2.6. — 2026-10-26 — Rekaman dan source tag dipertahankan di luar repo; semua baris Audit terisi.
-- [ ] **T-UI.0.3** Keputusan pengguna **D-UI-1** (identitas: navy+amber *atau* netral) dan persetujuan D-UI-2…4 di bawah. *Selesai bila:* kolom Status Decision Log terisi.
+- [x] **T-UI.0.3** Keputusan pengguna D-UI-1 dan persetujuan D-UI-2…4 dicatat di Decision Log. — 2026-10-26 — Semua keputusan disetujui; D-UI-1 memilih identitas netral seperti template.
 
 ## FASE UI-A — Fondasi (tampilan tidak boleh berubah)
 
-- [ ] **T-UI.A.1** Tabrakan token `muted`: (1) tambah `--color-muted-foreground: var(--text-muted)`; (2) codemod `text-muted` → `text-muted-foreground` (±614 titik, termasuk varian `dark:`/`hover:`/`group-hover:`, jangan menyentuh yang sudah `-foreground`); (3) baru definisikan `--color-muted` sebagai `--surface-2`. *Selesai bila:* 0 sisa `text-muted` lama, diff visual nol.
+- [x] **T-UI.A.1** Tabrakan token `muted`: tambahkan `--color-muted-foreground`, migrasikan kelas teks lama, lalu petakan `--color-muted` ke `--surface-2`. — 2026-10-26 — 594 kelas di 131 file; tidak ada sisa kelas lama atau perubahan baseline visual.
 - [ ] **T-UI.A.2** Pasang `tw-animate-css` (import di `index.css`) dan `class-variance-authority`. *Selesai bila:* Dialog yang ada kini benar-benar beranimasi (verifikasi di browser) tanpa regresi.
 - [ ] **T-UI.A.3** Token bridge di `index.css` sesuai DESIGN §2.7 (`@theme inline`, light + `.dark`). Tidak menambah warna baru, radius tidak ditimpa. *Selesai bila:* kontras primary dark ≥ 4.5:1 terdokumentasi.
 - [ ] **T-UI.A.4** `components.json` (alias `ui` → `@/components/shadcn`, CSS `src/index.css`, `cssVariables: true`). Uji `shadcn add separator` lalu hapus bila tak dipakai. *Selesai bila:* tidak ada file di `src/components/ui/` yang berubah.
@@ -76,10 +81,10 @@
 
 | ID | Keputusan | Status |
 |---|---|---|
-| D-UI-1 | Identitas visual: pertahankan navy + amber (default) atau netral ala template | Menunggu pengguna |
-| D-UI-2 | Router: React Router v7 + adapter (bukan TanStack Router) | Diusulkan |
-| D-UI-3 | Dependensi baru: `tw-animate-css`, `class-variance-authority`, `@tanstack/react-table`, paket Radix tambahan; Sonner opsional | Diusulkan |
-| D-UI-4 | Komponen shadcn di `src/components/shadcn/`; barrel `components/ui` sebagai satu-satunya titik impor | Diusulkan |
+| D-UI-1 | Identitas visual: netral seperti template shadcn-admin | Disetujui — 2026-10-26 |
+| D-UI-2 | Router: React Router v7 + adapter (bukan TanStack Router) | Disetujui — 2026-10-26 |
+| D-UI-3 | Dependensi UI: `tw-animate-css`, `class-variance-authority`, `@tanstack/react-table`, paket Radix tambahan; Sonner opsional | Disetujui — 2026-10-26 |
+| D-UI-4 | Komponen shadcn di `src/components/shadcn/`; barrel `components/ui` sebagai satu-satunya titik impor | Disetujui — 2026-10-26 |
 
 ## Backlog / Temuan (Fase UI)
 

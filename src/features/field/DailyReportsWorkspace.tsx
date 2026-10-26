@@ -188,7 +188,7 @@ export function DailyReportsWorkspace() {
 
   if (!canView) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">
+      <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">
         {messages.accessDenied}
       </div>
     );

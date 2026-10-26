@@ -36,7 +36,7 @@ export function ProjectDocumentCard({
             <FileText className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-muted">{messages.categories[document.category]}</p>
+            <p className="text-xs font-semibold text-muted-foreground">{messages.categories[document.category]}</p>
             <p className="truncate text-xs text-subtle">{document.document_number}</p>
           </div>
         </div>
@@ -50,9 +50,9 @@ export function ProjectDocumentCard({
       </div>
       <div>
         <h2 className="line-clamp-2 text-sm font-semibold text-text">{document.title}</h2>
-        <p className="mt-1 text-xs text-muted">{projectName}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{projectName}</p>
       </div>
-      <div className="grid gap-1 rounded-lg bg-surface-2 p-3 text-xs text-muted">
+      <div className="grid gap-1 rounded-lg bg-surface-2 p-3 text-xs text-muted-foreground">
         <p className="truncate">{latestVersion?.file_name ?? messages.versionMissing}</p>
         <p>{latestVersion ? `${messages.revision} ${latestVersion.version_number}` : messages.versionMissing}</p>
         <p>{messages.uploaded} {formatTanggal(latestVersion?.created_at)}</p>

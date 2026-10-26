@@ -105,7 +105,7 @@ export function EquipmentView() {
   };
 
   if (!can('warehouse', 'view')) {
-    return <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">Akun Anda tidak memiliki izin untuk melihat peralatan.</section>;
+    return <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">Akun Anda tidak memiliki izin untuk melihat peralatan.</section>;
   }
 
   return (
@@ -113,7 +113,7 @@ export function EquipmentView() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
         </div>
         {canCreate && (
           <button
@@ -208,7 +208,7 @@ export function EquipmentView() {
           {activeTab === 'assets' && (
             filteredAssets.length === 0 ? (
               <div className="rounded-xl border border-border bg-surface p-6 text-center">
-                <Wrench className="mx-auto size-7 text-muted" aria-hidden="true" />
+                <Wrench className="mx-auto size-7 text-muted-foreground" aria-hidden="true" />
                 <p className="mt-2 text-sm font-semibold text-text">{messages.noAssets}</p>
                 {canCreate && (
                   <button type="button" onClick={() => setAssetForm(null)} className="mt-4 min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white">
@@ -242,9 +242,9 @@ export function EquipmentView() {
                 </button>
               )}
               {projects.length === 0 ? (
-                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noProjects}</p>
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noProjects}</p>
               ) : filteredUsage.length === 0 ? (
-                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noUsage}</p>
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noUsage}</p>
               ) : filteredUsage.map((entry) => (
                 <EquipmentUsageCard
                   key={entry.id}
@@ -265,7 +265,7 @@ export function EquipmentView() {
                 </button>
               )}
               {filteredMaintenance.length === 0 ? (
-                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">{messages.noMaintenance}</p>
+                <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noMaintenance}</p>
               ) : filteredMaintenance.map((entry) => (
                 <EquipmentMaintenanceCard
                   key={entry.id}

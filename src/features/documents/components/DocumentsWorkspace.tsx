@@ -193,7 +193,7 @@ export function DocumentsWorkspace({ projectId }: { projectId?: string }) {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-text sm:text-2xl">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted">
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
             {activeProject ? messages.projectDescription.replace('{project}', activeProject.name) : messages.description}
           </p>
         </div>

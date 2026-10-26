@@ -86,7 +86,7 @@ export function DocumentNumberingPanel() {
   };
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   return (
@@ -96,12 +96,12 @@ export function DocumentNumberingPanel() {
           <FileText className="h-5 w-5 text-primary-600" aria-hidden="true" />
           {messages.documentNumbering}
         </h2>
-        <p className="mt-1 text-sm text-muted">{messages.documentNumberingHint}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.documentNumberingHint}</p>
       </div>
       <p className="w-fit rounded-md bg-surface-2 px-3 py-2 text-sm font-medium text-text">
         {messages.year}: {year}
       </p>
-      {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.permissionReadOnly}</p>}
+      {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.permissionReadOnly}</p>}
 
       {isLoading ? (
         <div className="grid gap-3" role="status" aria-busy="true" aria-label={messages.loadingSettings}>
@@ -127,7 +127,7 @@ export function DocumentNumberingPanel() {
               <div key={entity} className="grid gap-3 rounded-lg border border-border p-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-end">
                 <div>
                   <p className="text-sm font-semibold text-text">{messages.documentTypeNames[entity]}</p>
-                  <p className="mt-1 text-xs text-muted">{messages.lastNumber}: {lastNumber}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{messages.lastNumber}: {lastNumber}</p>
                 </div>
                 <Input
                   label={messages.prefix}
@@ -138,7 +138,7 @@ export function DocumentNumberingPanel() {
                   className="text-sm uppercase"
                 />
                 <div>
-                  <p className="text-xs font-medium text-muted">{messages.preview}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{messages.preview}</p>
                   <p className="mt-1 break-all font-mono text-sm text-text">{preview}</p>
                 </div>
                 <Button

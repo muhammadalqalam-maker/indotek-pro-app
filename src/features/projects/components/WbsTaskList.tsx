@@ -40,17 +40,17 @@ export function WbsTaskList({
           <Card key={task.id}>
             <CardContent className="space-y-3 p-4 sm:p-5">
               <div className="flex min-w-0 items-start gap-3">
-                <span className="shrink-0 pt-0.5 font-mono text-xs font-semibold tabular-nums text-muted">
+                <span className="shrink-0 pt-0.5 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
                   {task.code}
                 </span>
                 <div className="min-w-0 flex-1" style={{ paddingInlineStart: `${Math.min(task.depth, 6) * 12}px` }}>
                   <div className="flex flex-wrap items-center gap-2">
-                    {task.depth > 0 && <CornerDownRight className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
+                    {task.depth > 0 && <CornerDownRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
                     <h3 className="break-words text-sm font-semibold text-text">{task.title}</h3>
                     {task.is_milestone && <Badge variant="warning">{messages.milestone}</Badge>}
                   </div>
                   {task.description && (
-                    <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted">{task.description}</p>
+                    <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">{task.description}</p>
                   )}
                 </div>
                 {editable && (
@@ -92,21 +92,21 @@ export function WbsTaskList({
 
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-md bg-surface-2 p-3 text-xs sm:grid-cols-4">
                 <div>
-                  <dt className="text-muted">{messages.startDate}</dt>
+                  <dt className="text-muted-foreground">{messages.startDate}</dt>
                   <dd className="mt-1 font-medium tabular-nums text-text">{formatTanggal(task.start_date)}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted">{messages.endDate}</dt>
+                  <dt className="text-muted-foreground">{messages.endDate}</dt>
                   <dd className="mt-1 font-medium tabular-nums text-text">{formatTanggal(task.end_date)}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted">{messages.duration}</dt>
+                  <dt className="text-muted-foreground">{messages.duration}</dt>
                   <dd className="mt-1 font-medium tabular-nums text-text">
                     {getTaskDurationDays(task)} {messages.days}
                   </dd>
                 </div>
                 <div className="min-w-0">
-                  <dt className="text-muted">{messages.predecessor}</dt>
+                  <dt className="text-muted-foreground">{messages.predecessor}</dt>
                   <dd className="mt-1 break-words font-medium text-text">
                     {predecessors.length ? predecessors.join(', ') : messages.noPredecessor}
                   </dd>

@@ -69,7 +69,7 @@ export function ToolboxMeetingForm({
     <form onSubmit={(event) => void submit(event)} className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 sm:p-5">
       <div className="sm:col-span-2">
         <h2 className="text-lg font-semibold text-text">{messages.addToolbox}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.toolboxDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.toolboxDescription}</p>
       </div>
       {(validationSummary || form.formState.errors.root?.serverError?.message) && (
         <div ref={errorSummaryRef} role="alert" tabIndex={-1} className="rounded-md border border-danger/30 bg-danger/10 p-3 text-sm text-danger sm:col-span-2">

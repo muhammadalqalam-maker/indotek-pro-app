@@ -58,7 +58,7 @@ export function PunchListList({
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
         <label className="relative grid gap-1.5 text-sm font-medium text-text">
           <span className="sr-only">{messages.qualitySearch}</span>
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <input
             type="search"
             placeholder={messages.qualitySearch}
@@ -68,7 +68,7 @@ export function PunchListList({
           />
         </label>
         <label className="grid gap-1.5 text-sm font-medium text-text">
-          <span className="flex items-center gap-2 text-muted"><Filter className="size-4" aria-hidden="true" /> {messages.status}</span>
+          <span className="flex items-center gap-2 text-muted-foreground"><Filter className="size-4" aria-hidden="true" /> {messages.status}</span>
           <select
             value={statusFilter}
             onChange={(event) => {
@@ -85,7 +85,7 @@ export function PunchListList({
       </div>
       {filteredItems.length === 0 ? (
         <div className="grid justify-items-center gap-3 rounded-xl border border-border bg-surface p-6 text-center">
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             {searchTerm || statusFilter !== 'all'
               ? messages.punchNoSearchResults
               : messages.qualityEmptyPunchList}

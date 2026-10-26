@@ -92,15 +92,15 @@ export function WorkerAttendanceForm({
       <header className="flex flex-col gap-1 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold text-text">{projectName}</h2>
-          <p className="text-sm text-muted">{messages.attendanceCount(recordedCount, workers.length)}</p>
+          <p className="text-sm text-muted-foreground">{messages.attendanceCount(recordedCount, workers.length)}</p>
         </div>
-        <span className="inline-flex items-center gap-2 text-sm text-muted">
+        <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
           <Clock3 className="size-4" aria-hidden="true" />
           {attendanceDate}
         </span>
       </header>
       {recordedCount === 0 && (
-        <p className="rounded-lg border border-border bg-surface p-3 text-sm text-muted">{messages.noAttendance}</p>
+        <p className="rounded-lg border border-border bg-surface p-3 text-sm text-muted-foreground">{messages.noAttendance}</p>
       )}
 
       {workers.map((worker, index) => {
@@ -110,7 +110,7 @@ export function WorkerAttendanceForm({
           <article key={worker.id} className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(13rem,1fr)_minmax(10rem,0.7fr)_minmax(10rem,0.7fr)] sm:items-end">
             <div className="min-w-0">
               <h3 className="truncate font-semibold text-text">{worker.full_name}</h3>
-              <p className="mt-1 text-sm text-muted">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {messages.trades[worker.role_trade]} · {worker.nik}
               </p>
             </div>
@@ -149,7 +149,7 @@ export function WorkerAttendanceForm({
                 step="0.5"
                 disabled={isSaving || (status !== 'hadir' && status !== 'lembur')}
                 {...register(`records.${index}.work_hours`, { valueAsNumber: true })}
-                className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted"
+                className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted-foreground"
               />
             </label>
 
@@ -162,7 +162,7 @@ export function WorkerAttendanceForm({
                 step="0.5"
                 disabled={isSaving || (status !== 'hadir' && status !== 'lembur')}
                 {...register(`records.${index}.overtime_hours`, { valueAsNumber: true })}
-                className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted"
+                className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-muted-foreground"
               />
             </label>
           </article>

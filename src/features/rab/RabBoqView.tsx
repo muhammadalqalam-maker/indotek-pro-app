@@ -25,7 +25,7 @@ export const RabBoqView = () => {
       <header className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(14rem,22rem)] sm:items-end">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text">{messages.boqTitle}</h1>
-          <p className="mt-1 text-sm text-muted">{messages.boqDescription}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.boqDescription}</p>
         </div>
         <Select
           name="project-selector"
@@ -83,11 +83,11 @@ export const RabBoqView = () => {
                     <li key={resource.id} className="flex items-start justify-between gap-3 py-3">
                       <div className="min-w-0">
                         <p className="font-medium text-text">{resource.name}</p>
-                        <p className="text-xs text-muted">{resource.code}</p>
+                        <p className="text-xs text-muted-foreground">{resource.code}</p>
                       </div>
                       <p className="shrink-0 text-right text-sm font-semibold tabular-nums text-text">
                         {formatRupiah(resource.unit_price)}
-                        <span className="block text-xs font-normal text-muted">/{resource.unit}</span>
+                        <span className="block text-xs font-normal text-muted-foreground">/{resource.unit}</span>
                       </p>
                     </li>
                   ))}

@@ -27,7 +27,7 @@ function statusClasses(status: ProcurementPurchaseRequest['status']): string {
   if (status === 'approved') return 'bg-success-bg text-success';
   if (status === 'rejected') return 'bg-danger-bg text-danger';
   if (status === 'submitted') return 'bg-warning-bg text-warning';
-  return 'bg-surface-2 text-muted';
+  return 'bg-surface-2 text-muted-foreground';
 }
 
 export function ProcurementWorkflowWorkspace({
@@ -104,7 +104,7 @@ export function ProcurementWorkflowWorkspace({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 text-sm text-muted">{messages.approvalFlow}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.approvalFlow}</p>
         </div>
         {canRequest && (
           <button
@@ -134,7 +134,7 @@ export function ProcurementWorkflowWorkspace({
       ) : requests.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-surface p-8 text-center">
           <h3 className="font-semibold text-text">{messages.noRequests}</h3>
-          <p className="mt-1 text-sm text-muted">{messages.noRequestsHint}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.noRequestsHint}</p>
         </div>
       ) : (
         <div className="grid gap-3">
@@ -148,10 +148,10 @@ export function ProcurementWorkflowWorkspace({
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="font-semibold text-text">{request.pr_number}</h3>
                       <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses(request.status)}`}>{statusLabel(request.status)}</span>
-                      <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted">{messages[request.urgency]}</span>
+                      <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted-foreground">{messages[request.urgency]}</span>
                     </div>
-                    <p className="mt-1 text-sm text-muted">{request.project_name} · {request.requester_name} · {request.department}</p>
-                    <p className="mt-1 text-xs text-muted">{messages.required}: {formatTanggal(request.required_date)}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{request.project_name} · {request.requester_name} · {request.department}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{messages.required}: {formatTanggal(request.required_date)}</p>
                   </div>
                   <p className="font-semibold tabular-nums text-text">{formatRupiah(request.total_estimated_amount)}</p>
                 </header>
@@ -160,7 +160,7 @@ export function ProcurementWorkflowWorkspace({
                   {request.items.map((item) => (
                     <li key={item.id} className="text-sm text-text">
                       <span className="font-medium">{item.item_name}</span>
-                      <span className="text-muted"> · {item.quantity} {item.unit}</span>
+                      <span className="text-muted-foreground"> · {item.quantity} {item.unit}</span>
                     </li>
                   ))}
                 </ul>
@@ -181,11 +181,11 @@ export function ProcurementWorkflowWorkspace({
                       )}
                     </div>
                     {requestQuotes.length === 0 ? (
-                      <p className="text-sm text-muted">{messages.noQuotes}</p>
+                      <p className="text-sm text-muted-foreground">{messages.noQuotes}</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full min-w-[32rem] text-left text-sm">
-                          <thead className="text-xs text-muted">
+                          <thead className="text-xs text-muted-foreground">
                             <tr>
                               <th className="py-2 pr-3">{messages.vendor}</th>
                               <th className="py-2 pr-3">{messages.quoteDate}</th>
@@ -197,10 +197,10 @@ export function ProcurementWorkflowWorkspace({
                           <tbody className="divide-y divide-border">
                             {requestQuotes.map((quote) => (
                               <tr key={quote.id}>
-                                <td className="py-2 pr-3 font-medium text-text">{quote.vendor_name}<span className="block text-xs font-normal text-muted">{quote.quote_number}</span></td>
-                                <td className="py-2 pr-3 text-muted">{formatTanggal(quote.quote_date)}</td>
-                                <td className="py-2 pr-3 text-right tabular-nums text-muted">{formatRupiah(quote.subtotal)}</td>
-                                <td className="py-2 pr-3 text-right tabular-nums text-muted">{formatRupiah(quote.ppn_amount)}</td>
+                                <td className="py-2 pr-3 font-medium text-text">{quote.vendor_name}<span className="block text-xs font-normal text-muted-foreground">{quote.quote_number}</span></td>
+                                <td className="py-2 pr-3 text-muted-foreground">{formatTanggal(quote.quote_date)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums text-muted-foreground">{formatRupiah(quote.subtotal)}</td>
+                                <td className="py-2 pr-3 text-right tabular-nums text-muted-foreground">{formatRupiah(quote.ppn_amount)}</td>
                                 <td className="py-2 text-right font-semibold tabular-nums text-text">{formatRupiah(quote.grand_total)}</td>
                               </tr>
                             ))}

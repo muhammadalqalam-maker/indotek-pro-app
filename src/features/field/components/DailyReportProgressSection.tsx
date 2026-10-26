@@ -236,7 +236,7 @@ export function DailyReportProgressSection({
     <section className="space-y-4 rounded-lg border border-border bg-surface p-4 sm:p-5">
       <header className="space-y-1">
         <h3 className="text-base font-semibold text-text">{messages.progressSectionTitle}</h3>
-        <p className="text-sm text-muted">{messages.progressSectionDescription}</p>
+        <p className="text-sm text-muted-foreground">{messages.progressSectionDescription}</p>
       </header>
 
       {!isOnline && (
@@ -245,13 +245,13 @@ export function DailyReportProgressSection({
         </p>
       )}
       {!canEditReport && (
-        <p className="rounded-md bg-surface-2 p-3 text-sm text-muted" role="status">
+        <p className="rounded-md bg-surface-2 p-3 text-sm text-muted-foreground" role="status">
           {reportStatus === DAILY_REPORT_STATUSES.draft ? messages.progressAccessDenied : messages.progressReadOnly}
         </p>
       )}
 
       {overview.versions.length === 0 ? (
-        <p className="rounded-md border border-border p-4 text-sm text-muted">{messages.progressNoBoq}</p>
+        <p className="rounded-md border border-border p-4 text-sm text-muted-foreground">{messages.progressNoBoq}</p>
       ) : (
         <>
           <Select
@@ -270,7 +270,7 @@ export function DailyReportProgressSection({
           </Select>
 
           {workItems.length === 0 ? (
-            <p className="rounded-md border border-border p-4 text-sm text-muted">{messages.progressNoItems}</p>
+            <p className="rounded-md border border-border p-4 text-sm text-muted-foreground">{messages.progressNoItems}</p>
           ) : (
             <DailyReportProgressForm
               form={form}

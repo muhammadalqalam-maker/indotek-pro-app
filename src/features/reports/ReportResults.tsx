@@ -38,9 +38,9 @@ export function ReportResults({
       <Card>
         <CardContent className="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium text-muted">{recordCountLabel}</p>
+            <p className="text-xs font-medium text-muted-foreground">{recordCountLabel}</p>
             <p className="text-2xl font-bold tabular-nums text-text">{rows.length}</p>
-            <p className="text-sm text-muted">{periodLabel} · {projectLabel}</p>
+            <p className="text-sm text-muted-foreground">{periodLabel} · {projectLabel}</p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Button
@@ -70,14 +70,14 @@ export function ReportResults({
             <CardContent className="space-y-3 pt-4">
               <div className="min-w-0">
                 <p className="break-words font-semibold text-text">{cellValue(row, columns[0])}</p>
-                <p className="text-sm text-muted">
+                <p className="text-sm text-muted-foreground">
                   {cellValue(row, columns[1])} · {cellValue(row, columns[2])}
                 </p>
               </div>
               <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
                 {columns.slice(3).map((column) => (
                   <div key={column.key} className="min-w-0">
-                    <dt className="text-xs text-muted">{columnLabel(column.key)}</dt>
+                    <dt className="text-xs text-muted-foreground">{columnLabel(column.key)}</dt>
                     <dd className="break-words font-medium text-text">{cellValue(row, column)}</dd>
                   </div>
                 ))}
@@ -90,7 +90,7 @@ export function ReportResults({
       <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
         <table className="w-full table-auto border-collapse text-left text-sm">
           <caption className="sr-only">{title}</caption>
-          <thead className="bg-surface-2 text-xs font-semibold text-muted">
+          <thead className="bg-surface-2 text-xs font-semibold text-muted-foreground">
             <tr>
               {columns.map((column) => (
                 <th key={column.key} scope="col" className="px-3 py-3">{columnLabel(column.key)}</th>

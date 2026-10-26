@@ -24,8 +24,8 @@ export function BoqWorkspaceHeader({
     <header className="grid gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm sm:grid-cols-[minmax(14rem,1fr)_minmax(14rem,20rem)] sm:items-end sm:p-6">
       <div>
         <h2 className="text-lg font-semibold text-text">{messages.boqTitle}</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted">{messages.boqDescription}</p>
-        <p className="mt-2 text-sm text-muted">{projectCode} · {projectName}</p>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{messages.boqDescription}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{projectCode} · {projectName}</p>
       </div>
       {versions.length > 0 && (
         <Select

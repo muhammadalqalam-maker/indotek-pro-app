@@ -382,7 +382,7 @@ export const FinanceView: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {isLoading ? (
-                  <tr><td className="p-6 text-center text-sm text-muted" colSpan={8}>Memuat invoice termin…</td></tr>
+                  <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={8}>Memuat invoice termin…</td></tr>
                 ) : organizationDataError ? (
                   <tr>
                     <td className="p-6 text-center" colSpan={8}>
@@ -391,7 +391,7 @@ export const FinanceView: React.FC = () => {
                     </td>
                   </tr>
                 ) : filteredInvoices.length === 0 ? (
-                  <tr><td className="p-6 text-center text-sm text-muted" colSpan={8}>Belum ada invoice untuk filter ini. Terbitkan invoice dari termin proyek.</td></tr>
+                  <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={8}>Belum ada invoice untuk filter ini. Terbitkan invoice dari termin proyek.</td></tr>
                 ) : filteredInvoices.map((inv) => (
                   <tr key={inv.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                     <td className="py-3.5 px-4">
@@ -507,7 +507,7 @@ export const FinanceView: React.FC = () => {
                       <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
                     </td></tr>
                   ) : filteredCashTransactions.length === 0 ? (
-                    <tr><td className="p-6 text-center text-sm text-muted" colSpan={6}>{messages.cashTransactionsEmpty}</td></tr>
+                    <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={6}>{messages.cashTransactionsEmpty}</td></tr>
                   ) : filteredCashTransactions.map((transaction) => (
                     <tr key={transaction.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
                       <td className="px-4 py-3.5">
@@ -564,20 +564,20 @@ export const FinanceView: React.FC = () => {
                   <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
                 </div>
               ) : filteredCashTransactions.length === 0 ? (
-                <p className="p-4 text-center text-sm text-muted">{messages.cashTransactionsEmpty}</p>
+                <p className="p-4 text-center text-sm text-muted-foreground">{messages.cashTransactionsEmpty}</p>
               ) : filteredCashTransactions.map((transaction) => (
                 <article className="space-y-3 rounded-xl border border-border p-4" key={transaction.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-text">{transaction.transaction_number}</p>
-                      <p className="mt-1 text-xs text-muted">{formatDateIndo(transaction.transaction_date)} · {transaction.category}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{formatDateIndo(transaction.transaction_date)} · {transaction.category}</p>
                     </div>
                     <span className={`shrink-0 text-sm font-bold tabular-nums ${transaction.type === 'inflow' ? 'text-success' : 'text-text'}`}>
                       {transaction.type === 'inflow' ? '+' : '−'} {formatRupiah(transaction.amount)}
                     </span>
                   </div>
                   <p className="text-sm text-text">{transaction.description}</p>
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
                     <span>{transaction.recipient_or_payer} · {transaction.payment_method}</span>
                     <span className="font-semibold">{transaction.status === CASH_TRANSACTION_STATUSES.verified ? messages.verified : messages.pending}</span>
                   </div>
@@ -624,7 +624,7 @@ export const FinanceView: React.FC = () => {
             </div>
           ) : filteredKasbonList.length === 0 ? (
             <div className="rounded-xl border border-border bg-surface p-6 text-center">
-              <p className="text-sm text-muted">{messages.cashAdvanceEmpty}</p>
+              <p className="text-sm text-muted-foreground">{messages.cashAdvanceEmpty}</p>
             </div>
           ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -675,12 +675,12 @@ export const FinanceView: React.FC = () => {
                     {statusLabels[k.settlement_status]}
                   </span>
                 </div>
-                {k.decision_comment && <p className="rounded-md bg-surface-2 p-2 text-xs text-muted">{k.decision_comment}</p>}
+                {k.decision_comment && <p className="rounded-md bg-surface-2 p-2 text-xs text-muted-foreground">{k.decision_comment}</p>}
                 {(k.paid_amount ?? 0) > 0 && (
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <p className="text-muted">Dibayar: <span className="font-semibold text-text">{formatRupiah(k.paid_amount ?? 0)}</span></p>
+                    <p className="text-muted-foreground">Dibayar: <span className="font-semibold text-text">{formatRupiah(k.paid_amount ?? 0)}</span></p>
                     {k.settlement_status === CASH_ADVANCE_STATUSES.settled && (
-                      <p className="text-muted">Realisasi: <span className="font-semibold text-text">{formatRupiah(k.settled_amount ?? 0)}</span></p>
+                      <p className="text-muted-foreground">Realisasi: <span className="font-semibold text-text">{formatRupiah(k.settled_amount ?? 0)}</span></p>
                     )}
                   </div>
                 )}
@@ -729,10 +729,10 @@ export const FinanceView: React.FC = () => {
           <section className="space-y-4">
             <div className="space-y-1">
               <h2 className="text-lg font-semibold text-text">{messages.grossProfitEstimate}</h2>
-              <p className="text-sm text-muted">{messages.profitLossBasisNote}</p>
+              <p className="text-sm text-muted-foreground">{messages.profitLossBasisNote}</p>
             </div>
             {financeReportProjects.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted">
+              <p className="rounded-lg border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
                 {messages.noProjectsForProfitLoss}
               </p>
             ) : (
@@ -753,16 +753,16 @@ export const FinanceView: React.FC = () => {
                           {p.code}
                         </span>
                         <h3 className="mt-1.5 text-base font-semibold text-text">{p.name}</h3>
-                        <p className="text-sm text-muted">{p.client_name}</p>
+                        <p className="text-sm text-muted-foreground">{p.client_name}</p>
                       </div>
 
                       <dl className="space-y-2.5 text-sm">
                         <div className="flex justify-between gap-3 border-b border-border py-1.5">
-                          <dt className="text-muted">{messages.effectiveContractValue}</dt>
+                          <dt className="text-muted-foreground">{messages.effectiveContractValue}</dt>
                           <dd className="font-semibold tabular-nums text-text">{formatRupiah(contractVal)}</dd>
                         </div>
                         <div className="flex justify-between gap-3 border-b border-border py-1.5">
-                          <dt className="text-muted">{messages.recordedRealizedCost}</dt>
+                          <dt className="text-muted-foreground">{messages.recordedRealizedCost}</dt>
                           <dd className="font-semibold tabular-nums text-danger">{formatRupiah(realizedCost)}</dd>
                         </div>
                         <div className="flex justify-between gap-3 rounded-md border border-border bg-surface-2 px-3 py-2 font-semibold">
@@ -773,7 +773,7 @@ export const FinanceView: React.FC = () => {
                         </div>
                       </dl>
 
-                      <div className="flex justify-between gap-3 text-xs text-muted">
+                      <div className="flex justify-between gap-3 text-xs text-muted-foreground">
                         <span>{messages.profitProgress}: {formatPercent(p.actual_progress)}</span>
                         <span>{messages.contractPeriod}: {formatDateIndo(p.end_date)}</span>
                       </div>

@@ -25,7 +25,7 @@ export function Textarea({ label, hint, error, id, className, ...props }: Textar
         {...props}
       />
       {(error || hint) && (
-        <p id={messageId} className={cn('text-xs', error ? 'text-danger' : 'text-muted')} role={error ? 'alert' : undefined}>
+        <p id={messageId} className={cn('text-xs', error ? 'text-danger' : 'text-muted-foreground')} role={error ? 'alert' : undefined}>
           {error || hint}
         </p>
       )}

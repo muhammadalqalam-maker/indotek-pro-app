@@ -126,7 +126,7 @@ export function MeasurementUnitsPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 id="measurement-units-title" className="text-base font-semibold text-text">{messages.units}</h3>
-          <p className="mt-1 text-sm text-muted">{messages.emptyUnits}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.emptyUnits}</p>
         </div>
         {editing && <Button variant="outline" size="sm" onClick={cancelEdit}><X className="h-4 w-4" aria-hidden="true" />{messages.cancel}</Button>}
       </div>
@@ -154,11 +154,11 @@ export function MeasurementUnitsPanel({
           <Button variant="outline" size="sm" onClick={() => void load()}>{messages.retry}</Button>
         </div>
       ) : units.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">{messages.emptyUnits}</p>
+        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted-foreground">{messages.emptyUnits}</p>
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
           <table className="w-full min-w-[500px] text-left text-sm">
-            <thead className="bg-surface-2 text-xs uppercase text-muted">
+            <thead className="bg-surface-2 text-xs uppercase text-muted-foreground">
               <tr>
                 <th scope="col" className="px-3 py-3">{messages.code}</th>
                 <th scope="col" className="px-3 py-3">{messages.name}</th>
@@ -168,7 +168,7 @@ export function MeasurementUnitsPanel({
             </thead>
             <tbody className="divide-y divide-border">
               {units.map((unit) => (
-                <tr key={unit.id} className={unit.deleted_at ? 'text-muted' : 'text-text'}>
+                <tr key={unit.id} className={unit.deleted_at ? 'text-muted-foreground' : 'text-text'}>
                   <td className="px-3 py-3 font-mono">{unit.code}</td>
                   <td className="px-3 py-3">{unit.name}{unit.deleted_at ? ` — ${messages.archive}` : ''}</td>
                   <td className="px-3 py-3">{unit.symbol}</td>

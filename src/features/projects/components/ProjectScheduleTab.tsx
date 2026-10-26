@@ -163,7 +163,7 @@ export function ProjectScheduleTab({ project }: ProjectScheduleTabProps) {
     return (
       <section className="space-y-3 rounded-lg border border-danger bg-surface p-4" role="alert">
         <p className="text-sm text-danger">{messages.loadFailed}</p>
-        <p className="break-words text-xs text-muted">{query.error.message}</p>
+        <p className="break-words text-xs text-muted-foreground">{query.error.message}</p>
         <Button variant="outline" onClick={() => void query.refetch()}>
           <RefreshCw className="h-4 w-4" aria-hidden="true" />{messages.retry}
         </Button>
@@ -182,7 +182,7 @@ export function ProjectScheduleTab({ project }: ProjectScheduleTabProps) {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-danger bg-surface p-3" role="alert">
           <div className="min-w-0">
             <p className="text-sm text-danger">{messages.loadFailed}</p>
-            <p className="mt-1 break-words text-xs text-muted">{query.error.message}</p>
+            <p className="mt-1 break-words text-xs text-muted-foreground">{query.error.message}</p>
           </div>
           <Button variant="outline" onClick={() => void query.refetch()}>
             <RefreshCw className="h-4 w-4" aria-hidden="true" />{messages.retry}
@@ -190,14 +190,14 @@ export function ProjectScheduleTab({ project }: ProjectScheduleTabProps) {
         </div>
       )}
       {isOnline && !editable && (
-        <p className="rounded-md bg-surface-2 p-3 text-sm text-muted" role="status">
+        <p className="rounded-md bg-surface-2 p-3 text-sm text-muted-foreground" role="status">
           {messages.noEditAccess}
         </p>
       )}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.description}</p>
         </div>
         {editable && (
           <Can module="projects" action="edit">

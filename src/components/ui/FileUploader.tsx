@@ -199,10 +199,10 @@ export function FileUploader({
         <span className="text-sm font-semibold text-text">
           {isProcessing ? 'Memproses berkas...' : 'Pilih berkas atau seret ke sini'}
         </span>
-        <span className="text-xs text-muted">
+        <span className="text-xs text-muted-foreground">
           Maks. {maxFiles} berkas · {formatFileSize(maxFileSizeBytes)} per berkas
         </span>
-        {hint && <span className="text-xs text-muted">{hint}</span>}
+        {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
       </div>
 
       {errors.length > 0 && (
@@ -220,19 +220,19 @@ export function FileUploader({
                 {preview ? (
                   <img src={preview} alt="" className="h-12 w-12 shrink-0 rounded-md object-cover" />
                 ) : (
-                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-surface-2 text-muted">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-surface-2 text-muted-foreground">
                     {file.type.startsWith('image/') ? <FileImage className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-text">{file.name}</p>
-                  <p className="text-xs text-muted">{formatFileSize(file.size)} · {statusLabel[uploadStatus]}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)} · {statusLabel[uploadStatus]}</p>
                   {uploadStatus === 'uploading' && uploadProgress !== undefined && (
                     <progress className="mt-1 h-1.5 w-full accent-primary-500" max={100} value={Math.max(0, Math.min(100, uploadProgress))} aria-label={`Progres unggah ${file.name}`} />
                   )}
                 </div>
                 {!disabled && uploadStatus !== 'uploading' && (
-                  <button type="button" onClick={() => removeFile(file)} className="grid h-11 w-11 shrink-0 place-items-center rounded-md text-muted hover:bg-danger-bg hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" aria-label={`Hapus ${file.name}`}>
+                  <button type="button" onClick={() => removeFile(file)} className="grid h-11 w-11 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-danger-bg hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" aria-label={`Hapus ${file.name}`}>
                     <Trash2 className="h-4 w-4" aria-hidden="true" />
                   </button>
                 )}

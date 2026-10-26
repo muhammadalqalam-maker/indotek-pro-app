@@ -98,7 +98,7 @@ export function WarehouseMovementDialog({
       >
         <header className="mb-5 flex items-start justify-between gap-3">
           <h2 id="warehouse-movement-title" className="text-lg font-semibold text-text">{messages.movementFormTitle}</h2>
-          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="mx-auto h-5 w-5" aria-hidden="true" />
           </button>
         </header>

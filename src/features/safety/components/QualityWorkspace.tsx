@@ -120,7 +120,7 @@ export function QualityWorkspace() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-text">{messages.qualityTab}</h2>
-          <p className="mt-1 max-w-3xl text-sm text-muted">
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
             {activeTab === 'inspections' ? messages.qualityInspectionDescription : messages.qualityPunchListDescription}
           </p>
         </div>
@@ -138,7 +138,7 @@ export function QualityWorkspace() {
       </header>
 
       {projects.length === 0 && (
-        <p className="rounded-xl border border-border bg-surface p-4 text-sm text-muted">{messages.noProjects}</p>
+        <p className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noProjects}</p>
       )}
 
       <div role="tablist" aria-label={messages.qualityTab} className="flex gap-2 overflow-x-auto border-b border-border">
@@ -153,7 +153,7 @@ export function QualityWorkspace() {
             disabled={activeForm !== null}
             onClick={() => setActiveTab(id)}
             className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${
-              activeTab === id ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'
+              activeTab === id ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'
             } disabled:cursor-not-allowed disabled:opacity-50`}
           >
             <Icon className="size-4" aria-hidden="true" />

@@ -14,7 +14,7 @@ export const SafetyQcView: React.FC = () => {
 
   if (!can('safety', 'view')) {
     return (
-      <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted">
+      <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">
         {messages.permissionDenied}
       </section>
     );
@@ -24,7 +24,7 @@ export const SafetyQcView: React.FC = () => {
     <section className="grid gap-5">
       <header>
         <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
-        <p className="mt-1 max-w-3xl text-sm text-muted">{messages.description}</p>
+        <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
       </header>
 
       <div role="tablist" aria-label={messages.title} className="flex gap-2 overflow-x-auto border-b border-border">
@@ -36,7 +36,7 @@ export const SafetyQcView: React.FC = () => {
           aria-controls="safety-qc-panel-safety"
           onClick={() => setActiveTab('safety')}
           className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${
-            activeTab === 'safety' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'
+            activeTab === 'safety' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'
           }`}
         >
           <ShieldCheck className="size-4" aria-hidden="true" />
@@ -50,7 +50,7 @@ export const SafetyQcView: React.FC = () => {
           aria-controls="safety-qc-panel-quality"
           onClick={() => setActiveTab('quality')}
           className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${
-            activeTab === 'quality' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'
+            activeTab === 'quality' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'
           }`}
         >
           <CheckCircle2 className="size-4" aria-hidden="true" />

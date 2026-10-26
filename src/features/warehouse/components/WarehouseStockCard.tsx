@@ -35,7 +35,7 @@ export function WarehouseStockCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="break-words text-sm font-semibold text-text">{item.item_name}</p>
-          <p className="mt-1 break-words text-xs text-muted">{item.item_code} · {item.category}</p>
+          <p className="mt-1 break-words text-xs text-muted-foreground">{item.item_code} · {item.category}</p>
         </div>
         <span className={`shrink-0 rounded-full border px-2 py-1 text-xs font-semibold ${statusClass}`}>
           {statusText}
@@ -43,19 +43,19 @@ export function WarehouseStockCard({
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 border-y border-border py-3 text-sm">
         <div>
-          <p className="text-xs text-muted">{messages.currentStock}</p>
+          <p className="text-xs text-muted-foreground">{messages.currentStock}</p>
           <p className="mt-1 font-semibold tabular-nums text-text">
             {formatVolume(item.current_stock)} {item.unit}
           </p>
         </div>
         <div>
-          <p className="text-xs text-muted">{messages.minimumStock}</p>
+          <p className="text-xs text-muted-foreground">{messages.minimumStock}</p>
           <p className="mt-1 font-semibold tabular-nums text-text">
             {formatVolume(item.minimum_stock)} {item.unit}
           </p>
         </div>
       </div>
-      <div className="mt-3 flex min-w-0 items-start justify-between gap-3 text-xs text-muted">
+      <div className="mt-3 flex min-w-0 items-start justify-between gap-3 text-xs text-muted-foreground">
         <div className="min-w-0 space-y-1">
           <p className="flex items-start gap-1.5">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />

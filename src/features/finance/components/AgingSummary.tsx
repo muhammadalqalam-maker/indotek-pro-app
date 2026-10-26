@@ -24,7 +24,7 @@ export function AgingSummary({ title, totals }: AgingSummaryProps) {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {buckets.map(([bucket, label]) => (
           <div className="rounded-lg border border-border bg-surface p-3" key={bucket}>
-            <p className="min-h-8 text-xs font-medium text-muted">{messages[label]}</p>
+            <p className="min-h-8 text-xs font-medium text-muted-foreground">{messages[label]}</p>
             <p className="mt-1 break-words text-sm font-semibold tabular-nums text-text">{formatRupiah(totals[bucket])}</p>
           </div>
         ))}

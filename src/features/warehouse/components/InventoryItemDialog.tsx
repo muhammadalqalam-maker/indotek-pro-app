@@ -61,7 +61,7 @@ export function InventoryItemDialog({
           <h2 id="warehouse-item-title" className="text-lg font-semibold text-text">
             {messages.itemFormTitle}
           </h2>
-          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="mx-auto h-5 w-5" aria-hidden="true" />
           </button>
         </header>

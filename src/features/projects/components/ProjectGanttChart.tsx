@@ -35,7 +35,7 @@ export function ProjectGanttChart({
     <Card>
       <CardHeader>
         <CardTitle>{messages.ganttChart}</CardTitle>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-muted-foreground">
           {messages.timeline}: {formatTanggal(timeline.startDate)} – {formatTanggal(timeline.endDate)}
         </p>
       </CardHeader>
@@ -43,7 +43,7 @@ export function ProjectGanttChart({
         <div className="overflow-x-auto rounded-md border border-border" role="region" aria-label={messages.ganttChart} tabIndex={0}>
           <div role="table" className="min-w-max">
             <div role="row" className="flex border-b border-border bg-surface-2">
-              <div role="columnheader" className="sticky left-0 z-10 flex w-56 shrink-0 items-center border-r border-border bg-surface-2 px-3 py-2 text-xs font-semibold text-muted">
+              <div role="columnheader" className="sticky left-0 z-10 flex w-56 shrink-0 items-center border-r border-border bg-surface-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
                 {messages.taskColumn}
               </div>
               <div
@@ -55,7 +55,7 @@ export function ProjectGanttChart({
                 {timeline.months.map((month) => (
                   <span
                     key={`${month.label}-${month.leftPercent}`}
-                    className="absolute inset-y-0 flex items-center border-l border-border px-2 text-xs font-medium text-muted"
+                    className="absolute inset-y-0 flex items-center border-l border-border px-2 text-xs font-medium text-muted-foreground"
                     style={{
                       left: `${month.leftPercent}%`,
                       width: `${month.widthPercent}%`,
@@ -75,7 +75,7 @@ export function ProjectGanttChart({
                     className="sticky left-0 z-10 flex min-h-12 w-56 shrink-0 items-center gap-2 border-r border-border bg-surface px-3 py-2"
                     aria-label={task.is_milestone ? `${task.title}, ${messages.milestone}` : task.title}
                   >
-                    <span className="shrink-0 font-mono text-xs tabular-nums text-muted">{task.code}</span>
+                    <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{task.code}</span>
                     <span className="min-w-0 truncate text-sm text-text" title={task.title}>{task.title}</span>
                   </div>
                   <div

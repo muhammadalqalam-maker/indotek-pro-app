@@ -21,12 +21,12 @@ export function DailyReportsView() {
     <main className="space-y-5">
       <header className="space-y-1">
         {activeProject && (
-          <p className="text-xs font-medium text-muted">
+          <p className="text-xs font-medium text-muted-foreground">
             {activeProject.code} · {activeProject.name}
           </p>
         )}
         <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
-        <p className="max-w-3xl text-sm text-muted">{messages.description}</p>
+        <p className="max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
       </header>
 
       <div role="tablist" aria-label={messages.title} className="flex gap-2 overflow-x-auto border-b border-border">
@@ -35,7 +35,7 @@ export function DailyReportsView() {
           role="tab"
           aria-selected={activeTab === 'reports'}
           onClick={() => setActiveTab('reports')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'reports' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'}`}
+          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'reports' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
         >
           <ClipboardList className="h-4 w-4" aria-hidden="true" />
           {messages.reportsTab}
@@ -45,7 +45,7 @@ export function DailyReportsView() {
           role="tab"
           aria-selected={activeTab === 'periodPdf'}
           onClick={() => setActiveTab('periodPdf')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'periodPdf' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'}`}
+          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'periodPdf' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
         >
           <FileText className="h-4 w-4" aria-hidden="true" />
           {messages.periodPdfTab}
@@ -55,7 +55,7 @@ export function DailyReportsView() {
           role="tab"
           aria-selected={activeTab === 'scurve'}
           onClick={() => setActiveTab('scurve')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'scurve' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted hover:text-text'}`}
+          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'scurve' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
         >
           <TrendingUp className="h-4 w-4" aria-hidden="true" />
           {messages.scurveTab}
@@ -68,14 +68,14 @@ export function DailyReportsView() {
         activeProject ? (
           <DailyReportPeriodPdfView project={activeProject} />
         ) : (
-          <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">
+          <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">
             {messages.noReportsProject}
           </div>
         )
       ) : activeProject ? (
         <SCurveProgressView projectId={activeProject.id} />
       ) : (
-        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">
+        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">
           {messages.noProject}
         </div>
       )}

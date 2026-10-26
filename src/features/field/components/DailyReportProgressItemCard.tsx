@@ -41,22 +41,22 @@ export function DailyReportProgressItemCard({
     <article className="space-y-3 rounded-lg border border-border p-3 sm:p-4">
       <div className="min-w-0">
         <p className="break-words text-sm font-semibold text-text">{item.description}</p>
-        <p className="mt-1 text-xs text-muted">
+        <p className="mt-1 text-xs text-muted-foreground">
           <span className="font-mono">{item.item_code}</span>
           {unit ? ` · ${unit}` : ''}
         </p>
       </div>
       <dl className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
         <div className="rounded-md bg-surface-2 p-2">
-          <dt className="text-muted">{messages.progressBudgetVolume}</dt>
+          <dt className="text-muted-foreground">{messages.progressBudgetVolume}</dt>
           <dd className="mt-1 font-semibold tabular-nums text-text">{formatVolume(item.volume)}{unit ? ` ${unit}` : ''}</dd>
         </div>
         <div className="rounded-md bg-surface-2 p-2">
-          <dt className="text-muted">{messages.progressCumulativeVolume}</dt>
+          <dt className="text-muted-foreground">{messages.progressCumulativeVolume}</dt>
           <dd className="mt-1 font-semibold tabular-nums text-text">{formatVolume(cumulativeVolume)}{unit ? ` ${unit}` : ''}</dd>
         </div>
         <div className="rounded-md bg-surface-2 p-2">
-          <dt className="text-muted">{messages.progressRemainingVolume}</dt>
+          <dt className="text-muted-foreground">{messages.progressRemainingVolume}</dt>
           <dd className="mt-1 font-semibold tabular-nums text-text">{formatVolume(remainingVolume)}{unit ? ` ${unit}` : ''}</dd>
         </div>
       </dl>

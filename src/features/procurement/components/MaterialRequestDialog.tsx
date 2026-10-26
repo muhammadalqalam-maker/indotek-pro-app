@@ -55,8 +55,8 @@ export function MaterialRequestDialog({
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-3" role="presentation">
       <section role="dialog" aria-modal="true" aria-labelledby="material-request-title" className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-border bg-surface p-4 shadow-2xl sm:p-6">
         <header className="mb-5 flex items-start justify-between gap-3">
-          <div><h2 id="material-request-title" className="text-lg font-semibold text-text">Permintaan material lapangan</h2><p className="mt-1 text-sm text-muted">Permintaan dikirim ke PM untuk persetujuan.</p></div>
-          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted hover:bg-surface-2" aria-label="Tutup"><X className="h-5 w-5" /></button>
+          <div><h2 id="material-request-title" className="text-lg font-semibold text-text">Permintaan material lapangan</h2><p className="mt-1 text-sm text-muted-foreground">Permintaan dikirim ke PM untuk persetujuan.</p></div>
+          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label="Tutup"><X className="h-5 w-5" /></button>
         </header>
         <form onSubmit={(event) => void submit(event)} className="grid gap-4">
           <div className="grid gap-4 sm:grid-cols-2">

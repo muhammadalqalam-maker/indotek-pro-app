@@ -112,7 +112,7 @@ export function RolePermissionsPanel() {
   };
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   const modules = Object.keys(ROLE_PERMISSIONS[role]) as AppModule[];
@@ -133,7 +133,7 @@ export function RolePermissionsPanel() {
             <ShieldCheck className="h-5 w-5 text-primary-600" aria-hidden="true" />
             {messages.rolePermissions}
           </h2>
-          <p className="mt-1 text-sm text-muted">{messages.rolePermissionsHint}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.rolePermissionsHint}</p>
         </div>
         <Button
           variant="outline"
@@ -147,7 +147,7 @@ export function RolePermissionsPanel() {
         </Button>
       </div>
 
-      {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.permissionReadOnly}</p>}
+      {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.permissionReadOnly}</p>}
 
       <div className="max-w-sm">
         <Select label={messages.role} value={role} onChange={(event) => setRole(event.target.value as InvitableMemberRole)}>
@@ -171,7 +171,7 @@ export function RolePermissionsPanel() {
       ) : (
         <div className="overflow-x-auto rounded-md border border-border">
           <table className="w-full min-w-[620px] text-left text-sm">
-            <thead className="bg-surface-2 text-xs uppercase text-muted">
+            <thead className="bg-surface-2 text-xs uppercase text-muted-foreground">
               <tr>
                 <th scope="col" className="px-3 py-3">{messages.module}</th>
                 {actions.map((action) => (

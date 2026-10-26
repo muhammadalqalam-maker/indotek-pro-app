@@ -123,7 +123,7 @@ export const MobileBottomNav: React.FC<{
             onClick={() => handleNav('dashboard')}
             aria-current={activeTab === 'dashboard' ? 'page' : undefined}
             className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
-              activeTab === 'dashboard' ? 'text-accent-600' : 'text-muted'
+              activeTab === 'dashboard' ? 'text-accent-600' : 'text-muted-foreground'
             }`}
           >
             <LayoutDashboard className="h-5 w-5" />
@@ -137,7 +137,7 @@ export const MobileBottomNav: React.FC<{
             onClick={() => handleNav('projects')}
             aria-current={activeTab === 'projects' ? 'page' : undefined}
             className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
-              activeTab === 'projects' ? 'text-accent-600' : 'text-muted'
+              activeTab === 'projects' ? 'text-accent-600' : 'text-muted-foreground'
             }`}
           >
             <FolderKanban className="h-5 w-5" />
@@ -165,7 +165,7 @@ export const MobileBottomNav: React.FC<{
             onClick={() => handleNav('approvals')}
             aria-current={activeTab === 'approvals' ? 'page' : undefined}
             className={`flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold transition ${
-              activeTab === 'approvals' ? 'text-accent-600' : 'text-muted'
+              activeTab === 'approvals' ? 'text-accent-600' : 'text-muted-foreground'
             }`}
           >
             <ListTodo className="h-5 w-5" />
@@ -179,7 +179,7 @@ export const MobileBottomNav: React.FC<{
             setFabMenuOpen(false);
             onToggleMobileDrawer();
           }}
-          className="flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold text-muted transition"
+          className="flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold text-muted-foreground transition"
           aria-label={shellMessages.openMenu}
           aria-expanded={isMenuOpen}
           aria-controls="app-sidebar"

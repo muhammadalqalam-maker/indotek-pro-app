@@ -176,7 +176,7 @@ export function AhspEditorDialog({
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-primary-50 p-4 dark:bg-primary-900/40">
             <div>
-              <p className="text-xs font-medium text-muted">{messages.calculatedPrice}</p>
+              <p className="text-xs font-medium text-muted-foreground">{messages.calculatedPrice}</p>
               <p className="text-sm font-semibold text-text">{messages.analysisUnitPrice} / {units.find((unit) => unit.id === selectedUnitId)?.symbol ?? '—'}</p>
             </div>
             <output className="font-mono text-xl font-bold text-primary-700 dark:text-primary-500" aria-live="polite">

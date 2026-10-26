@@ -123,7 +123,7 @@ export function CompanyProfilePanel() {
   };
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   return (
@@ -135,11 +135,11 @@ export function CompanyProfilePanel() {
               <Building2 className="h-5 w-5 text-primary-600" aria-hidden="true" />
               {messages.companyProfile}
             </h2>
-            <p className="mt-1 text-sm text-muted">{messages.companyProfileHint}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.companyProfileHint}</p>
           </div>
         </div>
 
-        {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.permissionReadOnly}</p>}
+        {!canEdit && <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.permissionReadOnly}</p>}
         <fieldset disabled={!canEdit} className="grid gap-4 sm:grid-cols-2">
           <Input label={messages.companyName} error={errors.name?.message} {...register('name')} className="text-sm" />
           <Input label={messages.companyCode} error={errors.company_code?.message} {...register('company_code')} className="text-sm font-mono uppercase" />
@@ -160,7 +160,7 @@ export function CompanyProfilePanel() {
           </div>
         </fieldset>
 
-        <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.letterheadHint}</p>
+        <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.letterheadHint}</p>
         <div className="flex justify-end border-t border-border pt-4">
           <Button type="submit" variant="accent" loading={isSubmitting} disabled={!canEdit}>
             <Save className="h-4 w-4" aria-hidden="true" />
@@ -171,15 +171,15 @@ export function CompanyProfilePanel() {
 
       <section className="rounded-xl border border-border bg-surface p-4 shadow-sm sm:p-6" aria-labelledby="company-logo-title">
         <h2 id="company-logo-title" className="text-base font-semibold text-text">{messages.companyLogo}</h2>
-        {!canEdit && <p className="mt-1 text-sm text-muted">{messages.permissionReadOnly}</p>}
-        <p className="mt-1 text-sm text-muted">
+        {!canEdit && <p className="mt-1 text-sm text-muted-foreground">{messages.permissionReadOnly}</p>}
+        <p className="mt-1 text-sm text-muted-foreground">
           {messages.companyLogoHint}{!isSupabaseLive ? ` ${messages.logoUploadUnavailable}` : ''}
         </p>
         <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="grid h-20 w-28 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-surface-2">
             {logoUrl
               ? <img src={logoUrl} alt={messages.companyLogoAlt} className="h-full w-full object-contain" />
-              : <Building2 className="h-8 w-8 text-muted" aria-hidden="true" />}
+              : <Building2 className="h-8 w-8 text-muted-foreground" aria-hidden="true" />}
           </div>
           <div className="grid gap-2">
             <label className="inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-border-strong bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-2 has-[:disabled]:cursor-wait has-[:disabled]:opacity-60">

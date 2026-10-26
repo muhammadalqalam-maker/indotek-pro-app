@@ -25,7 +25,7 @@ function SummaryCard({
         : 'text-text';
   return (
     <div className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-xs">
-      <div className="flex items-center gap-2 text-muted">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
         <p className="text-xs font-medium">{label}</p>
       </div>

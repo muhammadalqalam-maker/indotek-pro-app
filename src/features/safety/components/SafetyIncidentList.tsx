@@ -63,7 +63,7 @@ export function SafetyIncidentList({
             <span className="rounded-md bg-info/10 px-2 py-1 text-xs font-semibold text-info">{categoryLabels[incident.category]}</span>
             <span className="rounded-md bg-warning/10 px-2 py-1 text-xs font-semibold text-warning">{severityLabels[incident.severity]}</span>
           </div>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-muted-foreground">
             {projectNames.get(incident.project_id) ?? messages.project}
             {' · '}{incident.location}
             {' · '}{formatTanggal(incident.incident_date, { timezone: 'WIB' })}
@@ -76,16 +76,16 @@ export function SafetyIncidentList({
       <p className="text-sm text-text">{incident.description}</p>
       <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
         <div>
-          <p className="text-xs font-semibold text-muted">{messages.immediateAction}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{messages.immediateAction}</p>
           <p className="mt-1 text-sm text-text">{incident.immediate_action}</p>
         </div>
         <div>
-          <p className="text-xs font-semibold text-muted">{messages.correctiveAction}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{messages.correctiveAction}</p>
           <p className="mt-1 text-sm text-text">{incident.corrective_action || '—'}</p>
         </div>
       </div>
       <footer className="flex flex-col gap-2 border-t border-border pt-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-muted">{messages.reporter}: {incident.reporter_name}</p>
+        <p className="text-muted-foreground">{messages.reporter}: {incident.reporter_name}</p>
         {canEdit && incident.status === 'investigating' && (
           <button
             type="button"
@@ -108,7 +108,7 @@ export function SafetyIncidentList({
       </footer>
       {activeActionId === incident.id && incident.status === 'investigating' && (
         <div className="grid gap-2 border-t border-border pt-3">
-          <p className="text-sm text-muted">{messages.statusActionDescription}</p>
+          <p className="text-sm text-muted-foreground">{messages.statusActionDescription}</p>
           <SafetyIncidentActionForm
             isSaving={isSaving}
             onCancel={onCancelAction}

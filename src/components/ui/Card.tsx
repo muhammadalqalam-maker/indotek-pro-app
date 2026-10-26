@@ -18,7 +18,7 @@ export function CardTitle({ as: Heading = 'h3', className, ...props }: CardTitle
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn('text-sm leading-relaxed text-muted', className)} {...props} />;
+  return <p className={cn('text-sm leading-relaxed text-muted-foreground', className)} {...props} />;
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

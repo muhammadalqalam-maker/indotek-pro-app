@@ -95,7 +95,8 @@
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
-  --color-muted: var(--text-muted);
+  --color-muted: var(--surface-2);
+  --color-muted-foreground: var(--text-muted);
   --color-subtle: var(--text-subtle);
 
   --color-success: var(--success);

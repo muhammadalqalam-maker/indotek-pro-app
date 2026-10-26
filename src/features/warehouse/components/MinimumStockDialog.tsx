@@ -50,13 +50,13 @@ export function MinimumStockDialog({
         <header className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 id="warehouse-minimum-title" className="text-lg font-semibold text-text">{messages.minimumFormTitle}</h2>
-            <p className="mt-1 text-sm text-muted">{item.item_code} · {item.item_name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{item.item_code} · {item.item_name}</p>
           </div>
-          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="min-h-11 min-w-11 rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="mx-auto h-5 w-5" aria-hidden="true" />
           </button>
         </header>
-        <p className="mb-4 text-sm text-muted">
+        <p className="mb-4 text-sm text-muted-foreground">
           {messages.currentStock}: {formatVolume(item.current_stock)} {item.unit}
         </p>
         <form onSubmit={(event) => void submit(event)} className="grid gap-4">

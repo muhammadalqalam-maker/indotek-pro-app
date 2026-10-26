@@ -41,15 +41,15 @@ export function EstimatingCatalogPanel() {
   useEffect(() => { void loadUnits(); }, [loadUnits]);
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   return (
     <section className="grid gap-4">
       <header className="rounded-xl border border-border bg-surface p-4 shadow-sm sm:p-6">
         <h2 className="text-base font-semibold text-text">{messages.estimatingCatalog}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.estimatingCatalogHint}</p>
-        {!canEdit && <p className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.permissionReadOnly}</p>}
+        <p className="mt-1 text-sm text-muted-foreground">{messages.estimatingCatalogHint}</p>
+        {!canEdit && <p className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.permissionReadOnly}</p>}
       </header>
       <div role="tablist" aria-label={messages.estimatingCatalog} className="flex gap-1 overflow-x-auto border-b border-border">
         <button
@@ -58,7 +58,7 @@ export function EstimatingCatalogPanel() {
           aria-selected={activeTab === 'prices'}
           onClick={() => setActiveTab('prices')}
           className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold ${
-            activeTab === 'prices' ? 'border-primary-600 text-primary-700 dark:text-primary-300' : 'border-transparent text-muted hover:text-text'
+            activeTab === 'prices' ? 'border-primary-600 text-primary-700 dark:text-primary-300' : 'border-transparent text-muted-foreground hover:text-text'
           }`}
         >
           <Boxes className="h-4 w-4" aria-hidden="true" />
@@ -70,7 +70,7 @@ export function EstimatingCatalogPanel() {
           aria-selected={activeTab === 'units'}
           onClick={() => setActiveTab('units')}
           className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold ${
-            activeTab === 'units' ? 'border-primary-600 text-primary-700 dark:text-primary-300' : 'border-transparent text-muted hover:text-text'
+            activeTab === 'units' ? 'border-primary-600 text-primary-700 dark:text-primary-300' : 'border-transparent text-muted-foreground hover:text-text'
           }`}
         >
           <Ruler className="h-4 w-4" aria-hidden="true" />

@@ -133,10 +133,10 @@ export function VendorWorkspace() {
   };
 
   if (!organizationId) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.noOrganization}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noOrganization}</p>;
   }
   if (!isSupabaseLive) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.liveRequired}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.liveRequired}</p>;
   }
 
   return (
@@ -144,7 +144,7 @@ export function VendorWorkspace() {
       <header className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
           <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.description}</p>
         </div>
         {canCreate && (
           <Button onClick={() => setEditingVendorId('new')}>
@@ -191,7 +191,7 @@ export function VendorWorkspace() {
                 <article className="grid gap-3">
                   <header className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-muted">{vendor.code} · {vendor.category}</p>
+                      <p className="text-xs font-medium text-muted-foreground">{vendor.code} · {vendor.category}</p>
                       <h3 className="mt-1 break-words text-base font-semibold text-text">{vendor.name}</h3>
                     </div>
                     <div className="shrink-0 text-right">
@@ -199,14 +199,14 @@ export function VendorWorkspace() {
                         <Star className="h-4 w-4 fill-accent-500 text-accent-500" aria-hidden="true" />
                         {vendor.evaluation_count ? vendor.rating.toFixed(2) : '—'}
                       </p>
-                      <p className="text-xs text-muted">{messages.evaluationCount(vendor.evaluation_count ?? 0)}</p>
+                      <p className="text-xs text-muted-foreground">{messages.evaluationCount(vendor.evaluation_count ?? 0)}</p>
                     </div>
                   </header>
                   <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-                    <div><dt className="text-xs text-muted">{messages.contactPerson}</dt><dd className="break-words text-text">{vendor.contact_person}</dd></div>
-                    <div><dt className="text-xs text-muted">{messages.phone}</dt><dd className="break-words text-text">{vendor.phone}</dd></div>
-                    <div><dt className="text-xs text-muted">{messages.email}</dt><dd className="break-all text-text">{vendor.email || '—'}</dd></div>
-                    <div><dt className="text-xs text-muted">{messages.paymentTerms}</dt><dd className="text-text">{vendor.payment_terms_days} hari</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{messages.contactPerson}</dt><dd className="break-words text-text">{vendor.contact_person}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{messages.phone}</dt><dd className="break-words text-text">{vendor.phone}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{messages.email}</dt><dd className="break-all text-text">{vendor.email || '—'}</dd></div>
+                    <div><dt className="text-xs text-muted-foreground">{messages.paymentTerms}</dt><dd className="text-text">{vendor.payment_terms_days} hari</dd></div>
                   </dl>
                   <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                     {canCreate && vendor.is_active !== false && (
@@ -247,9 +247,9 @@ export function VendorWorkspace() {
                           <div key={evaluation.id} className="border-b border-border pb-2 last:border-0">
                             <div className="flex flex-wrap justify-between gap-2 text-sm">
                               <span className="font-medium text-text">{evaluation.transaction_reference}</span>
-                              <span className="text-muted">{formatDateIndo(evaluation.created_at)}</span>
+                              <span className="text-muted-foreground">{formatDateIndo(evaluation.created_at)}</span>
                             </div>
-                            <p className="mt-1 text-xs text-muted">
+                            <p className="mt-1 text-xs text-muted-foreground">
                               {messages.quality}: {evaluation.quality_score} · {messages.price}: {evaluation.price_score}
                               {' · '}{messages.delivery}: {evaluation.delivery_score} · {messages.service}: {evaluation.service_score}
                               {' · '}{messages.overallScore}: {evaluation.overall_score.toFixed(2)}
@@ -258,7 +258,7 @@ export function VendorWorkspace() {
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-muted">{messages.noEvaluations}</p>
+                        <p className="text-sm text-muted-foreground">{messages.noEvaluations}</p>
                       )}
                     </div>
                   )}

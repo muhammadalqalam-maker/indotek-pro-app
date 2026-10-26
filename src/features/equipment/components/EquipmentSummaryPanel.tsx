@@ -19,7 +19,7 @@ export function EquipmentSummaryPanel({ summary }: { summary: EquipmentSummary }
         {stats.map(({ label, value, Icon }) => (
           <article key={label} className="grid min-w-0 gap-2 rounded-xl border border-border bg-surface p-4 shadow-xs">
             <div className="flex items-start justify-between gap-3">
-              <p className="text-sm font-medium text-muted">{label}</p>
+              <p className="text-sm font-medium text-muted-foreground">{label}</p>
               <Icon className="size-4 shrink-0 text-primary-500" aria-hidden="true" />
             </div>
             <p className="break-words text-xl font-bold tabular-nums text-text">{value}</p>
@@ -29,18 +29,18 @@ export function EquipmentSummaryPanel({ summary }: { summary: EquipmentSummary }
 
       <section className="grid gap-2 rounded-xl border border-border bg-surface p-4 sm:grid-cols-3 sm:p-5">
         <div>
-          <p className="text-sm text-muted">{messages.rentalCost}</p>
+          <p className="text-sm text-muted-foreground">{messages.rentalCost}</p>
           <p className="mt-1 text-lg font-semibold tabular-nums text-text">{formatRupiah(summary.rentalCost)}</p>
         </div>
         <div>
-          <p className="text-sm text-muted">{messages.fuelCost}</p>
+          <p className="text-sm text-muted-foreground">{messages.fuelCost}</p>
           <p className="mt-1 text-lg font-semibold tabular-nums text-text">{formatRupiah(summary.fuelCost)}</p>
         </div>
         <div>
-          <p className="text-sm text-muted">{messages.maintenanceCost}</p>
+          <p className="text-sm text-muted-foreground">{messages.maintenanceCost}</p>
           <p className="mt-1 text-lg font-semibold tabular-nums text-text">{formatRupiah(summary.maintenanceCost)}</p>
         </div>
-        <p className="text-xs text-muted sm:col-span-3">{messages.costSummaryNote}</p>
+        <p className="text-xs text-muted-foreground sm:col-span-3">{messages.costSummaryNote}</p>
       </section>
     </>
   );

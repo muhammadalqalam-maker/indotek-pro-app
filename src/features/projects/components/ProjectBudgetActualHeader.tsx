@@ -25,7 +25,7 @@ export function ProjectBudgetActualHeader({
     <header className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.overview}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.overview}</p>
       </div>
       <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-64">
         <Select

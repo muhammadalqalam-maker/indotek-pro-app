@@ -250,7 +250,7 @@ export function ReportsAnalyticsView() {
         </p>
       )}
       {query.isFetching && query.data && (
-        <p className="text-sm text-muted" role="status">{messages.loading}…</p>
+        <p className="text-sm text-muted-foreground" role="status">{messages.loading}…</p>
       )}
 
       {query.isFetching && !query.data ? (

@@ -28,7 +28,7 @@ export function DashboardProjectList({
       </CardHeader>
       <CardContent>
         {projects.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted">{emptyMessage}</p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
         ) : (
           <ul className="divide-y divide-border">
             {projects.map((project) => (
@@ -46,7 +46,7 @@ export function DashboardProjectList({
                         {dashboardProjectStatusLabels[project.status]}
                       </Badge>
                     </span>
-                    <span className="mt-1 block text-xs text-muted">
+                    <span className="mt-1 block text-xs text-muted-foreground">
                       {project.code} · {formatTanggal(project.start_date)} – {formatTanggal(project.end_date)}
                     </span>
                     <span className="mt-2 flex items-center gap-2">
@@ -56,12 +56,12 @@ export function DashboardProjectList({
                           style={{ width: `${Math.min(Math.max(project.actual_progress, 0), 100)}%` }}
                         />
                       </span>
-                      <span className="w-12 text-right text-xs tabular-nums text-muted">
+                      <span className="w-12 text-right text-xs tabular-nums text-muted-foreground">
                         {formatPersen(project.actual_progress)}
                       </span>
                     </span>
                   </span>
-                  <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted">
+                  <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-muted-foreground">
                     {formatRupiah(calculateEffectiveProjectContractValue(project))}
                     <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
                   </span>

@@ -14,7 +14,7 @@ export function ProjectBudgetActualLoadError({
   return (
     <section className="space-y-3 rounded-lg border border-danger bg-surface p-4" role="alert">
       <p className="text-sm text-danger">{messages.loadFailed}</p>
-      <p className="break-words text-xs text-muted">{detail}</p>
+      <p className="break-words text-xs text-muted-foreground">{detail}</p>
       <Button variant="outline" onClick={onRetry}>
         <RefreshCw className="h-4 w-4" aria-hidden="true" />{messages.retry}
       </Button>

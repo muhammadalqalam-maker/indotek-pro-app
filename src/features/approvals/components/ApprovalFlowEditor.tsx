@@ -91,7 +91,7 @@ export function ApprovalFlowEditor({
     <section className="grid gap-4">
       <header>
         <h2 className="text-lg font-semibold text-text">{messages.flowsTitle}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.flowsDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.flowsDescription}</p>
       </header>
 
       <div className="flex flex-wrap gap-2" role="tablist" aria-label={messages.flowsTitle}>
@@ -110,7 +110,7 @@ export function ApprovalFlowEditor({
             className={`min-h-11 rounded-md border px-3 text-sm font-medium transition ${
               selectedType === resourceType
                 ? 'border-primary-700 bg-primary-700 text-white'
-                : 'border-border bg-surface text-muted hover:text-text'
+                : 'border-border bg-surface text-muted-foreground hover:text-text'
             }`}
           >
             {resourceLabels[resourceType]}
@@ -159,7 +159,7 @@ export function ApprovalFlowEditor({
                       {messages.removeStep}
                     </Button>
                   </div>
-                  <p className="text-xs text-muted">{messages.approverRoles}</p>
+                  <p className="text-xs text-muted-foreground">{messages.approverRoles}</p>
                   <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {roles.map(([role, label]) => (
                       <label key={role} className="flex min-h-11 items-center gap-2 rounded-md bg-surface-2 px-3 text-sm text-text">

@@ -19,7 +19,7 @@ export function SCurveChart({ points }: { points: SCurvePoint[] }) {
     <section className="space-y-4 rounded-lg border border-border bg-surface p-4 sm:p-5">
       <header className="space-y-1">
         <h2 className="text-base font-semibold text-text">{messages.chartTitle}</h2>
-        <p className="text-sm text-muted">{messages.chartDescription}</p>
+        <p className="text-sm text-muted-foreground">{messages.chartDescription}</p>
       </header>
 
       <div className="h-72 w-full min-w-0 sm:h-80" role="img" aria-label={messages.chartAccessibleName}>
@@ -75,7 +75,7 @@ export function SCurveChart({ points }: { points: SCurvePoint[] }) {
       <div className="overflow-x-auto rounded-md border border-border">
         <table className="w-full min-w-[640px] text-left text-sm">
           <caption className="sr-only">{messages.tableCaption}</caption>
-          <thead className="bg-surface-2 text-xs text-muted">
+          <thead className="bg-surface-2 text-xs text-muted-foreground">
             <tr>
               <th scope="col" className="px-3 py-2 font-semibold">{messages.weekColumn}</th>
               <th scope="col" className="px-3 py-2 font-semibold">{messages.periodColumn}</th>
@@ -92,7 +92,7 @@ export function SCurveChart({ points }: { points: SCurvePoint[] }) {
                 <th scope="row" className="px-3 py-2 font-semibold text-text">
                   {messages.weekLabel(point.week_number)}
                 </th>
-                <td className="whitespace-nowrap px-3 py-2 text-muted">
+                <td className="whitespace-nowrap px-3 py-2 text-muted-foreground">
                   {formatTanggal(point.start_date)} – {formatTanggal(point.end_date)}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums text-text">{formatPersen(point.planned_weekly_percent)}</td>

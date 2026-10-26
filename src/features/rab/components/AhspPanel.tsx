@@ -108,11 +108,11 @@ export function AhspPanel() {
   };
 
   if (!organizationId) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   if (!isSupabaseLive) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.offline}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.offline}</p>;
   }
 
   return (
@@ -120,8 +120,8 @@ export function AhspPanel() {
       <header className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between sm:p-6">
         <div>
           <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{messages.description}</p>
-          {!canEdit && <p className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.readOnly}</p>}
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{messages.description}</p>
+          {!canEdit && <p className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.readOnly}</p>}
         </div>
         {canEdit && (
           <Button
@@ -155,7 +155,7 @@ export function AhspPanel() {
       ) : (
         <>
           {!hasActiveCatalog && (
-            <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.noCatalogItems}</p>
+            <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted-foreground">{messages.noCatalogItems}</p>
           )}
           <div className="grid gap-3 sm:grid-cols-[minmax(16rem,24rem)_auto] sm:items-end">
             <Input
@@ -165,7 +165,7 @@ export function AhspPanel() {
               onChange={(event) => setSearch(event.target.value)}
               prefix={<Search className="h-4 w-4" aria-hidden="true" />}
             />
-            <p className="pb-1 text-sm text-muted" aria-live="polite">{filteredAnalyses.length} / {analyses.length}</p>
+            <p className="pb-1 text-sm text-muted-foreground" aria-live="polite">{filteredAnalyses.length} / {analyses.length}</p>
           </div>
 
           {actionError && <p className="rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger" role="alert">{actionError}</p>}
@@ -191,13 +191,13 @@ export function AhspPanel() {
                         <span className="rounded bg-primary-50 px-2 py-1 font-mono text-xs font-semibold text-primary-700 dark:bg-primary-900/40 dark:text-primary-500">
                           {analysis.code}
                         </span>
-                        <span className="text-xs text-muted">{analysis.division}</span>
+                        <span className="text-xs text-muted-foreground">{analysis.division}</span>
                       </div>
                       <h3 className="mt-2 break-words text-base font-semibold text-text">{analysis.title}</h3>
                     </div>
                     <div className="flex items-center justify-between gap-3 sm:justify-end">
                       <div className="sm:text-right">
-                        <p className="text-xs text-muted">{messages.analysisUnitPrice} / {analysis.unitSymbol}</p>
+                        <p className="text-xs text-muted-foreground">{messages.analysisUnitPrice} / {analysis.unitSymbol}</p>
                         <p className="font-mono text-lg font-bold text-text">{formatRupiah(analysis.unitPrice)}</p>
                       </div>
                       {canEdit && (
@@ -234,10 +234,10 @@ export function AhspPanel() {
                         <div key={component.id} className="grid gap-1 rounded-md bg-surface-2/60 p-3 text-sm sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-4">
                           <div className="min-w-0">
                             <p className="break-words font-medium text-text">{component.item.name}</p>
-                            <p className="text-xs text-muted">{component.item.code} · {getCategoryLabel(component.item.category, messages)}</p>
+                            <p className="text-xs text-muted-foreground">{component.item.code} · {getCategoryLabel(component.item.category, messages)}</p>
                           </div>
-                          <p className="text-xs text-muted">{messages.coefficient}: <span className="font-mono text-text">{component.coefficient}</span></p>
-                          <p className="text-xs text-muted">{messages.basePrice}: <span className="font-mono text-text">{formatRupiah(component.item.unit_price)} / {component.item.unitSymbol}</span></p>
+                          <p className="text-xs text-muted-foreground">{messages.coefficient}: <span className="font-mono text-text">{component.coefficient}</span></p>
+                          <p className="text-xs text-muted-foreground">{messages.basePrice}: <span className="font-mono text-text">{formatRupiah(component.item.unit_price)} / {component.item.unitSymbol}</span></p>
                           <p className="font-mono font-semibold text-text">{formatRupiah(calculateAhspLineTotal(component.coefficient, component.item.unit_price))}</p>
                         </div>
                       ))}

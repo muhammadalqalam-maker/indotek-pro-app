@@ -58,7 +58,7 @@ export function GoodsReceiptWorkspace({
           <h2 id="goods-receipt-workspace-title" className="text-lg font-semibold text-text">
             {messages.receivingTitle}
           </h2>
-          <p className="mt-1 text-sm text-muted">{messages.itemsMatchHint}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.itemsMatchHint}</p>
         </div>
         {!isSupabaseLive && (
           <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
@@ -83,7 +83,7 @@ export function GoodsReceiptWorkspace({
 
       <section className="space-y-3" aria-labelledby="open-purchase-orders-title">
         <div className="flex items-center gap-2">
-          <Truck className="h-4 w-4 text-muted" aria-hidden="true" />
+          <Truck className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <h3 id="open-purchase-orders-title" className="text-sm font-semibold text-text">
             {messages.openOrdersTitle}
           </h3>
@@ -96,9 +96,9 @@ export function GoodsReceiptWorkspace({
           </div>
         ) : openOrders.length === 0 ? (
           <div className="rounded-xl border border-border bg-surface p-5 text-center">
-            <PackageCheck className="mx-auto h-6 w-6 text-muted" aria-hidden="true" />
+            <PackageCheck className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden="true" />
             <p className="mt-2 text-sm font-semibold text-text">{messages.noOpenOrders}</p>
-            <p className="mt-1 text-sm text-muted">{messages.noOpenOrdersHint}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.noOpenOrdersHint}</p>
           </div>
         ) : (
           <div className="grid gap-3">
@@ -107,7 +107,7 @@ export function GoodsReceiptWorkspace({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-semibold text-text">{order.po_number} · {order.vendor_name}</p>
-                    <p className="mt-1 text-sm text-muted">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {order.project_name} · {messages.deliveryDeadline}: {formatDateIndo(order.delivery_deadline)}
                     </p>
                   </div>
@@ -131,7 +131,7 @@ export function GoodsReceiptWorkspace({
                     return (
                       <li key={item.id} className="flex justify-between gap-3">
                         <span className="min-w-0 break-words">{item.item_name}</span>
-                        <span className="text-right text-muted">
+                        <span className="text-right text-muted-foreground">
                           {item.received_quantity}/{item.quantity} {item.unit} · {messages.remaining}: {remaining}
                         </span>
                       </li>
@@ -146,7 +146,7 @@ export function GoodsReceiptWorkspace({
 
       <section className="space-y-3" aria-labelledby="receipt-history-title">
         <div className="flex items-center gap-2">
-          <Clock3 className="h-4 w-4 text-muted" aria-hidden="true" />
+          <Clock3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <h3 id="receipt-history-title" className="text-sm font-semibold text-text">
             {messages.receiptHistoryTitle} ({receipts.length})
           </h3>
@@ -154,7 +154,7 @@ export function GoodsReceiptWorkspace({
         {receipts.length === 0 ? (
           <div className="rounded-xl border border-border bg-surface p-5 text-center">
             <p className="text-sm font-semibold text-text">{messages.noReceipts}</p>
-            <p className="mt-1 text-sm text-muted">{messages.noReceiptsHint}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.noReceiptsHint}</p>
           </div>
         ) : (
           <div className="grid gap-3">
@@ -163,14 +163,14 @@ export function GoodsReceiptWorkspace({
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-semibold text-text">{receipt.grn_number} · {receipt.po_number}</p>
-                    <p className="mt-1 text-sm text-muted">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {receipt.vendor_name} · {messages.deliveryNoteShort} {receipt.delivery_note_number}
                     </p>
-                    <p className="text-sm text-muted">
+                    <p className="text-sm text-muted-foreground">
                       {receipt.project_name} · {formatDateIndo(receipt.received_date)} · {receipt.receiver_name}
                     </p>
                     {receipt.receiving_location && (
-                      <p className="mt-1 text-sm text-muted">{messages.receivingLocation}: {receipt.receiving_location}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{messages.receivingLocation}: {receipt.receiving_location}</p>
                     )}
                   </div>
                   <span className="inline-flex min-h-8 items-center gap-1 self-start rounded-full bg-surface-2 px-3 text-xs font-semibold text-text">
@@ -182,14 +182,14 @@ export function GoodsReceiptWorkspace({
                   {receipt.items.map((item, index) => (
                     <li key={`${receipt.id}-${item.purchase_order_item_id ?? index}`} className="rounded-lg bg-surface-2 p-3">
                       <p className="font-medium text-text">{item.item_name}</p>
-                      <p className="mt-1 text-muted">
+                      <p className="mt-1 text-muted-foreground">
                         {messages.deliveryNoteShort} {item.received_quantity} · {messages.acceptedShort} {item.accepted_quantity} · {messages.rejectedShort} {item.rejected_quantity} {item.unit}
                       </p>
-                      {item.condition_notes && <p className="mt-1 break-words text-xs text-muted">{item.condition_notes}</p>}
+                      {item.condition_notes && <p className="mt-1 break-words text-xs text-muted-foreground">{item.condition_notes}</p>}
                     </li>
                   ))}
                 </ul>
-                {receipt.notes && <p className="mt-3 break-words text-sm text-muted">{receipt.notes}</p>}
+                {receipt.notes && <p className="mt-3 break-words text-sm text-muted-foreground">{receipt.notes}</p>}
               </article>
             ))}
           </div>

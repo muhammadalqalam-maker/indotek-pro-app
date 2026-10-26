@@ -43,10 +43,10 @@ export function PunchListCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-warning/10 px-2 py-1 text-xs font-semibold text-warning">{item.code}</span>
-            <span className="rounded-md bg-surface-2 px-2 py-1 text-xs font-semibold text-muted">{severityLabels[item.severity]}</span>
+            <span className="rounded-md bg-surface-2 px-2 py-1 text-xs font-semibold text-muted-foreground">{severityLabels[item.severity]}</span>
           </div>
           <h3 className="mt-2 text-sm font-semibold text-text">{item.category} · {item.location_zone}</h3>
-          <p className="text-xs text-muted">{projectName}</p>
+          <p className="text-xs text-muted-foreground">{projectName}</p>
         </div>
         <span className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-semibold text-text">
           {statusLabels[item.status]}
@@ -55,32 +55,32 @@ export function PunchListCard({
       <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-text">{item.defect_description}</p>
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
-          <p className="text-xs text-muted">{messages.punchOwner}</p>
+          <p className="text-xs text-muted-foreground">{messages.punchOwner}</p>
           <p className="mt-1 break-words font-medium text-text">{item.assigned_to_subcon}</p>
         </div>
         <div>
-          <p className="text-xs text-muted">{messages.punchDueDate}</p>
+          <p className="text-xs text-muted-foreground">{messages.punchDueDate}</p>
           <p className="mt-1 font-medium text-text">{formatTanggal(item.due_date, { timezone: 'WIB' })}</p>
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <figure className="grid gap-1">
           <img src={item.before_photo_url} alt={messages.punchBeforePhotoAlt} className="aspect-video w-full rounded-md border border-border object-cover" />
-          <figcaption className="text-xs text-muted">{messages.punchBeforePhoto}</figcaption>
+          <figcaption className="text-xs text-muted-foreground">{messages.punchBeforePhoto}</figcaption>
         </figure>
         {item.after_photo_url ? (
           <figure className="grid gap-1">
             <img src={item.after_photo_url} alt={messages.punchAfterPhotoAlt} className="aspect-video w-full rounded-md border border-border object-cover" />
-            <figcaption className="text-xs text-muted">{messages.punchAfterPhoto}</figcaption>
+            <figcaption className="text-xs text-muted-foreground">{messages.punchAfterPhoto}</figcaption>
           </figure>
         ) : (
-          <p className="grid min-h-24 place-items-center rounded-md border border-dashed border-border p-3 text-center text-xs text-muted">
+          <p className="grid min-h-24 place-items-center rounded-md border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
             {messages.punchAfterPhoto}
           </p>
         )}
       </div>
       <footer className="grid gap-3 border-t border-border pt-3 text-xs sm:flex sm:items-center sm:justify-between">
-        <span className="text-muted">{messages.punchReporter}: {item.reported_by}</span>
+        <span className="text-muted-foreground">{messages.punchReporter}: {item.reported_by}</span>
         {canEdit && !isClosed && (
           <div className="grid gap-2 sm:flex sm:flex-wrap sm:justify-end">
             {item.status === 'open' && (
@@ -117,7 +117,7 @@ export function PunchListCard({
         )}
       </footer>
       {!isClosed && item.status === 'ready_for_inspection' && !canClose && (
-        <p className="text-xs text-muted">{messages.punchClosureRoleHint}</p>
+        <p className="text-xs text-muted-foreground">{messages.punchClosureRoleHint}</p>
       )}
       {showClosureForm && (
         <PunchListClosureForm

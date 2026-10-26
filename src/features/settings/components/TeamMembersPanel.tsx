@@ -98,7 +98,7 @@ export function TeamMembersPanel() {
   const managerRole: UserRole = currentRole;
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   return (
@@ -109,7 +109,7 @@ export function TeamMembersPanel() {
             <Users className="h-5 w-5 text-primary-600" aria-hidden="true" />
             {messages.team}
           </h2>
-          <p className="mt-1 text-sm text-muted">{messages.teamDescription} {currentOrg.name}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.teamDescription} {currentOrg.name}</p>
         </div>
         <Can module="users" action="create">
           <Button variant="accent" onClick={() => { setInviteError(''); setIsInviteOpen(true); }}>
@@ -120,7 +120,7 @@ export function TeamMembersPanel() {
       </header>
 
       {!canManageMembers && !canInviteMembers && (
-        <p className="rounded-md border border-border bg-surface p-3 text-sm text-muted">{memberMessages.managerOnly}</p>
+        <p className="rounded-md border border-border bg-surface p-3 text-sm text-muted-foreground">{memberMessages.managerOnly}</p>
       )}
       {inviteNotice && <p className="rounded-md border border-success/30 bg-success/5 p-3 text-sm text-text" role="status">{inviteNotice}</p>}
       {memberActionError && <p className="rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger" role="alert">{memberActionError}</p>}
@@ -139,9 +139,9 @@ export function TeamMembersPanel() {
         </div>
       ) : members.length === 0 && !membersError ? (
         <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center">
-          <Users className="mx-auto h-8 w-8 text-muted" aria-hidden="true" />
+          <Users className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
           <p className="mt-2 font-semibold text-text">{memberMessages.memberEmptyTitle}</p>
-          <p className="mt-1 text-sm text-muted">{memberMessages.memberEmptyHelp}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{memberMessages.memberEmptyHelp}</p>
         </div>
       ) : (
         <ul className="grid gap-3">
@@ -154,8 +154,8 @@ export function TeamMembersPanel() {
               <li key={member.id} className="grid gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm sm:grid-cols-[minmax(0,1fr)_minmax(12rem,auto)] sm:items-center">
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-text">{member.user?.full_name || 'Anggota'}</p>
-                  <p className="break-all text-sm text-muted">{member.user?.email}</p>
-                  <p className="mt-1 text-sm text-muted">{member.department || 'Operasional'}</p>
+                  <p className="break-all text-sm text-muted-foreground">{member.user?.email}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{member.department || 'Operasional'}</p>
                 </div>
                 <div className="grid gap-2 sm:min-w-52">
                   {canEditMember ? (
@@ -176,7 +176,7 @@ export function TeamMembersPanel() {
                     <span className="text-sm font-semibold text-text">{ROLE_LABELS[member.role]}</span>
                   )}
                   <div className="flex items-center justify-between gap-3">
-                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${member.is_active ? 'bg-success/10 text-success' : 'bg-surface-2 text-muted'}`}>
+                    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${member.is_active ? 'bg-success/10 text-success' : 'bg-surface-2 text-muted-foreground'}`}>
                       {member.is_active ? messages.memberActive : messages.memberInactive}
                     </span>
                     {canEditMember && (

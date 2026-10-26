@@ -86,7 +86,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
 
   if (!isSupabaseLive) {
     return (
-      <div role="alert" className="rounded-lg border border-border bg-surface p-4 text-sm text-muted">
+      <div role="alert" className="rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">
         {periodMessages.liveDataRequired}
       </div>
     );
@@ -102,7 +102,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
             <h2 id="period-pdf-title" className="text-lg font-semibold text-text">
               {periodMessages.title}
             </h2>
-            <p className="text-sm text-muted">{periodMessages.description}</p>
+            <p className="text-sm text-muted-foreground">{periodMessages.description}</p>
           </div>
           <button
             type="button"
@@ -125,7 +125,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
                   type="button"
                   aria-pressed={period === value}
                   onClick={() => setPeriod(value)}
-                  className={`min-h-9 flex-1 rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${period === value ? 'bg-primary-600 text-white' : 'text-muted hover:text-text'}`}
+                  className={`min-h-9 flex-1 rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${period === value ? 'bg-primary-600 text-white' : 'text-muted-foreground hover:text-text'}`}
                 >
                   {value === 'weekly' ? periodMessages.weekly : periodMessages.monthly}
                 </button>
@@ -149,7 +149,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
             />
           </label>
         </div>
-        <p className="mt-3 text-sm text-muted">
+        <p className="mt-3 text-sm text-muted-foreground">
           {periodMessages.range}: {formatTanggal(range.startDate)} - {formatTanggal(range.endDate)}
         </p>
       </div>
@@ -186,9 +186,9 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
 
       {!reportsQuery.isPending && !reportsQuery.isError && reports.length === 0 && isOnline && (
         <div className="rounded-lg border border-dashed border-border bg-surface p-6 text-center">
-          <FileText className="mx-auto h-8 w-8 text-muted" aria-hidden="true" />
+          <FileText className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
           <h3 className="mt-3 font-semibold text-text">{periodMessages.emptyTitle}</h3>
-          <p className="mt-1 text-sm text-muted">{periodMessages.emptyDescription}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{periodMessages.emptyDescription}</p>
         </div>
       )}
 
@@ -202,7 +202,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
               [periodMessages.materialCount, formatVolume(materialCount, 0)],
             ].map(([label, value]) => (
               <div key={label} className="rounded-lg border border-border bg-surface p-4">
-                <p className="text-sm text-muted">{label}</p>
+                <p className="text-sm text-muted-foreground">{label}</p>
                 <p className="mt-1 text-2xl font-semibold text-text">{value}</p>
               </div>
             ))}
@@ -212,11 +212,11 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
               <article key={report.id} className="space-y-3 rounded-lg border border-border bg-surface p-4 sm:p-5">
                 <header className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
                   <h3 className="font-semibold text-text">{formatTanggal(report.report_date, { long: true })}</h3>
-                  <p className="text-sm text-muted">{report.site_manager_name}</p>
+                  <p className="text-sm text-muted-foreground">{report.site_manager_name}</p>
                 </header>
                 <p className="text-sm text-text"><span className="font-medium">{periodMessages.weather}:</span> {report.weather_conditions || '-'}</p>
                 <p className="whitespace-pre-wrap text-sm text-text"><span className="font-medium">{periodMessages.workSummary}:</span> {report.work_summary || '-'}</p>
-                <div className="grid gap-2 text-sm text-muted sm:grid-cols-3">
+                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
                   <p>{periodMessages.manpower}: {manpower.length}</p>
                   <p>{periodMessages.equipment}: {equipment.length}</p>
                   <p>{periodMessages.materials}: {materials.length}</p>

@@ -64,10 +64,10 @@ export function ApprovalsView() {
   };
 
   if (!organizationId) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.noOrganization}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noOrganization}</p>;
   }
   if (!isSupabaseLive) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.liveRequired}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.liveRequired}</p>;
   }
 
   return (
@@ -75,7 +75,7 @@ export function ApprovalsView() {
       <header className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{messages.description}</p>
         </div>
         <span className="inline-flex min-h-10 items-center gap-2 self-start rounded-full bg-warning-bg px-3 text-sm font-semibold text-warning sm:self-auto">
           <Clock3 className="h-4 w-4" aria-hidden="true" />
@@ -89,7 +89,7 @@ export function ApprovalsView() {
           aria-pressed={activeTab === 'requests'}
           onClick={() => setActiveTab('requests')}
           className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-            activeTab === 'requests' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+            activeTab === 'requests' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
           }`}
         >
           <ListChecks className="h-4 w-4" aria-hidden="true" />
@@ -101,7 +101,7 @@ export function ApprovalsView() {
             aria-pressed={activeTab === 'flows'}
             onClick={() => setActiveTab('flows')}
             className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-              activeTab === 'flows' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+              activeTab === 'flows' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
             }`}
           >
             <Settings2 className="h-4 w-4" aria-hidden="true" />
@@ -157,7 +157,7 @@ export function ApprovalsView() {
                 className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-medium ${
                   filter === status
                     ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-500'
-                    : 'border-border bg-surface text-muted hover:text-text'
+                    : 'border-border bg-surface text-muted-foreground hover:text-text'
                 }`}
               >
                 <Icon className="h-4 w-4" aria-hidden="true" />

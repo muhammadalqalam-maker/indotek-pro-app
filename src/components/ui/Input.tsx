@@ -21,7 +21,7 @@ export function Input({ label, hint, error, prefix, suffix, id, className, ...pr
         'flex min-h-11 items-center gap-2 rounded-md border bg-surface px-3 text-base text-text transition focus-within:ring-2 focus-within:ring-primary-500',
         error ? 'border-danger' : 'border-border-strong',
       )}>
-        {prefix && <span className="shrink-0 text-muted">{prefix}</span>}
+        {prefix && <span className="shrink-0 text-muted-foreground">{prefix}</span>}
         <input
           id={inputId}
           aria-invalid={Boolean(error)}
@@ -29,10 +29,10 @@ export function Input({ label, hint, error, prefix, suffix, id, className, ...pr
           className={cn('min-w-0 flex-1 bg-transparent outline-none placeholder:text-subtle disabled:cursor-not-allowed disabled:opacity-50', className)}
           {...props}
         />
-        {suffix && <span className="shrink-0 text-muted">{suffix}</span>}
+        {suffix && <span className="shrink-0 text-muted-foreground">{suffix}</span>}
       </div>
       {(error || hint) && (
-        <p id={messageId} className={cn('text-xs', error ? 'text-danger' : 'text-muted')} role={error ? 'alert' : undefined}>
+        <p id={messageId} className={cn('text-xs', error ? 'text-danger' : 'text-muted-foreground')} role={error ? 'alert' : undefined}>
           {error || hint}
         </p>
       )}

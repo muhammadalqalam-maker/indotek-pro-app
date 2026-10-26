@@ -48,7 +48,7 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
       <div className="grid gap-3 sm:grid-cols-2">
         <Card>
           <CardContent className="p-4 sm:p-5">
-            <p className="text-sm text-muted">{messages.baseContractValue}</p>
+            <p className="text-sm text-muted-foreground">{messages.baseContractValue}</p>
             <p className="mt-1 break-words text-xl font-bold tabular-nums text-text">
               {formatRupiah(project.contract_value)}
             </p>
@@ -56,11 +56,11 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
         </Card>
         <Card>
           <CardContent className="p-4 sm:p-5">
-            <p className="text-sm text-muted">{messages.effectiveContractValue}</p>
+            <p className="text-sm text-muted-foreground">{messages.effectiveContractValue}</p>
             <p className="mt-1 break-words text-xl font-bold tabular-nums text-text">
               {formatRupiah(effectiveContractValue)}
             </p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs text-muted-foreground">
               {messages.approvedAddendumTotal}: {formatRupiah(effectiveContractValue - project.contract_value)}
             </p>
           </CardContent>
@@ -71,7 +71,7 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
         <CardHeader className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <CardTitle>{messages.addendumListTitle}</CardTitle>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-sm text-muted-foreground">
               {messages.approvedTimeExtension}: {approvedExtensionDays} {messages.days}
             </p>
           </div>
@@ -107,7 +107,7 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
                         <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="break-all font-mono text-xs font-semibold text-muted">
+                              <p className="break-all font-mono text-xs font-semibold text-muted-foreground">
                                 {addendum.addendum_number}
                               </p>
                               <Badge variant={addendumStatusVariant(status)}>
@@ -125,26 +125,26 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
                         </div>
 
                         {addendum.description && (
-                          <p className="whitespace-pre-wrap break-words text-sm text-muted">
+                          <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">
                             {addendum.description}
                           </p>
                         )}
 
                         <dl className="grid gap-3 rounded-md bg-surface-2 p-3 sm:grid-cols-3">
                           <div className="min-w-0">
-                            <dt className="text-xs text-muted">{messages.addendumAmount}</dt>
+                            <dt className="text-xs text-muted-foreground">{messages.addendumAmount}</dt>
                             <dd className="mt-1 break-words text-sm font-semibold tabular-nums text-text">
                               {formatRupiah(addendum.amount)}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">{messages.addendumTimeExtension}</dt>
+                            <dt className="text-xs text-muted-foreground">{messages.addendumTimeExtension}</dt>
                             <dd className="mt-1 text-sm font-semibold tabular-nums text-text">
                               {addendum.time_extension_days} {messages.days}
                             </dd>
                           </div>
                           <div>
-                            <dt className="text-xs text-muted">
+                            <dt className="text-xs text-muted-foreground">
                               {approved ? messages.addendumApprovedOn : messages.addendumCreatedOn}
                             </dt>
                             <dd className="mt-1 break-words text-sm font-medium text-text">
@@ -154,7 +154,7 @@ export function ProjectAddendumsTab({ project }: { project: Project }) {
                         </dl>
 
                         {approved && (
-                          <p className="text-xs text-muted">
+                          <p className="text-xs text-muted-foreground">
                             {messages.addendumApprovedBy}: {approverName}
                           </p>
                         )}

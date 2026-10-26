@@ -111,7 +111,7 @@ export function WorkerPieceworkForm({
         <form onSubmit={(event) => void submit(event)} className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 sm:p-5">
           <div className="sm:col-span-2">
             <h3 className="font-semibold text-text">{messages.pieceworkTitle}</h3>
-            <p className="mt-1 text-sm text-muted">{messages.pieceworkDescription}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.pieceworkDescription}</p>
           </div>
           <label className="grid gap-1.5 text-sm font-medium text-text">
             {messages.pieceworkWorker}
@@ -146,7 +146,7 @@ export function WorkerPieceworkForm({
             {messages.pieceworkRate}
             <input type="number" min="0" step="100" inputMode="decimal" {...register('unit_rate', { valueAsNumber: true })} disabled={isSaving} className="min-h-11 rounded-md border border-border bg-surface px-3 text-base" />
           </label>
-          <p className="flex items-end text-sm text-muted sm:pb-3">
+          <p className="flex items-end text-sm text-muted-foreground sm:pb-3">
             {messages.pieceworkAmount}: {formatRupiah(
               Number.isFinite(quantityValue) && Number.isFinite(rateValue)
                 ? quantityValue * rateValue

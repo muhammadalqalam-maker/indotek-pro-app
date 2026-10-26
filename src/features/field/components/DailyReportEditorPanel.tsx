@@ -32,7 +32,7 @@ function statusLabel(status: string): string {
 function statusClasses(status: string): string {
   if (status === DAILY_REPORT_STATUSES.approved) return 'bg-success-bg text-success';
   if (status === DAILY_REPORT_STATUSES.submitted) return 'bg-warning-bg text-warning';
-  return 'bg-surface-2 text-muted';
+  return 'bg-surface-2 text-muted-foreground';
 }
 
 function technicalError(error: unknown): string {
@@ -54,10 +54,10 @@ export function DailyReportEditorPanel({
   const canSubmit = Boolean(editor.editable && editor.isOnline && !editor.isSaving);
 
   if (!projectId) {
-    return <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">{messages.noReportsProject}</div>;
+    return <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">{messages.noReportsProject}</div>;
   }
   if (!reportId) {
-    return <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted">{messages.selectReport}</div>;
+    return <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">{messages.selectReport}</div>;
   }
   if (isLoading) {
     return (
@@ -95,7 +95,7 @@ export function DailyReportEditorPanel({
     >
       <header className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-border bg-surface p-4 sm:p-5">
         <div>
-          <p className="text-xs font-medium text-muted">{messages.reportDate}</p>
+          <p className="text-xs font-medium text-muted-foreground">{messages.reportDate}</p>
           <h2 className="mt-1 text-lg font-semibold text-text">
             {formatTanggal(report.report_date, { timezone, long: true })}
           </h2>
@@ -146,7 +146,7 @@ export function DailyReportEditorPanel({
 
       <footer className="sticky bottom-2 z-20 flex flex-col gap-3 rounded-lg border border-border bg-surface p-3 shadow-md sm:flex-row sm:items-center sm:justify-between">
         <p
-          className={`flex items-center gap-2 text-xs ${editor.saveState === 'error' ? 'text-danger' : 'text-muted'}`}
+          className={`flex items-center gap-2 text-xs ${editor.saveState === 'error' ? 'text-danger' : 'text-muted-foreground'}`}
           role="status"
           aria-live="polite"
         >
@@ -172,7 +172,7 @@ export function DailyReportEditorPanel({
             </>
           )}
           {!editor.editable && (
-            <span className="text-xs text-muted">{messages.readOnly}</span>
+            <span className="text-xs text-muted-foreground">{messages.readOnly}</span>
           )}
         </div>
       </footer>

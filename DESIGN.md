@@ -6,7 +6,7 @@ Sumber kebenaran **tampilan & interaksi**. Semua UI wajib memakai token dan pola
 
 ## 1. Karakter Visual
 
-**Modern, bersih, elegan, tepercaya** — seperti SaaS premium (Linear/Stripe/Notion) namun bernuansa konstruksi: navy yang kokoh, aksen amber/oranye, whitespace lega, hierarki jelas. Data padat tetap terbaca. Tidak ramai, tidak norak, tanpa gradien berlebihan.
+**Modern, bersih, elegan, tepercaya** — seperti SaaS premium dengan identitas netral ala shadcn-admin, whitespace lega, hierarki jelas, dan data padat yang tetap terbaca. Tidak ramai, tidak norak, tanpa gradien berlebihan.
 
 Prinsip:
 1. **Kejelasan > dekorasi.** Setiap elemen punya fungsi.
@@ -17,22 +17,22 @@ Prinsip:
 
 ## 2. Design Tokens
 
-Implementasi sebagai CSS variables di `:root` dan `.dark`, dipetakan ke Tailwind v4 lewat `@theme inline` di `src/index.css` (CSS-first, tanpa `tailwind.config`). Komponen hanya memakai token semantik (mis. `bg-surface`, `text-muted`), bukan hex.
+Implementasi sebagai CSS variables di `:root` dan `.dark`, dipetakan ke Tailwind v4 lewat `@theme inline` di `src/index.css` (CSS-first, tanpa `tailwind.config`). Komponen hanya memakai token semantik (mis. `bg-surface`, `text-muted-foreground`), bukan hex.
 
-### 2.1 Warna Brand
+### 2.1 Warna Kontekstual yang Tersedia
 | Token | Light | Dark | Pemakaian |
 |---|---|---|---|
-| `--primary-50` | `#EFF4FB` | — | latar tint |
-| `--primary-100` | `#DCE7F6` | — | hover halus |
-| `--primary-500` | `#2B5C9E` | `#5B8FD6` | link, fokus |
-| `--primary-600` | `#1E4A85` | `#4A7DC4` | tombol primer hover |
-| `--primary-700` | `#163A6A` | — | tombol primer aktif |
-| `--primary-900` | `#0F2A4A` | — | sidebar, header gelap |
-| `--accent-400` | `#FBBF24` | `#FBBF24` | highlight |
-| `--accent-500` | `#F59E0B` | `#F59E0B` | aksen/CTA sekunder, FAB |
-| `--accent-600` | `#D97706` | `#D97706` | aksen hover |
+| `--primary-50` | `#EFF4FB` | — | tint untuk visualisasi/konteks domain |
+| `--primary-100` | `#DCE7F6` | — | hover pada visualisasi/konteks domain |
+| `--primary-500` | `#2B5C9E` | `#5B8FD6` | seri grafik atau konteks domain |
+| `--primary-600` | `#1E4A85` | `#4A7DC4` | variasi warna visualisasi |
+| `--primary-700` | `#163A6A` | — | variasi warna visualisasi |
+| `--primary-900` | `#0F2A4A` | — | konteks brand lama; bukan warna sidebar/header |
+| `--accent-400` | `#FBBF24` | `#FBBF24` | highlight visualisasi |
+| `--accent-500` | `#F59E0B` | `#F59E0B` | seri grafik atau konteks domain |
+| `--accent-600` | `#D97706` | `#D97706` | variasi warna visualisasi |
 
-Tombol primer = `primary-700` (light) dengan teks putih. Aksen amber dipakai hemat (FAB, badge penting, grafik pendamping).
+Palet kontekstual di atas tidak mendominasi shell dan kontrol umum; pemetaan visual netral untuk tombol primer dan sidebar mengikuti §2.7. Token warna tersebut tetap tersedia untuk visualisasi atau konteks domain yang memerlukannya.
 
 ### 2.2 Netral & Permukaan
 | Token | Light | Dark |
@@ -107,15 +107,15 @@ Komponen shadcn memakai token semantik. Token itu **dipetakan ke token Indotek y
 |---|---|
 | `--background` / `--foreground` | `--bg` / `--text` |
 | `--card`, `--popover` (+ `-foreground`) | `--surface` / `--text` |
-| `--primary` (+ `-foreground`) | light: `primary-700` + putih; dark: `primary-500` + teks gelap (cek kontras ≥ 4.5:1) |
+| `--primary` (+ `-foreground`) | `--text` + `--bg` (netral pada light dan dark) |
 | `--secondary`, `--muted`, `--accent` | `--surface-2` (`accent` shadcn = latar hover, **bukan** amber brand) |
 | `--muted-foreground` | `--text-muted` |
 | `--destructive` | `--danger` |
-| `--border` / `--input` / `--ring` | `--border` / `--border-strong` / `primary-500` |
-| `--sidebar*` | default: latar `primary-900`, teks putih/85, item aktif putih/10 + penanda `accent-500` (keputusan D-UI-1) |
+| `--border` / `--input` / `--ring` | `--border` / `--border-strong` / `--text-muted` |
+| `--sidebar*` | light/dark: latar `--surface`, teks `--text`, item aktif `--surface-2` + `--text`; tanpa penanda amber (D-UI-1) |
 | `--chart-1..5` | `primary-500`, `accent-500`, `success`, `danger`, `neutral` |
 
-Amber brand tetap `accent-400/500/600` (bernomor), berdampingan dengan `accent` shadcn (tanpa nomor). Radius tetap §2.5 (`sm 6 / md 10 / lg 14 / xl 20`); jangan menimpa lewat `--radius`. Kelas `text-muted` lama **tidak boleh dipakai** setelah T-UI.A.1; gunakan `text-muted-foreground`.
+Amber brand tetap `accent-400/500/600` (bernomor), berdampingan dengan `accent` shadcn (tanpa nomor). Radius tetap §2.5 (`sm 6 / md 10 / lg 14 / xl 20`); jangan menimpa lewat `--radius`. Gunakan `text-muted-foreground` untuk teks sekunder; `bg-muted` dipetakan ke `--surface-2`.
 
 ## 3. Layout & Navigasi
 
@@ -268,7 +268,7 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Router | TanStack Router | React Router v7 | Disengaja (AGENTS §2) |
 | Auth | Clerk (sebagian) | Supabase Auth | Disengaja |
 | Ikon | Lucide | Lucide | Sama |
-| Warna | Netral | Navy + amber | Disengaja (D-UI-1) |
+| Warna | Netral | Netral seperti template | Disetujui (D-UI-1) |
 | Indikator offline/sinkron, FAB, target sentuh 44px | Tidak ada | Ada | Disengaja |
 
 Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel ini (nama, alasan, tanggal).

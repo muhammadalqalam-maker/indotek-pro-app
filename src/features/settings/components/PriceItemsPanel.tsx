@@ -158,7 +158,7 @@ export function PriceItemsPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 id="price-items-title" className="text-base font-semibold text-text">{messages.priceItems}</h3>
-          <p className="mt-1 text-sm text-muted">{messages.estimatingCatalogHint}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.estimatingCatalogHint}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {canEdit && !editing && (
@@ -215,7 +215,7 @@ export function PriceItemsPanel({
             </Button>
           </div>
           {activeUnits.length === 0 && (
-            <p className="sm:col-span-2 lg:col-span-3 text-sm text-muted">{messages.emptyUnits}</p>
+            <p className="sm:col-span-2 lg:col-span-3 text-sm text-muted-foreground">{messages.emptyUnits}</p>
           )}
         </form>
       )}
@@ -231,7 +231,7 @@ export function PriceItemsPanel({
           <Button variant="outline" size="sm" onClick={() => void load()}>{messages.retry}</Button>
         </div>
       ) : items.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">{messages.emptyPriceItems}</p>
+        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted-foreground">{messages.emptyPriceItems}</p>
       ) : (
         <PriceItemsList items={items} units={units} canEdit={canEdit} onEdit={editItem} onArchive={setArchiveTarget} />
       )}

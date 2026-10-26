@@ -153,7 +153,7 @@ export function DataTable<Row>({
           <div className="flex flex-wrap items-center gap-2">
             {toolbar}
             {onDensityChange && (
-              <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
+              <label className="flex min-h-11 items-center gap-2 text-xs text-muted-foreground">
                 <span>Kepadatan</span>
                 <select
                   className="min-h-11 rounded-md border border-border-strong bg-surface px-2 text-sm text-text"
@@ -230,7 +230,7 @@ export function DataTable<Row>({
       <div className="hidden overflow-hidden rounded-lg border border-border bg-surface sm:block">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[40rem] border-collapse text-left text-sm">
-            <thead className="sticky top-0 z-10 bg-surface-2 text-xs text-muted">
+            <thead className="sticky top-0 z-10 bg-surface-2 text-xs text-muted-foreground">
               <tr>
                 {onSelectionChange && (
                   <th scope="col" className="w-11 px-3 py-3">
@@ -302,12 +302,12 @@ export function DataTable<Row>({
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-muted" aria-live="polite">
+        <p className="text-xs text-muted-foreground" aria-live="polite">
           {totalRows === 0 ? 'Tidak ada data' : `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, totalRows)} dari ${totalRows}`}
           {selectedRowIds.length > 0 ? ` · ${selectedRowIds.length} dipilih` : ''}
         </p>
         <div className="flex flex-wrap items-center gap-2">
-          <label className="flex min-h-11 items-center gap-2 text-xs text-muted">
+          <label className="flex min-h-11 items-center gap-2 text-xs text-muted-foreground">
             <span>Baris</span>
             <select
               value={pageSize}
@@ -321,7 +321,7 @@ export function DataTable<Row>({
           <Button variant="outline" size="sm" disabled={page <= 1 || loading} onClick={() => onPageChange(page - 1)}>
             Sebelumnya
           </Button>
-          <span className="min-w-20 text-center text-xs text-muted">Halaman {page} / {totalPages}</span>
+          <span className="min-w-20 text-center text-xs text-muted-foreground">Halaman {page} / {totalPages}</span>
           <Button variant="outline" size="sm" disabled={page >= totalPages || loading} onClick={() => onPageChange(page + 1)}>
             Berikutnya
           </Button>

@@ -70,9 +70,9 @@ export function CashAdvanceActionDialog({ request, action, onClose, onSubmit }: 
         <div className="mb-4 flex items-start justify-between gap-4 border-b border-border pb-3">
           <div>
             <h2 className="text-lg font-semibold text-text" id="cash-advance-action-title">{titles[action]}</h2>
-            <p className="mt-1 text-sm text-muted">{request.ticket_number} · {formatRupiah(request.amount)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{request.ticket_number} · {formatRupiah(request.amount)}</p>
           </div>
-          <button aria-label={messages.close} className="min-h-11 min-w-11 rounded-md text-muted hover:bg-surface-2" onClick={onClose} type="button">
+          <button aria-label={messages.close} className="min-h-11 min-w-11 rounded-md text-muted-foreground hover:bg-surface-2" onClick={onClose} type="button">
             <X aria-hidden="true" className="mx-auto h-5 w-5" />
           </button>
         </div>
@@ -93,7 +93,7 @@ export function CashAdvanceActionDialog({ request, action, onClose, onSubmit }: 
           )}
           {action === 'payout' && (
             <>
-              <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.payoutHint}</p>
+              <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted-foreground">{messages.payoutHint}</p>
               <label className="block space-y-1 text-sm text-text">
                 <span>{messages.paymentMethod}</span>
                 <select className="min-h-11 w-full rounded-md border border-border-strong bg-surface px-3 text-base" {...register('paymentMethod')}>
@@ -113,11 +113,11 @@ export function CashAdvanceActionDialog({ request, action, onClose, onSubmit }: 
           )}
           {action === 'settle' && (
             <>
-              <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted">{messages.settledHint}</p>
+              <p className="rounded-md border border-border bg-surface-2 p-3 text-sm text-muted-foreground">{messages.settledHint}</p>
               <label className="block space-y-1 text-sm text-text">
                 <span>{messages.settlementAmount}</span>
                 <input className="min-h-11 w-full rounded-md border border-border-strong bg-surface px-3 text-base" inputMode="decimal" {...register('settledAmount')} />
-                <span className="block text-xs text-muted">{messages.settlementAmountHint(formatRupiah(paidAmount))}</span>
+                <span className="block text-xs text-muted-foreground">{messages.settlementAmountHint(formatRupiah(paidAmount))}</span>
                 {errors.settledAmount && <span className="text-xs text-danger">{errors.settledAmount.message}</span>}
               </label>
               <label className="block space-y-1 text-sm text-text">

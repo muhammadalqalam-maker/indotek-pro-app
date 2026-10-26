@@ -22,7 +22,7 @@ export function ErrorState({
       </span>
       <div className="space-y-1">
         <h2 className="text-base font-semibold text-text">{title}</h2>
-        <p className="max-w-md text-sm text-muted">{description}</p>
+        <p className="max-w-md text-sm text-muted-foreground">{description}</p>
       </div>
       {onRetry && <Button variant="outline" onClick={onRetry}>{retryLabel}</Button>}
     </section>

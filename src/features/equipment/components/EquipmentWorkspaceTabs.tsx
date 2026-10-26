@@ -29,7 +29,7 @@ export function EquipmentWorkspaceTabs({
           className={`min-h-11 shrink-0 border-b-2 px-3 text-sm font-semibold ${
             activeTab === tab
               ? 'border-primary-600 text-primary-600'
-              : 'border-transparent text-muted hover:text-text'
+              : 'border-transparent text-muted-foreground hover:text-text'
           }`}
         >
           {label}

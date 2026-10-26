@@ -78,11 +78,11 @@ export function WeeklyWagesPanel({
       <article key={entry.id} className="grid gap-2 rounded-lg border border-border bg-surface p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
         <div className="min-w-0">
           <h4 className="font-medium text-text">{entry.description}</h4>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             {worker?.full_name ?? messages.unnamedWorker} · {formatTanggal(entry.work_date)}
           </p>
         </div>
-        <p className="text-sm tabular-nums text-muted">
+        <p className="text-sm tabular-nums text-muted-foreground">
           {formatVolume(entry.quantity)} {entry.unit} × {formatRupiah(entry.unit_rate)}
         </p>
         <p className="font-semibold tabular-nums text-text">{formatRupiah(entry.total_amount)}</p>
@@ -99,14 +99,14 @@ export function WeeklyWagesPanel({
       <header className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:p-5">
         <div>
           <h2 className="text-lg font-semibold text-text">{messages.weeklyWagesTitle}</h2>
-          <p className="mt-1 text-sm text-muted">{messages.weeklyWagesDescription}</p>
-          <p className="mt-2 text-xs text-muted">{messages.accruedOnlyNotice}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.weeklyWagesDescription}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{messages.accruedOnlyNotice}</p>
         </div>
         <div className="grid gap-2 sm:min-w-64">
           <label className="grid gap-1.5 text-sm font-medium text-text">
             {messages.weekAnchor}
             <span className="relative">
-              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+              <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <input
                 type="date"
                 value={anchorDate}
@@ -160,9 +160,9 @@ export function WeeklyWagesPanel({
         <>
           <section className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5">
             <div>
-              <p className="text-sm font-medium text-muted">{messages.weeklyTotal}</p>
+              <p className="text-sm font-medium text-muted-foreground">{messages.weeklyTotal}</p>
               <p className="mt-1 text-2xl font-bold tabular-nums text-text">{formatRupiah(totalWage)}</p>
-              <p className="mt-1 text-sm text-muted">{messages.workersCount(summary.filter((item) => item.total_wage > 0).length)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{messages.workersCount(summary.filter((item) => item.total_wage > 0).length)}</p>
             </div>
           </section>
 
@@ -185,8 +185,8 @@ export function WeeklyWagesPanel({
                 <article key={item.worker_id} className="grid gap-3 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1.2fr)_repeat(4,minmax(0,1fr))] sm:items-center">
                   <div className="min-w-0">
                     <h3 className="truncate font-semibold text-text">{item.worker_name}</h3>
-                    <p className="mt-1 text-sm text-muted">{messages.trades[item.role_trade]}</p>
-                    <p className="mt-1 text-xs text-muted">{messages.attendanceDays}: {item.attendance_days}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{messages.trades[item.role_trade]}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{messages.attendanceDays}: {item.attendance_days}</p>
                   </div>
                   <WageAmount label={messages.baseWage} amount={item.base_wage} />
                   <WageAmount label={messages.overtimeWage} amount={item.overtime_wage} />
@@ -204,7 +204,7 @@ export function WeeklyWagesPanel({
             {(query.data?.piecework.length ?? 0) > 0 ? (
               <div className="grid gap-2">{query.data?.piecework.map(renderPieceworkEntry)}</div>
             ) : (
-              <p className="text-sm text-muted">{messages.noPiecework}</p>
+              <p className="text-sm text-muted-foreground">{messages.noPiecework}</p>
             )}
           </section>
         </>
@@ -216,7 +216,7 @@ export function WeeklyWagesPanel({
 function WageAmount({ label, amount, emphasized = false }: { label: string; amount: number; emphasized?: boolean }) {
   return (
     <div className="grid gap-1">
-      <span className="text-xs text-muted">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
       <span className={`tabular-nums ${emphasized ? 'font-semibold text-text' : 'text-text'}`}>{formatRupiah(amount)}</span>
     </div>
   );

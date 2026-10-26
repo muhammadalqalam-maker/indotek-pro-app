@@ -80,7 +80,7 @@ export function QcInspectionForm({
     <form onSubmit={(event) => void submit(event)} className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 sm:p-5">
       <div className="sm:col-span-2">
         <h2 className="text-lg font-semibold text-text">{messages.addQcInspection}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.qualityInspectionDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.qualityInspectionDescription}</p>
       </div>
       {(validationSummary || serverError) && (
         <div

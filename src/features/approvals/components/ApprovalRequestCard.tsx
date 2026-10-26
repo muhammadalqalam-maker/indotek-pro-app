@@ -164,18 +164,18 @@ export function ApprovalRequestCard({
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="info">{resourceLabel(request.resource_type)}</Badge>
               <Badge variant={statusVariant(request.status)}>{statusLabel(request.status)}</Badge>
-              <span className="break-all font-mono text-xs text-muted">{request.reference_number}</span>
+              <span className="break-all font-mono text-xs text-muted-foreground">{request.reference_number}</span>
             </div>
             <h3 className="mt-2 break-words text-base font-semibold text-text">{request.title}</h3>
-            <p className="mt-1 text-sm text-muted">
+            <p className="mt-1 text-sm text-muted-foreground">
               {messages.project}: {request.project_name} · {messages.requester}: {request.requester_name}
             </p>
-            <p className="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs text-muted-foreground">
               {messages.submittedAt}: {formatTanggal(request.created_at, { withTime: true })}
             </p>
           </div>
           <div className="shrink-0 sm:text-right">
-            <p className="text-xs text-muted">{messages.amount}</p>
+            <p className="text-xs text-muted-foreground">{messages.amount}</p>
             <p className="mt-1 text-lg font-semibold tabular-nums text-text">
               {request.amount > 0 ? formatRupiah(request.amount) : messages.noAmount}
             </p>
@@ -183,7 +183,7 @@ export function ApprovalRequestCard({
         </header>
 
         {request.requester_comment && (
-          <p className="rounded-md bg-surface-2 p-3 text-sm text-muted">
+          <p className="rounded-md bg-surface-2 p-3 text-sm text-muted-foreground">
             <strong className="text-text">{messages.requesterComment}: </strong>
             {request.requester_comment}
           </p>
@@ -210,16 +210,16 @@ export function ApprovalRequestCard({
                     ? <Check className="h-4 w-4 text-success" aria-hidden="true" />
                     : step.status === APPROVAL_STEP_STATUSES.rejected
                       ? <X className="h-4 w-4 text-danger" aria-hidden="true" />
-                      : <Clock3 className="h-4 w-4 text-muted" aria-hidden="true" />}
+                      : <Clock3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />}
                   {messages.step(step.step_number)}
                   {isCurrent && <span className="text-xs text-primary-700 dark:text-primary-500">{messages.currentStep}</span>}
                 </span>
-                <span className="text-xs text-muted">{roleNames}</span>
+                <span className="text-xs text-muted-foreground">{roleNames}</span>
                 {step.status === APPROVAL_STEP_STATUSES.waiting && (
-                  <span className="text-xs text-muted">{messages.waitingStep}</span>
+                  <span className="text-xs text-muted-foreground">{messages.waitingStep}</span>
                 )}
                 {step.acted_by && (
-                  <span className="text-xs text-muted">
+                  <span className="text-xs text-muted-foreground">
                     {messages.approvedBy}: {actor}
                   </span>
                 )}
@@ -227,7 +227,7 @@ export function ApprovalRequestCard({
                 {stepDelegations.map((delegation) => {
                   const delegate = members.find((member) => member.user_id === delegation.delegate_user_id);
                   return (
-                    <span key={delegation.id} className="text-xs text-muted">
+                    <span key={delegation.id} className="text-xs text-muted-foreground">
                       {messages.delegationActive(
                         delegate?.user?.full_name ?? delegation.delegate_user_id,
                         formatTanggal(delegation.expires_at, { withTime: true }),

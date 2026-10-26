@@ -61,9 +61,9 @@ export function PurchaseOrderDialog({
         <header className="mb-5 flex items-start justify-between gap-3">
           <div>
             <h2 id="purchase-order-title" className="text-lg font-semibold text-text">{messages.createOrder}</h2>
-            <p className="mt-1 text-sm text-muted">{request.pr_number} · {request.project_name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{request.pr_number} · {request.project_name}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </header>
@@ -81,8 +81,8 @@ export function PurchaseOrderDialog({
           </label>
           {selectedQuote && (
             <div className="grid grid-cols-2 gap-2 rounded-lg bg-surface-2 p-3 text-sm">
-              <span className="text-muted">Subtotal</span><strong className="text-right text-text">{formatRupiah(selectedQuote.subtotal)}</strong>
-              <span className="text-muted">PPN {selectedQuote.ppn_percent}%</span><strong className="text-right text-text">{formatRupiah(selectedQuote.ppn_amount)}</strong>
+              <span className="text-muted-foreground">Subtotal</span><strong className="text-right text-text">{formatRupiah(selectedQuote.subtotal)}</strong>
+              <span className="text-muted-foreground">PPN {selectedQuote.ppn_percent}%</span><strong className="text-right text-text">{formatRupiah(selectedQuote.ppn_amount)}</strong>
               <span className="font-semibold text-text">{messages.comparison}</span><strong className="text-right text-primary-700">{formatRupiah(selectedQuote.grand_total)}</strong>
             </div>
           )}

@@ -25,14 +25,14 @@ export function ToolboxMeetingList({
       <header className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="font-semibold text-text">{meeting.topic}</h3>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             {projectNames.get(meeting.project_id) ?? messages.project}
             {' · '}{formatTanggal(meeting.meeting_date, { timezone: 'WIB' })}
           </p>
         </div>
         <p className="text-sm font-semibold text-text">{messages.attendeesCount(meeting.attendees_count)}</p>
       </header>
-      <p className="text-sm text-muted">{messages.presenter}: {meeting.presenter_name}</p>
+      <p className="text-sm text-muted-foreground">{messages.presenter}: {meeting.presenter_name}</p>
       <ul className="list-inside list-disc space-y-1 text-sm text-text">
         {meeting.key_points.map((point, index) => <li key={`${meeting.id}-${index}`}>{point}</li>)}
       </ul>

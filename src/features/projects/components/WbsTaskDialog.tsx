@@ -194,7 +194,7 @@ export function WbsTaskDialog({
             />
           </div>
           {startDate && form.watch('end_date') && form.formState.errors.end_date?.message === undefined && (
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted-foreground">
               {messages.duration}: {getTaskDurationDays({
                 start_date: startDate,
                 end_date: form.watch('end_date'),
@@ -212,14 +212,14 @@ export function WbsTaskDialog({
                 shouldValidate: true,
               })}
             />
-            <p className="text-xs text-muted">{messages.milestoneHint}</p>
+            <p className="text-xs text-muted-foreground">{messages.milestoneHint}</p>
           </div>
 
           <fieldset className="space-y-2 rounded-md border border-border p-3">
             <legend className="px-1 text-sm font-medium text-text">{messages.predecessor}</legend>
-            <p className="text-xs text-muted">{messages.dependencyHint}</p>
+            <p className="text-xs text-muted-foreground">{messages.dependencyHint}</p>
             {allowedPredecessors.length === 0 ? (
-              <p className="text-sm text-muted">{messages.emptyPredecessors}</p>
+              <p className="text-sm text-muted-foreground">{messages.emptyPredecessors}</p>
             ) : (
               <div className="max-h-48 space-y-1 overflow-y-auto">
                 {allowedPredecessors.map((row) => {

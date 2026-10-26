@@ -159,7 +159,7 @@ export function WarehouseWorkspace() {
 
   if (!currentOrg) {
     return (
-      <section className="rounded-xl border border-border bg-surface p-5 text-sm text-muted" role="status">
+      <section className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground" role="status">
         {messages.noOrganization}
       </section>
     );
@@ -170,7 +170,7 @@ export function WarehouseWorkspace() {
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <h1 id="warehouse-page-title" className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
         </div>
         {canCreate && (
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -234,7 +234,7 @@ export function WarehouseWorkspace() {
               role="tab"
               aria-selected={activeTab === 'inventory'}
               onClick={() => setActiveTab('inventory')}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'inventory' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted'}`}
+              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'inventory' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted-foreground'}`}
             >
               <Boxes className="h-4 w-4" aria-hidden="true" />
               {messages.inventory} ({filteredInventory.length})
@@ -244,7 +244,7 @@ export function WarehouseWorkspace() {
               role="tab"
               aria-selected={activeTab === 'movements'}
               onClick={() => setActiveTab('movements')}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'movements' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted'}`}
+              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'movements' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted-foreground'}`}
             >
               <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
               {messages.movementLog} ({filteredMovements.length})
@@ -258,7 +258,7 @@ export function WarehouseWorkspace() {
               placeholder={messages.search}
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text placeholder:text-muted"
+              className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text placeholder:text-muted-foreground"
             />
           </label>
 
@@ -297,7 +297,7 @@ export function WarehouseWorkspace() {
               {filteredMovements.map((movement) => (
                 <WarehouseMovementCard key={movement.id} movement={movement} projects={projects} />
               ))}
-              <p className="text-center text-xs text-muted">{messages.limitNote}</p>
+              <p className="text-center text-xs text-muted-foreground">{messages.limitNote}</p>
             </div>
           )}
         </>

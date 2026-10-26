@@ -65,33 +65,33 @@ export function ProjectCashFlowForecast({
     <section className="space-y-4 rounded-lg border border-border bg-surface p-4 sm:p-5">
       <header className="space-y-1">
         <h2 className="text-base font-semibold text-text">{messages.cashFlowForecastTitle}</h2>
-        <p className="text-sm text-muted">{messages.cashFlowForecastDescription}</p>
-        <p className="text-xs text-muted">{messages.cashFlowForecastNote}</p>
+        <p className="text-sm text-muted-foreground">{messages.cashFlowForecastDescription}</p>
+        <p className="text-xs text-muted-foreground">{messages.cashFlowForecastNote}</p>
       </header>
 
       {!hasProjects ? (
-        <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
+        <p className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           {messages.cashFlowNoProjects}
         </p>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-md border border-border bg-surface-2 p-3">
-              <p className="text-xs font-medium text-muted">{messages.scheduledInflow}</p>
+              <p className="text-xs font-medium text-muted-foreground">{messages.scheduledInflow}</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-success">{formatRupiah(forecast.scheduledInflow)}</p>
-              <p className="text-xs text-muted">{messages.forecastPeriod}</p>
+              <p className="text-xs text-muted-foreground">{messages.forecastPeriod}</p>
             </div>
             <div className="rounded-md border border-border bg-surface-2 p-3">
-              <p className="text-xs font-medium text-muted">{messages.scheduledOutflow}</p>
+              <p className="text-xs font-medium text-muted-foreground">{messages.scheduledOutflow}</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-danger">{formatRupiah(forecast.scheduledOutflow)}</p>
-              <p className="text-xs text-muted">{messages.forecastPeriod}</p>
+              <p className="text-xs text-muted-foreground">{messages.forecastPeriod}</p>
             </div>
             <div className="rounded-md border border-border bg-surface-2 p-3">
-              <p className="text-xs font-medium text-muted">{messages.scheduledNet}</p>
+              <p className="text-xs font-medium text-muted-foreground">{messages.scheduledNet}</p>
               <p className={`mt-1 text-lg font-semibold tabular-nums ${forecast.scheduledNet >= 0 ? 'text-success' : 'text-danger'}`}>
                 {formatRupiah(forecast.scheduledNet)}
               </p>
-              <p className="text-xs text-muted">{messages.forecastPeriod}</p>
+              <p className="text-xs text-muted-foreground">{messages.forecastPeriod}</p>
             </div>
           </div>
 
@@ -150,7 +150,7 @@ export function ProjectCashFlowForecast({
           <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full min-w-[560px] text-left text-sm">
               <caption className="sr-only">{messages.cashFlowTableCaption}</caption>
-              <thead className="bg-surface-2 text-xs text-muted">
+              <thead className="bg-surface-2 text-xs text-muted-foreground">
                 <tr>
                   <th scope="col" className="px-3 py-2 font-semibold">{messages.period}</th>
                   <th scope="col" className="px-3 py-2 text-right font-semibold">{messages.actualInflow}</th>

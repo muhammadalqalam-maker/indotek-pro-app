@@ -231,7 +231,7 @@ export function CreateProjectModal({
               onChange={(event) => setValue('code', event.target.value.toUpperCase(), { shouldDirty: true, shouldValidate: true })}
             />
             {isSupabaseLive && !projectToEdit && (
-              <p className="text-xs text-muted sm:col-span-2">
+              <p className="text-xs text-muted-foreground sm:col-span-2">
                 {getMessages('id').settings.generatedProjectCodeHint}
               </p>
             )}
@@ -303,9 +303,9 @@ export function CreateProjectModal({
                 </Button>
               </div>
             )}
-            {membersLoading && <p className="text-sm text-muted sm:col-span-2">{messages.loadingMembers}</p>}
+            {membersLoading && <p className="text-sm text-muted-foreground sm:col-span-2">{messages.loadingMembers}</p>}
             {!membersLoading && !membersError && activeMembers.length === 0 && (
-              <p className="text-sm text-muted sm:col-span-2">{messages.noMembers}</p>
+              <p className="text-sm text-muted-foreground sm:col-span-2">{messages.noMembers}</p>
             )}
           </section>
 

@@ -131,7 +131,7 @@ export function SignaturePad({
     <section className="space-y-3 rounded-lg border border-border bg-surface p-4">
       <div>
         <h3 className="text-sm font-semibold text-text">{label}</h3>
-        <p className="mt-1 text-xs text-muted">{hint}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </div>
       {!disabled && (
         <div className="space-y-3">
@@ -165,7 +165,7 @@ export function SignaturePad({
         <img src={filePreview} alt={label} className="max-h-24 max-w-full object-contain" />
       ) : savedSignatureUrl && !cleared ? (
         <div className="space-y-1">
-          <p className="text-xs font-medium text-muted">{savedLabel}</p>
+          <p className="text-xs font-medium text-muted-foreground">{savedLabel}</p>
           <img src={savedSignatureUrl} alt={label} className="max-h-24 max-w-full object-contain" />
         </div>
       ) : null}

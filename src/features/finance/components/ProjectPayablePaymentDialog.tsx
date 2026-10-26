@@ -54,9 +54,9 @@ export function ProjectPayablePaymentDialog({ payable, onClose, onSubmit }: Proj
         <div className="flex items-start justify-between gap-4 border-b border-border pb-3">
           <div>
             <h2 className="text-lg font-semibold text-text" id="project-payable-payment-title">{messages.payablePaymentTitle}</h2>
-            <p className="mt-1 text-sm text-muted">{messages.payablePaymentHint(payable.payable_number, formatRupiah(remaining))}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.payablePaymentHint(payable.payable_number, formatRupiah(remaining))}</p>
           </div>
-          <button aria-label={messages.close} className="min-h-11 min-w-11 rounded-md text-muted hover:bg-surface-2" onClick={onClose} type="button">
+          <button aria-label={messages.close} className="min-h-11 min-w-11 rounded-md text-muted-foreground hover:bg-surface-2" onClick={onClose} type="button">
             <X aria-hidden="true" className="mx-auto h-5 w-5" />
           </button>
         </div>

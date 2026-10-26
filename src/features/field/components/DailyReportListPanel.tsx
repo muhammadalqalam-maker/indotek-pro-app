@@ -39,7 +39,7 @@ function statusLabel(status: string): string {
 function statusClasses(status: string): string {
   if (status === DAILY_REPORT_STATUSES.approved) return 'bg-success-bg text-success';
   if (status === DAILY_REPORT_STATUSES.submitted) return 'bg-warning-bg text-warning';
-  return 'bg-surface-2 text-muted';
+  return 'bg-surface-2 text-muted-foreground';
 }
 
 export function DailyReportListPanel({
@@ -81,7 +81,7 @@ export function DailyReportListPanel({
           </select>
         </div>
       ) : (
-        <div className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{messages.noProject}</div>
+        <div className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noProject}</div>
       )}
 
       {canCreate && projectId && (
@@ -94,7 +94,7 @@ export function DailyReportListPanel({
             <FilePlus2 className="h-4 w-4" aria-hidden="true" />
             {isCreating ? messages.saving : messages.createDraft}
           </Button>
-          {todayExists && <p className="text-xs text-muted">{messages.alreadyCreatedToday}</p>}
+          {todayExists && <p className="text-xs text-muted-foreground">{messages.alreadyCreatedToday}</p>}
         </div>
       )}
       {creationError && (
@@ -124,7 +124,7 @@ export function DailyReportListPanel({
         {!isLoading && !isError && reports?.length === 0 && (
           <div className="space-y-1 py-3">
             <p className="text-sm font-medium text-text">{messages.emptyTitle}</p>
-            <p className="text-sm text-muted">{messages.emptyDescription}</p>
+            <p className="text-sm text-muted-foreground">{messages.emptyDescription}</p>
           </div>
         )}
         {reports && reports.length > 0 && (
@@ -146,7 +146,7 @@ export function DailyReportListPanel({
                       {statusLabel(report.status)}
                     </span>
                   </span>
-                  <span className="mt-1 block truncate text-xs text-muted">
+                  <span className="mt-1 block truncate text-xs text-muted-foreground">
                     {report.work_summary || messages.selectReport}
                   </span>
                 </button>

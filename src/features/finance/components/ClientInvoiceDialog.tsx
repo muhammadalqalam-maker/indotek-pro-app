@@ -109,15 +109,15 @@ export function ClientInvoiceDialog({ projects, organizationId, onClose, onSubmi
         <div className="mb-4 flex items-start justify-between gap-4 border-b border-border pb-3">
           <div>
             <h2 className="text-lg font-semibold text-text" id="client-invoice-title">Terbitkan invoice termin</h2>
-            <p className="mt-1 text-sm text-muted">Nilai progres diverifikasi terhadap progres yang sudah disetujui.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Nilai progres diverifikasi terhadap progres yang sudah disetujui.</p>
           </div>
-          <button aria-label="Tutup dialog" className="min-h-11 min-w-11 rounded-md text-muted hover:bg-surface-2" onClick={onClose} type="button">
+          <button aria-label="Tutup dialog" className="min-h-11 min-w-11 rounded-md text-muted-foreground hover:bg-surface-2" onClick={onClose} type="button">
             <X aria-hidden="true" className="mx-auto h-5 w-5" />
           </button>
         </div>
 
         {projects.length === 0 ? (
-          <p className="rounded-md border border-border bg-surface-2 p-4 text-sm text-muted">Buat proyek terlebih dahulu sebelum menerbitkan invoice.</p>
+          <p className="rounded-md border border-border bg-surface-2 p-4 text-sm text-muted-foreground">Buat proyek terlebih dahulu sebelum menerbitkan invoice.</p>
         ) : (
           <form className="space-y-4" onSubmit={submit}>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -132,7 +132,7 @@ export function ClientInvoiceDialog({ projects, organizationId, onClose, onSubmi
                 >
                   {projects.map((item) => <option key={item.id} value={item.id}>{item.name} — {item.client_name}</option>)}
                 </select>
-                <span className="block text-xs text-muted">Progres disetujui saat ini: {project?.actual_progress ?? 0}%</span>
+                <span className="block text-xs text-muted-foreground">Progres disetujui saat ini: {project?.actual_progress ?? 0}%</span>
               </label>
               <label className="space-y-1 text-sm text-text">
                 <span>Jenis termin</span>
@@ -199,9 +199,9 @@ export function ClientInvoiceDialog({ projects, organizationId, onClose, onSubmi
             </label>
 
             <dl className="grid gap-x-5 gap-y-2 rounded-md border border-border bg-surface-2 p-4 text-sm sm:grid-cols-2">
-              <div className="flex justify-between gap-3"><dt className="text-muted">Dasar kena pajak</dt><dd>{formatRupiah(taxable)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-muted">PPN {values.vatPercent}%</dt><dd>{formatRupiah(vatAmount)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-muted">PPh {values.pphPercent}%</dt><dd>- {formatRupiah(pphAmount)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-muted-foreground">Dasar kena pajak</dt><dd>{formatRupiah(taxable)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-muted-foreground">PPN {values.vatPercent}%</dt><dd>{formatRupiah(vatAmount)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-muted-foreground">PPh {values.pphPercent}%</dt><dd>- {formatRupiah(pphAmount)}</dd></div>
               <div className="flex justify-between gap-3 font-semibold"><dt>Tagihan bersih</dt><dd>{formatRupiah(netAmount)}</dd></div>
             </dl>
 

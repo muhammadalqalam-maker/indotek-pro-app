@@ -81,7 +81,7 @@ export function DocumentPreviewDialog({
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
               <section className="min-h-64 overflow-hidden rounded-lg border border-border bg-surface-2">
                 {isPreviewLoading ? (
-                  <div className="grid min-h-64 place-items-center text-sm text-muted" role="status">
+                  <div className="grid min-h-64 place-items-center text-sm text-muted-foreground" role="status">
                     {messages.loadingPreview}
                   </div>
                 ) : previewError ? (
@@ -95,7 +95,7 @@ export function DocumentPreviewDialog({
                     className="h-[65dvh] min-h-64 w-full bg-surface"
                   />
                 ) : (
-                  <p className="p-4 text-sm text-muted">{messages.previewUnavailable}</p>
+                  <p className="p-4 text-sm text-muted-foreground">{messages.previewUnavailable}</p>
                 )}
               </section>
 
@@ -111,7 +111,7 @@ export function DocumentPreviewDialog({
                       className="flex min-h-11 items-center justify-between gap-2 rounded-md border border-border px-3 text-left text-sm text-text hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     >
                       <span>{messages.revision} {version.version_number}</span>
-                      <span className="text-xs text-muted">{formatTanggal(version.created_at)}</span>
+                      <span className="text-xs text-muted-foreground">{formatTanggal(version.created_at)}</span>
                     </button>
                   ))}
                 </div>

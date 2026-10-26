@@ -86,12 +86,12 @@ export function GoodsReceiptDialog({
             <h2 id="goods-receipt-title" className="text-lg font-semibold text-text">
               {messages.receivingTitle}
             </h2>
-            <p className="mt-1 text-sm text-muted">{order.po_number} · {order.vendor_name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{order.po_number} · {order.vendor_name}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md p-2 text-muted hover:bg-surface-2"
+            className="rounded-md p-2 text-muted-foreground hover:bg-surface-2"
             aria-label={messages.close}
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -160,14 +160,14 @@ export function GoodsReceiptDialog({
           <section className="grid gap-3" aria-labelledby="receipt-items-title">
             <div>
               <h3 id="receipt-items-title" className="text-sm font-semibold text-text">{messages.items}</h3>
-              <p className="mt-1 text-xs text-muted">{messages.itemsMatchHint}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{messages.itemsMatchHint}</p>
             </div>
             {order.items.map((item, index) => {
               const remaining = Math.max(0, item.quantity - item.received_quantity);
               return (
                 <fieldset key={item.id} className="grid gap-3 rounded-xl border border-border p-3">
                   <legend className="px-1 text-sm font-semibold text-text">{item.item_name}</legend>
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {item.quantity} {item.unit} · {messages.remaining}: {remaining} {item.unit}
                   </p>
                   <input

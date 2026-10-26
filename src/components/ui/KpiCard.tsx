@@ -37,7 +37,7 @@ export function KpiCard({
   return (
     <Card className={cn('relative overflow-hidden p-4 sm:p-5', className)}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-medium text-muted">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
         {icon && <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-500">{icon}</span>}
       </div>
       <div className="mt-3 flex items-end justify-between gap-3">
@@ -47,13 +47,13 @@ export function KpiCard({
       {(delta || description) && (
         <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs">
           {delta && (
-            <span className={cn('inline-flex items-center gap-0.5 font-semibold', delta.direction === 'up' ? 'text-success' : delta.direction === 'down' ? 'text-danger' : 'text-muted')}>
+            <span className={cn('inline-flex items-center gap-0.5 font-semibold', delta.direction === 'up' ? 'text-success' : delta.direction === 'down' ? 'text-danger' : 'text-muted-foreground')}>
               <DeltaIcon className="h-3.5 w-3.5" aria-hidden="true" />
               {delta.value}
-              {delta.label && <span className="font-normal text-muted">{delta.label}</span>}
+              {delta.label && <span className="font-normal text-muted-foreground">{delta.label}</span>}
             </span>
           )}
-          {description && <span className="text-muted">{description}</span>}
+          {description && <span className="text-muted-foreground">{description}</span>}
         </div>
       )}
     </Card>

@@ -86,7 +86,7 @@ export function HrManpowerView() {
 
   if (!isSupabaseLive || !organizationId || !userId) {
     return (
-      <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">
+      <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">
         {messages.liveRequired}
       </p>
     );
@@ -104,7 +104,7 @@ export function HrManpowerView() {
       <header className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{messages.description}</p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{messages.description}</p>
         </div>
         <SyncIndicator isOnline={isOnline} onRetry={() => void retrySync()} />
       </header>
@@ -142,7 +142,7 @@ export function HrManpowerView() {
         <label className="grid gap-2 text-sm font-medium text-text sm:min-w-56">
           {messages.date}
           <span className="relative">
-            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input
               type="date"
               value={attendanceDate}
@@ -154,7 +154,7 @@ export function HrManpowerView() {
       </section>
 
       {!projectId ? (
-        <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">
+        <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">
           {messages.projectRequired}
         </p>
       ) : (
@@ -165,7 +165,7 @@ export function HrManpowerView() {
               aria-pressed={activeTab === 'attendance'}
               onClick={() => setActiveTab('attendance')}
               className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'attendance' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+                activeTab === 'attendance' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
               }`}
             >
               <CalendarDays className="size-4" aria-hidden="true" />
@@ -177,7 +177,7 @@ export function HrManpowerView() {
               aria-pressed={activeTab === 'workers'}
               onClick={() => setActiveTab('workers')}
               className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'workers' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+                activeTab === 'workers' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
               }`}
             >
               <Users className="size-4" aria-hidden="true" />
@@ -189,7 +189,7 @@ export function HrManpowerView() {
               aria-pressed={activeTab === 'wages'}
               onClick={() => setActiveTab('wages')}
               className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'wages' ? 'bg-primary-700 text-white' : 'text-muted hover:bg-surface-2 hover:text-text'
+                activeTab === 'wages' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
               }`}
             >
               <Banknote className="size-4" aria-hidden="true" />

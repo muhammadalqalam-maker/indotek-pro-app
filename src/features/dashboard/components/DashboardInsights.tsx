@@ -69,7 +69,7 @@ export function DashboardInsights({
         <Card>
           <CardHeader>
             <CardTitle as="h2">{messages.progressChart}</CardTitle>
-            <p className="text-sm text-muted">{messages.progressChartDescription}</p>
+            <p className="text-sm text-muted-foreground">{messages.progressChartDescription}</p>
           </CardHeader>
           <CardContent>
             <div className="h-72 min-w-0">
@@ -99,7 +99,7 @@ export function DashboardInsights({
         <Card>
           <CardHeader>
             <CardTitle as="h2">{messages.projectStatus}</CardTitle>
-            <p className="text-sm text-muted">{messages.projectCount}: {metrics.projectCount}</p>
+            <p className="text-sm text-muted-foreground">{messages.projectCount}: {metrics.projectCount}</p>
           </CardHeader>
           <CardContent>
             <ul className="space-y-3">
@@ -119,7 +119,7 @@ export function DashboardInsights({
                   : <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />}
                 {messages.delayedProjects}: {metrics.delayedProjectCount}
               </div>
-              <p className="mt-1 text-xs text-muted">{messages.delayedProjectsDescription}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{messages.delayedProjectsDescription}</p>
             </div>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export function DashboardInsights({
       <Card>
         <CardHeader>
           <CardTitle as="h2">{messages.budgetChart}</CardTitle>
-          <p className="text-sm text-muted">{messages.budgetChartDescription}</p>
+          <p className="text-sm text-muted-foreground">{messages.budgetChartDescription}</p>
         </CardHeader>
         <CardContent>
           <div className="h-72 min-w-0">

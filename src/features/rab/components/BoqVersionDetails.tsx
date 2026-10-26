@@ -76,7 +76,7 @@ export function BoqVersionDetails({
                 {workItems.map((item) => (
                   <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-sm">
                     <span className="min-w-0 flex-1 text-text">{item.item_code} · {item.description}</span>
-                    <span className="text-muted">
+                    <span className="text-muted-foreground">
                       {item.volume} {units.find((unit) => unit.id === item.unit_id)?.symbol ?? ''}
                       {' × '}{formatRupiah(Number(item.unit_price), true, 2)}
                     </span>

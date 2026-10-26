@@ -29,19 +29,19 @@ function ItemNumbers({ line }: { line: BudgetActualLine }) {
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
       <div>
-        <p className="text-xs text-muted">{messages.budget}</p>
+        <p className="text-xs text-muted-foreground">{messages.budget}</p>
         <p className="break-words font-medium text-text">{formatRupiah(line.budget)}</p>
       </div>
       <div>
-        <p className="text-xs text-muted">{messages.actual}</p>
+        <p className="text-xs text-muted-foreground">{messages.actual}</p>
         <p className="break-words font-medium text-text">{formatRupiah(line.actual)}</p>
       </div>
       <div>
-        <p className="text-xs text-muted">{messages.pending}</p>
+        <p className="text-xs text-muted-foreground">{messages.pending}</p>
         <p className="break-words text-text">{formatRupiah(line.pending)}</p>
       </div>
       <div>
-        <p className="text-xs text-muted">{messages.variance}</p>
+        <p className="text-xs text-muted-foreground">{messages.variance}</p>
         <VarianceValue value={line.variance} />
       </div>
     </div>
@@ -73,7 +73,7 @@ export function ProjectBudgetActualReport({
           { label: messages.totalVariance, value: formatRupiah(variance), variance: true },
         ].map(({ label, value, variance: isVariance }) => (
           <div key={label} className="min-w-0 rounded-lg border border-border bg-surface p-3 sm:p-4">
-            <p className="text-xs font-medium text-muted sm:text-sm">{label}</p>
+            <p className="text-xs font-medium text-muted-foreground sm:text-sm">{label}</p>
             <p className={`mt-1 break-words text-base font-semibold sm:text-lg ${isVariance && variance > 0 ? 'text-danger' : 'text-text'}`}>
               {value}
             </p>
@@ -81,7 +81,7 @@ export function ProjectBudgetActualReport({
         ))}
       </div>
 
-      <p className="text-xs text-muted">{messages.basisHint}</p>
+      <p className="text-xs text-muted-foreground">{messages.basisHint}</p>
 
       <section className="space-y-3" aria-label={messages.title}>
         <h3 className="text-base font-semibold text-text">{messages.title}</h3>
@@ -92,7 +92,7 @@ export function ProjectBudgetActualReport({
                 <p className="break-words font-semibold text-text">
                   {division.division.item_code} · {division.division.description}
                 </p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {messages.budget}: {formatRupiah(division.budget)}
                   {' · '}{messages.actual}: {formatRupiah(division.actual)}
                   {' · '}{messages.variance}: <VarianceValue value={division.variance} />
@@ -104,14 +104,14 @@ export function ProjectBudgetActualReport({
             </div>
 
             {division.items.length === 0 ? (
-              <p className="p-4 text-sm text-muted">{messages.noItems}</p>
+              <p className="p-4 text-sm text-muted-foreground">{messages.noItems}</p>
             ) : (
               <>
                 <div className="divide-y divide-border md:hidden">
                   {division.items.map((line) => (
                     <article key={line.item.id} className="space-y-3 p-3">
                       <p className="break-words text-sm font-medium text-text">
-                        <span className="mr-1 text-muted">{line.item.item_code}</span>
+                        <span className="mr-1 text-muted-foreground">{line.item.item_code}</span>
                         {line.item.description}
                       </p>
                       <ItemNumbers line={line} />
@@ -120,7 +120,7 @@ export function ProjectBudgetActualReport({
                 </div>
                 <div className="hidden overflow-x-auto md:block">
                   <table className="w-full min-w-max text-left text-sm">
-                    <thead className="bg-surface-2 text-xs text-muted">
+                    <thead className="bg-surface-2 text-xs text-muted-foreground">
                       <tr>
                         <th className="px-4 py-3 font-medium">{messages.item}</th>
                         <th className="px-4 py-3 text-right font-medium">{messages.budget}</th>
@@ -133,7 +133,7 @@ export function ProjectBudgetActualReport({
                       {division.items.map((line) => (
                         <tr key={line.item.id}>
                           <td className="max-w-sm px-4 py-3">
-                            <span className="mr-2 text-muted">{line.item.item_code}</span>
+                            <span className="mr-2 text-muted-foreground">{line.item.item_code}</span>
                             <span className="break-words text-text">{line.item.description}</span>
                           </td>
                           <td className="px-4 py-3 text-right text-text">{formatRupiah(line.budget)}</td>
@@ -154,7 +154,7 @@ export function ProjectBudgetActualReport({
       <section className="space-y-3" aria-label={messages.expenseList}>
         <h3 className="text-base font-semibold text-text">{messages.expenseList}</h3>
         {expenses.length === 0 ? (
-          <p className="rounded-lg border border-border bg-surface p-4 text-sm text-muted">{messages.noExpenses}</p>
+          <p className="rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noExpenses}</p>
         ) : (
           <>
             <div className="space-y-2 md:hidden">
@@ -166,7 +166,7 @@ export function ProjectBudgetActualReport({
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="break-words text-sm font-medium text-text">{expense.description}</p>
-                        <p className="mt-1 break-words text-xs text-muted">
+                        <p className="mt-1 break-words text-xs text-muted-foreground">
                           {item ? `${item.item_code} · ${item.description}` : expense.boq_item_id}
                         </p>
                       </div>
@@ -176,7 +176,7 @@ export function ProjectBudgetActualReport({
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs text-muted">{formatTanggal(expense.expense_date)}</p>
+                        <p className="text-xs text-muted-foreground">{formatTanggal(expense.expense_date)}</p>
                         <p className="font-semibold text-text">{formatRupiah(expense.amount)}</p>
                       </div>
                       {isPending && canVerify && (
@@ -196,7 +196,7 @@ export function ProjectBudgetActualReport({
             </div>
             <div className="hidden overflow-x-auto rounded-lg border border-border md:block">
               <table className="w-full min-w-max text-left text-sm">
-                <thead className="bg-surface-2 text-xs text-muted">
+                <thead className="bg-surface-2 text-xs text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 font-medium">{messages.expenseColumn}</th>
                     <th className="px-4 py-3 font-medium">{messages.item}</th>
@@ -213,10 +213,10 @@ export function ProjectBudgetActualReport({
                     return (
                       <tr key={expense.id}>
                         <td className="max-w-xs px-4 py-3 break-words text-text">{expense.description}</td>
-                        <td className="max-w-sm px-4 py-3 break-words text-muted">
+                        <td className="max-w-sm px-4 py-3 break-words text-muted-foreground">
                           {item ? `${item.item_code} · ${item.description}` : expense.boq_item_id}
                         </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-muted">{formatTanggal(expense.expense_date)}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{formatTanggal(expense.expense_date)}</td>
                         <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-text">{formatRupiah(expense.amount)}</td>
                         <td className="px-4 py-3">
                           <Badge variant={isPending ? 'warning' : 'success'}>

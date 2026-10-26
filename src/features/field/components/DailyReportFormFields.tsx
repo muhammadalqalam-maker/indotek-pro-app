@@ -139,7 +139,7 @@ export function DailyReportFormFields({
         })}
       >
         {manpower.fields.length === 0 ? (
-          <p className="text-sm text-muted">{messages.emptyEntries}</p>
+          <p className="text-sm text-muted-foreground">{messages.emptyEntries}</p>
         ) : manpower.fields.map((field, index) => {
           const rowErrors = errors.manpower?.[index];
           return (
@@ -168,7 +168,7 @@ export function DailyReportFormFields({
         })}
       >
         {equipment.fields.length === 0 ? (
-          <p className="text-sm text-muted">{messages.emptyEntries}</p>
+          <p className="text-sm text-muted-foreground">{messages.emptyEntries}</p>
         ) : equipment.fields.map((field, index) => {
           const rowErrors = errors.equipment?.[index];
           return (
@@ -198,7 +198,7 @@ export function DailyReportFormFields({
         })}
       >
         {materials.fields.length === 0 ? (
-          <p className="text-sm text-muted">{messages.emptyEntries}</p>
+          <p className="text-sm text-muted-foreground">{messages.emptyEntries}</p>
         ) : materials.fields.map((field, index) => {
           const rowErrors = errors.materials?.[index];
           return (
@@ -222,17 +222,17 @@ export function DailyReportFormFields({
       <section className="space-y-4 rounded-lg border border-border bg-surface p-4 sm:p-5">
         <div>
           <h2 className="text-base font-semibold text-text">{messages.photos}</h2>
-          <p className="mt-1 text-xs text-muted">{messages.photosHint}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{messages.photosHint}</p>
         </div>
         {photos.length > 0 && (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {photos.map((photo) => (
               <figure key={photo.path} className="space-y-2 rounded-md border border-border p-2">
                 <img src={photoPreviewUrls[photo.path]} alt={photo.caption} className="aspect-video w-full rounded object-cover" />
-                <figcaption className="flex items-center justify-between gap-2 text-xs text-muted">
+                <figcaption className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
                   <span className="truncate">{photo.caption}</span>
                   {editable && (
-                    <button type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded text-muted hover:bg-danger-bg hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" aria-label={`${messages.removePhoto}: ${photo.caption}`} onClick={() => onRemovePhoto(photo.path)}>
+                    <button type="button" className="grid h-11 w-11 shrink-0 place-items-center rounded text-muted-foreground hover:bg-danger-bg hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" aria-label={`${messages.removePhoto}: ${photo.caption}`} onClick={() => onRemovePhoto(photo.path)}>
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
                     </button>
                   )}

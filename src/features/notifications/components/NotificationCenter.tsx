@@ -43,8 +43,8 @@ function NotificationRow({
             <span className="break-words text-sm font-semibold text-text">{notification.title}</span>
             {!notification.is_read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" aria-hidden="true" />}
           </span>
-          <span className="mt-1 block break-words text-sm text-muted">{notification.message}</span>
-          <time className="mt-2 block text-xs text-muted" dateTime={notification.created_at}>
+          <span className="mt-1 block break-words text-sm text-muted-foreground">{notification.message}</span>
+          <time className="mt-2 block text-xs text-muted-foreground" dateTime={notification.created_at}>
             {formatTanggal(notification.created_at, { withTime: true, timezone })}
           </time>
           <span className="sr-only">{notification.is_read ? messages.read : messages.unread}</span>
@@ -186,7 +186,7 @@ export function NotificationCenter() {
       <button
         type="button"
         onClick={() => setIsOpen((open) => !open)}
-        className="relative grid min-h-11 min-w-11 place-items-center rounded-xl text-muted transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+        className="relative grid min-h-11 min-w-11 place-items-center rounded-xl text-muted-foreground transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
         aria-label={`${messages.openCenter}${unreadNotifsCount > 0 ? `, ${messages.unreadCount(unreadNotifsCount)}` : ''}`}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
@@ -211,7 +211,7 @@ export function NotificationCenter() {
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <h2 className="text-base font-semibold text-text">{messages.title}</h2>
-                <p className="mt-1 text-sm text-muted">{messages.unreadCount(unreadNotifsCount)}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{messages.unreadCount(unreadNotifsCount)}</p>
               </div>
               <Badge variant={realtimeVariant} className="shrink-0 whitespace-nowrap">{realtimeLabel}</Badge>
             </div>
@@ -272,7 +272,7 @@ export function NotificationCenter() {
                 <div className="h-14 animate-pulse rounded-md bg-surface-2" />
               </div>
             ) : visibleNotifications.length === 0 ? (
-              <p className="p-6 text-center text-sm text-muted">
+              <p className="p-6 text-center text-sm text-muted-foreground">
                 {filter === 'unread' ? messages.noUnread : messages.noNotifications}
               </p>
             ) : (

@@ -34,7 +34,7 @@ export function AhspComponentFields({ form, priceItems, units }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 id="ahsp-components-heading" className="text-sm font-semibold text-text">{messages.componentHeading}</h3>
-          <p className="mt-1 text-xs text-muted">{messages.componentHint}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{messages.componentHint}</p>
         </div>
         <Button
           variant="outline"
@@ -97,7 +97,7 @@ export function AhspComponentFields({ form, priceItems, units }: Props) {
                   ))}
                 </select>
                 {selectedItem && (
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {messages.category}: {getCategoryLabel(selectedItem.category, messages)}
                     {' · '}{formatRupiah(selectedItem.unit_price)} / {selectedItem.unitSymbol}
                     {selectedItem.deleted_at !== null && ` · ${messages.archived}`}
@@ -127,7 +127,7 @@ export function AhspComponentFields({ form, priceItems, units }: Props) {
 
               <div className="flex min-h-11 items-center justify-between gap-3 sm:justify-end">
                 <div className="text-left sm:text-right">
-                  <p className="text-xs text-muted">{messages.subtotal}</p>
+                  <p className="text-xs text-muted-foreground">{messages.subtotal}</p>
                   <p className="font-mono text-sm font-semibold text-text">{formatRupiah(subtotal)}</p>
                 </div>
                 <Button
@@ -147,7 +147,7 @@ export function AhspComponentFields({ form, priceItems, units }: Props) {
       </div>
 
       {(!hasActivePriceItems || !units.some((unit) => unit.deleted_at === null)) && (
-        <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted">{messages.noCatalogItems}</p>
+        <p className="rounded-md bg-surface-2 px-3 py-2 text-sm text-muted-foreground">{messages.noCatalogItems}</p>
       )}
     </section>
   );

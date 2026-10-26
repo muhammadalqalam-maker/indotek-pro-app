@@ -134,18 +134,18 @@ export function SCurveProgressView({ projectId }: { projectId: string }) {
       <div className="grid gap-3 sm:grid-cols-3">
         <Card>
           <CardContent className="space-y-1 p-4">
-            <p className="text-xs font-medium text-muted">{curveMessages.approvedBudget}</p>
+            <p className="text-xs font-medium text-muted-foreground">{curveMessages.approvedBudget}</p>
             <p className="break-words text-lg font-semibold tabular-nums text-text">{formatRupiah(query.data.budget)}</p>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted-foreground">
               {curveMessages.boqRevision(query.data.version.revision_number, query.data.version.title)}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="space-y-1 p-4">
-            <p className="text-xs font-medium text-muted">{curveMessages.earnedValue}</p>
+            <p className="text-xs font-medium text-muted-foreground">{curveMessages.earnedValue}</p>
             <p className="break-words text-lg font-semibold tabular-nums text-text">{formatRupiah(query.data.earnedValue)}</p>
-            <p className="text-xs text-muted">
+            <p className="text-xs text-muted-foreground">
               {query.data.latestReportDate
                 ? curveMessages.progressDate(formatTanggal(query.data.latestReportDate))
                 : curveMessages.noApprovedProgress}
@@ -154,15 +154,15 @@ export function SCurveProgressView({ projectId }: { projectId: string }) {
         </Card>
         <Card>
           <CardContent className="space-y-1 p-4">
-            <p className="text-xs font-medium text-muted">{curveMessages.actualProgress}</p>
+            <p className="text-xs font-medium text-muted-foreground">{curveMessages.actualProgress}</p>
             <p className="text-lg font-semibold tabular-nums text-text">{formatPersen(actualPercent)}</p>
-            <p className="text-xs text-muted">{curveMessages.weightedByBoqValue}</p>
+            <p className="text-xs text-muted-foreground">{curveMessages.weightedByBoqValue}</p>
           </CardContent>
         </Card>
       </div>
 
       <SCurveChart points={chartData} />
-      <p className="text-xs leading-relaxed text-muted">{curveMessages.calculationNote}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{curveMessages.calculationNote}</p>
     </section>
   );
 }

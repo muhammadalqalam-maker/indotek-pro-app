@@ -153,7 +153,7 @@ export function PriceItemsImportDialog({
 
         <div className="grid gap-4">
           <div className="flex flex-col gap-3 rounded-md bg-surface-2 p-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted">{messages.priceImportFormatHint}</p>
+            <p className="text-sm text-muted-foreground">{messages.priceImportFormatHint}</p>
             <Button variant="outline" loading={isDownloading} disabled={isBusy} onClick={() => void downloadTemplate()}>
               <Download className="h-4 w-4" aria-hidden="true" />
               {messages.downloadPriceTemplate}
@@ -179,12 +179,12 @@ export function PriceItemsImportDialog({
               {messages.selectPriceFile}
             </Button>
             {fileName && (
-              <p className="flex items-center gap-2 break-all text-sm text-muted">
+              <p className="flex items-center gap-2 break-all text-sm text-muted-foreground">
                 <FileSpreadsheet className="h-4 w-4 shrink-0" aria-hidden="true" />
                 {fileName}
               </p>
             )}
-            {isParsing && <p className="text-sm text-muted" role="status">{messages.priceImportParsing}</p>}
+            {isParsing && <p className="text-sm text-muted-foreground" role="status">{messages.priceImportParsing}</p>}
             {failure && <p className="rounded-md border border-danger/30 bg-danger/5 p-3 text-sm text-danger" role="alert">{failure}</p>}
           </div>
 
@@ -200,8 +200,8 @@ export function PriceItemsImportDialog({
                   </li>
                 ))}
               </ul>
-              {issues.length > 50 && <p className="text-xs text-muted">{messages.priceImportMoreIssues(issues.length - 50)}</p>}
-              <p className="text-sm text-muted">{messages.priceImportIssuesPreventSave}</p>
+              {issues.length > 50 && <p className="text-xs text-muted-foreground">{messages.priceImportMoreIssues(issues.length - 50)}</p>}
+              <p className="text-sm text-muted-foreground">{messages.priceImportIssuesPreventSave}</p>
             </section>
           )}
 
@@ -212,7 +212,7 @@ export function PriceItemsImportDialog({
               </h4>
               <div className="max-h-48 overflow-auto rounded-md border border-border">
                 <table className="w-full min-w-[520px] text-left text-sm">
-                  <thead className="sticky top-0 bg-surface-2 text-xs text-muted">
+                  <thead className="sticky top-0 bg-surface-2 text-xs text-muted-foreground">
                     <tr>
                       <th className="px-3 py-2">{messages.code}</th>
                       <th className="px-3 py-2">{messages.name}</th>
@@ -232,7 +232,7 @@ export function PriceItemsImportDialog({
                   </tbody>
                 </table>
               </div>
-              {rows.length > 10 && <p className="text-xs text-muted">{messages.priceImportPreviewRemaining(rows.length - 10)}</p>}
+              {rows.length > 10 && <p className="text-xs text-muted-foreground">{messages.priceImportPreviewRemaining(rows.length - 10)}</p>}
             </section>
           )}
         </div>

@@ -250,7 +250,7 @@ export function ProjectBudgetActualTab({ project }: ProjectBudgetActualTabProps)
             />
           )}
           {workspaceQuery.data.expenses.some((expense) => expense.status === 'pending') && !canVerify && (
-            <p className="rounded-md bg-surface-2 p-3 text-sm text-muted" role="note">{messages.noVerifyAccess}</p>
+            <p className="rounded-md bg-surface-2 p-3 text-sm text-muted-foreground" role="note">{messages.noVerifyAccess}</p>
           )}
         </>
       )}

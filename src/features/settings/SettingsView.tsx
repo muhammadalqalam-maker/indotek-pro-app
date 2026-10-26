@@ -29,7 +29,7 @@ export function SettingsView() {
     <main className="grid gap-6">
       <header>
         <h1 className="text-xl font-bold tracking-tight text-text sm:text-2xl">{messages.pageTitle}</h1>
-        <p className="mt-1 text-sm text-muted">{messages.pageDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.pageDescription}</p>
       </header>
 
       <nav aria-label={messages.settingsNavigation} className="flex gap-1 overflow-x-auto border-b border-border">
@@ -45,7 +45,7 @@ export function SettingsView() {
               className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors ${
                 selected
                   ? 'border-primary-600 text-primary-700 dark:text-primary-300'
-                  : 'border-transparent text-muted hover:text-text'
+                  : 'border-transparent text-muted-foreground hover:text-text'
               }`}
             >
               <Icon className="h-4 w-4" aria-hidden="true" />

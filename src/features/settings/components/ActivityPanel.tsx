@@ -51,7 +51,7 @@ export function ActivityPanel() {
   }, [auditLogs, currentOrg?.id, isSupabaseLive, messages.loadSettingsFailed, retryToken]);
 
   if (!currentOrg) {
-    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted">{messages.organizationMissing}</p>;
+    return <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.organizationMissing}</p>;
   }
 
   return (
@@ -62,7 +62,7 @@ export function ActivityPanel() {
             <Activity className="h-5 w-5 text-primary-600" aria-hidden="true" />
             {messages.auditTitle}
           </h2>
-          <p className="mt-1 text-sm text-muted">{messages.auditHint}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{messages.auditHint}</p>
         </div>
         {!isSupabaseLive && (
           <Button variant="outline" size="sm" onClick={handleResetDemo}>
@@ -83,7 +83,7 @@ export function ActivityPanel() {
           <Button variant="outline" size="sm" onClick={() => setRetryToken((token) => token + 1)}>{messages.retry}</Button>
         </div>
       ) : activities.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted">{messages.auditEmpty}</p>
+        <p className="rounded-md border border-dashed border-border p-5 text-center text-sm text-muted-foreground">{messages.auditEmpty}</p>
       ) : (
         <ol className="divide-y divide-border">
           {activities.map((entry) => (
@@ -91,15 +91,15 @@ export function ActivityPanel() {
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-text">{entry.actor_name || messages.actorUnavailable}</span>
-                  <span className="rounded bg-surface-2 px-2 py-1 font-mono text-xs text-muted">{entry.action}</span>
-                  <span className="text-xs text-muted">{entry.entity_type}</span>
+                  <span className="rounded bg-surface-2 px-2 py-1 font-mono text-xs text-muted-foreground">{entry.action}</span>
+                  <span className="text-xs text-muted-foreground">{entry.entity_type}</span>
                 </div>
                 <p className="mt-1 break-words text-sm text-text">{entry.details}</p>
                 {entry.project_name && (
-                  <p className="mt-1 text-xs text-muted">{messages.project}: {entry.project_name}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{messages.project}: {entry.project_name}</p>
                 )}
               </div>
-              <time className="text-xs text-muted sm:whitespace-nowrap" dateTime={entry.created_at}>
+              <time className="text-xs text-muted-foreground sm:whitespace-nowrap" dateTime={entry.created_at}>
                 {formatTanggal(entry.created_at, { withTime: true, timezone: currentOrg.timezone })}
               </time>
             </li>

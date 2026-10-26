@@ -70,7 +70,7 @@ export const TopNavbar: React.FC<{
         {/* Mobile menu button */}
         <button
           onClick={onToggleMobileSidebar}
-          className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl text-muted hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:hidden"
+          className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:hidden"
           aria-label={shellMessages.openMenu}
           aria-expanded={isMobileSidebarOpen}
           aria-controls="app-sidebar"
@@ -89,7 +89,7 @@ export const TopNavbar: React.FC<{
                 Indotek<span className="text-amber-500">Pro</span>
               </span>
             </div>
-            <p className="text-xs text-muted -mt-0.5 font-medium">Manajemen Konstruksi</p>
+            <p className="text-xs text-muted-foreground -mt-0.5 font-medium">Manajemen Konstruksi</p>
           </div>
         </div>
 
@@ -115,18 +115,18 @@ export const TopNavbar: React.FC<{
               <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate leading-tight">
                 {currentOrg?.name || 'Pilih Organisasi'}
               </p>
-              <p className="hidden text-xs text-muted leading-tight sm:block">
+              <p className="hidden text-xs text-muted-foreground leading-tight sm:block">
                 Kode: {currentOrg?.company_code} • {currentOrg?.timezone}
               </p>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-muted shrink-0 ml-auto" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0 ml-auto" />
           </button>
 
           {/* Org Dropdown */}
           {orgDropdownOpen && (
             <div role="menu" aria-label={organizationMessages.organizationList} className="absolute left-0 mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 sm:w-72">
               <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Daftar Perusahaan (Multi-tenant)
                 </p>
               </div>
@@ -149,7 +149,7 @@ export const TopNavbar: React.FC<{
                     >
                       <div className="truncate pr-2">
                         <p className="text-xs truncate">{org.name}</p>
-                        <p className="text-xs text-muted">
+                        <p className="text-xs text-muted-foreground">
                           {org.city || 'Indonesia'} • {org.company_code}
                         </p>
                       </div>
@@ -178,7 +178,7 @@ export const TopNavbar: React.FC<{
 
         {/* Global Project Context Selector */}
         <div className="hidden items-center gap-1.5 lg:flex">
-          <Layers className="w-3.5 h-3.5 text-muted" />
+          <Layers className="w-3.5 h-3.5 text-muted-foreground" />
           <select
             value={selectedProjectId}
             onChange={(e) => handleProjectChange(e.target.value)}
@@ -201,7 +201,7 @@ export const TopNavbar: React.FC<{
         {/* Command Palette Trigger */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-muted hover:text-text hover:border-slate-300 dark:hover:border-slate-700 text-xs transition"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-muted-foreground hover:text-text hover:border-slate-300 dark:hover:border-slate-700 text-xs transition"
           title="Buka Command Palette"
           aria-label="Cari dan jalankan perintah"
         >
@@ -232,10 +232,10 @@ export const TopNavbar: React.FC<{
           {roleDropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Simulasi Akses Peran (RBAC)
                 </p>
-                <p className="text-xs text-muted mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Uji antarmuka berdasarkan hak akses jabatan
                 </p>
               </div>
@@ -300,7 +300,7 @@ export const TopNavbar: React.FC<{
         </div>
       </div>
 
-      <label className="flex min-h-12 w-full items-center gap-2 text-xs text-muted lg:hidden">
+      <label className="flex min-h-12 w-full items-center gap-2 text-xs text-muted-foreground lg:hidden">
         <Layers className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="shrink-0">{shellMessages.projectContext}</span>
         <select

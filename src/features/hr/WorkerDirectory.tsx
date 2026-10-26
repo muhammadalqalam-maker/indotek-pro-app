@@ -119,7 +119,7 @@ export function WorkerDirectory({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-semibold text-text">{messages.workerCreatedTitle}</h2>
-              <p className="mt-1 text-sm text-muted">{messages.workerCount(workers.length)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{messages.workerCount(workers.length)}</p>
               {!isOnline && <p className="mt-1 text-sm text-warning-foreground">{messages.workerCreateOffline}</p>}
             </div>
             <button
@@ -239,13 +239,13 @@ export function WorkerDirectory({
           )}
         </div>
       ) : (
-        <p role="status" className="rounded-lg border border-border bg-surface p-4 text-sm text-muted">
+        <p role="status" className="rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground">
           {messages.workerAccessDenied}
         </p>
       )}
 
       <label className="relative block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <span className="sr-only">{messages.workerName}</span>
         <input
           value={search}
@@ -256,7 +256,7 @@ export function WorkerDirectory({
       </label>
 
       {visibleWorkers.length === 0 ? (
-        <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted">{messages.workerEmpty}</p>
+        <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.workerEmpty}</p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {visibleWorkers.map((worker) => (
@@ -266,13 +266,13 @@ export function WorkerDirectory({
               </span>
               <div className="min-w-0">
                 <h3 className="truncate font-semibold text-text">{worker.full_name}</h3>
-                <p className="mt-0.5 text-sm text-muted">{messages.trades[worker.role_trade]}</p>
-                <p className="mt-2 break-all text-xs text-muted">{messages.workerNik}: {worker.nik}</p>
-                <p className="mt-1 break-words text-xs text-muted">
+                <p className="mt-0.5 text-sm text-muted-foreground">{messages.trades[worker.role_trade]}</p>
+                <p className="mt-2 break-all text-xs text-muted-foreground">{messages.workerNik}: {worker.nik}</p>
+                <p className="mt-1 break-words text-xs text-muted-foreground">
                   {worker.phone || messages.workerPhone} · {worker.origin_city || messages.originNotProvided}
                 </p>
-                <p className="mt-2 text-xs text-muted">{messages.dailyWageRate}: {formatRupiah(worker.daily_wage_rate)}</p>
-                <p className="mt-1 text-xs text-muted">{messages.overtimeHourlyRate}: {formatRupiah(worker.overtime_hourly_rate)}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{messages.dailyWageRate}: {formatRupiah(worker.daily_wage_rate)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{messages.overtimeHourlyRate}: {formatRupiah(worker.overtime_hourly_rate)}</p>
                 {canManageWorkers && editingWorkerId !== worker.id && (
                   <button
                     type="button"

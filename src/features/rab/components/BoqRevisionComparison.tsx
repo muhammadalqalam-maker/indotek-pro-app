@@ -39,7 +39,7 @@ function getItemDetails(
     return (
       <div className="grid gap-1 text-sm">
         <p className="text-text">{item.description}</p>
-        <p className="text-muted">{messages.boqCompareOrder}: {item.sort_order + 1}</p>
+        <p className="text-muted-foreground">{messages.boqCompareOrder}: {item.sort_order + 1}</p>
       </div>
     );
   }
@@ -48,7 +48,7 @@ function getItemDetails(
   const analysis = analysesById.get(item.ahsp_id ?? '');
 
   return (
-    <div className="grid gap-1 text-sm text-muted">
+    <div className="grid gap-1 text-sm text-muted-foreground">
       <p className="text-text">{item.description}</p>
       <p className="tabular-nums">
         {item.volume} {unitSymbol} × {formatRupiah(Number(item.unit_price), true, 2)}
@@ -82,14 +82,14 @@ export function BoqRevisionComparison({
     <section className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:p-6" aria-labelledby="boq-comparison-title">
       <div>
         <h3 id="boq-comparison-title" className="text-base font-semibold text-text">{messages.boqCompareTitle}</h3>
-        <p className="mt-1 text-sm text-muted">{messages.boqCompareDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.boqCompareDescription}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {[previousVersion, currentVersion].map((version) => (
           <div key={version.id} className="rounded-lg border border-border bg-surface-2 p-3">
             <p className="text-sm font-medium text-text">Rev {version.revision_number} · {version.title}</p>
-            <p className="mt-1 text-sm text-muted">{messages.boqGrandTotal}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{messages.boqGrandTotal}</p>
             <p className="tabular-nums text-lg font-semibold text-text">
               {formatRupiah(Number(version.grand_total), true, 2)}
             </p>
@@ -97,12 +97,12 @@ export function BoqRevisionComparison({
         ))}
       </div>
 
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         {messages.boqComparePrevious}: {messages.boqOverhead}: {formatPersen(Number(previousVersion.overhead_percent))}
         {' · '}{messages.boqProfit}: {formatPersen(Number(previousVersion.profit_percent))}
         {' · '}{messages.boqPpn}: {formatPersen(Number(previousVersion.ppn_percent))}
       </p>
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         {messages.boqCompareCurrent}: {messages.boqOverhead}: {formatPersen(Number(currentVersion.overhead_percent))}
         {' · '}{messages.boqProfit}: {formatPersen(Number(currentVersion.profit_percent))}
         {' · '}{messages.boqPpn}: {formatPersen(Number(currentVersion.ppn_percent))}
@@ -112,7 +112,7 @@ export function BoqRevisionComparison({
         {messages.boqCompareDifference}: {differencePrefix}{formatRupiah(Math.abs(difference), true, 2)}
       </p>
 
-      <p className="text-sm text-muted" role="status" aria-live="polite" aria-atomic="true">
+      <p className="text-sm text-muted-foreground" role="status" aria-live="polite" aria-atomic="true">
         {messages.boqCompareChangeCount(changes.length)}
       </p>
 
@@ -139,20 +139,20 @@ export function BoqRevisionComparison({
                   <Badge variant={badgeVariant}>{changeLabel}</Badge>
                 </div>
                 {change.changedFields.length > 0 && (
-                  <p className="text-xs text-muted">
+                  <p className="text-xs text-muted-foreground">
                     {change.changedFields.map((field) => getFieldLabel(field, messages)).join(', ')}
                   </p>
                 )}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {change.previous && (
                     <div className="min-w-0">
-                      <p className="mb-1 text-xs font-medium text-muted">{messages.boqComparePrevious}</p>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">{messages.boqComparePrevious}</p>
                       {getItemDetails(change.previous, unitsById, analysesById, messages)}
                     </div>
                   )}
                   {change.current && (
                     <div className="min-w-0">
-                      <p className="mb-1 text-xs font-medium text-muted">{messages.boqCompareCurrent}</p>
+                      <p className="mb-1 text-xs font-medium text-muted-foreground">{messages.boqCompareCurrent}</p>
                       {getItemDetails(change.current, unitsById, analysesById, messages)}
                     </div>
                   )}

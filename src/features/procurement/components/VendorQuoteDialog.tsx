@@ -85,9 +85,9 @@ export function VendorQuoteDialog({
         <header className="mb-5 flex items-start justify-between gap-3">
           <div>
             <h2 id="vendor-quote-title" className="text-lg font-semibold text-text">{messages.quoteTitle}</h2>
-            <p className="mt-1 text-sm text-muted">{request.pr_number} · {request.project_name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{request.pr_number} · {request.project_name}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted hover:bg-surface-2" aria-label={messages.close}>
+          <button type="button" onClick={onClose} className="rounded-md p-2 text-muted-foreground hover:bg-surface-2" aria-label={messages.close}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </header>
@@ -120,9 +120,9 @@ export function VendorQuoteDialog({
               <div key={item.id} className="grid items-center gap-2 border-b border-border pb-3 last:border-0 last:pb-0 sm:grid-cols-[1fr_10rem]">
                 <p className="text-sm text-text">
                   {item.item_name} · {item.quantity} {item.unit}
-                  {item.specification && <span className="block text-xs text-muted">{item.specification}</span>}
+                  {item.specification && <span className="block text-xs text-muted-foreground">{item.specification}</span>}
                 </p>
-                <label className="grid gap-1 text-xs text-muted">
+                <label className="grid gap-1 text-xs text-muted-foreground">
                   {messages.estimatedPrice}
                   <input type="number" min="0" step="0.01" className="min-h-11 rounded-md border border-border bg-surface px-3 text-sm text-text" {...form.register(`items.${index}.unitPrice`, { valueAsNumber: true })} />
                 </label>

@@ -76,7 +76,7 @@ export function SafetyInspectionForm({
     <form onSubmit={(event) => void submit(event)} className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-2 sm:p-5">
       <div className="sm:col-span-2">
         <h2 className="text-lg font-semibold text-text">{messages.addInspection}</h2>
-        <p className="mt-1 text-sm text-muted">{messages.inspectionDescription}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{messages.inspectionDescription}</p>
       </div>
       {(validationSummary || form.formState.errors.root?.serverError?.message) && (
         <div

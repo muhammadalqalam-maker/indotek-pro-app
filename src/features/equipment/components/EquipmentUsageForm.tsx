@@ -106,7 +106,7 @@ export function EquipmentUsageForm({
         {messages.notes}
         <textarea {...form.register('notes')} rows={2} disabled={isSaving} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-text" />
       </label>
-      <p className="text-sm text-muted sm:col-span-2">
+      <p className="text-sm text-muted-foreground sm:col-span-2">
         {messages.rentalSnapshot}: {formatRupiah(
           eligibleAssets.find((asset) => asset.id === form.watch('equipment_id'))?.ownership === 'rental'
             ? eligibleAssets.find((asset) => asset.id === form.watch('equipment_id'))?.daily_rental_rate ?? 0

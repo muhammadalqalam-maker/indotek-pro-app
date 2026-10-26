@@ -15,7 +15,7 @@ const messages = getMessages('id').projects;
 function DetailField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0 space-y-1">
-      <dt className="text-xs font-medium text-muted">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="break-words text-sm font-medium text-text">
         {children === undefined || children === null || children === '' ? '—' : children}
       </dd>
@@ -47,7 +47,7 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
         {metrics.map(({ label, value }) => (
           <Card key={label}>
             <CardContent className="p-4 sm:p-5">
-              <p className="text-sm text-muted">{label}</p>
+              <p className="text-sm text-muted-foreground">{label}</p>
               <p className="mt-1 break-words text-xl font-bold tabular-nums text-text">{value}</p>
             </CardContent>
           </Card>
@@ -68,17 +68,17 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
             <DetailField label={details.category}>{messages.categoryLabels[project.category]}</DetailField>
             <DetailField label={details.location}>
               <span className="inline-flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {location || '—'}
               </span>
             </DetailField>
             <DetailField label={details.schedule}>
               <span className="inline-flex items-start gap-2">
-                <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                <CalendarDays className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {messages.projectDateRange(formatTanggal(project.start_date), formatTanggal(effectiveEndDate))}
               </span>
               {approvedExtensionDays > 0 && (
-                <span className="mt-1 block text-xs text-muted">
+                <span className="mt-1 block text-xs text-muted-foreground">
                   {details.approvedTimeExtension}: {approvedExtensionDays} {messages.days}
                 </span>
               )}
@@ -99,7 +99,7 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap justify-between gap-2 text-sm">
-            <span className="text-muted">{details.actualProgress}</span>
+            <span className="text-muted-foreground">{details.actualProgress}</span>
             <span className="font-semibold tabular-nums text-text">{formatPersen(actualProgress)}</span>
           </div>
           <div
@@ -115,7 +115,7 @@ export function ProjectSummaryTab({ project }: { project: Project }) {
               style={{ width: `${Math.min(100, Math.max(0, actualProgress))}%` }}
             />
           </div>
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             {details.plannedProgress}: <span className="font-medium text-text">{formatPersen(plannedProgress)}</span>
           </p>
         </CardContent>

@@ -154,7 +154,7 @@ export function BoqRevisionTools({
           </div>
 
           {!canCompare ? (
-            <p className="text-sm text-muted" role="status">{messages.boqCompareNeedTwo}</p>
+            <p className="text-sm text-muted-foreground" role="status">{messages.boqCompareNeedTwo}</p>
           ) : comparisonQuery.isLoading ? (
             <div className="grid gap-3" aria-label={messages.boqLoading}>
               <Skeleton className="h-24 w-full" />
