@@ -40,7 +40,7 @@ const ReportsAnalyticsView = lazy(() => import('./features/reports/ReportsAnalyt
 const SettingsView = lazy(() => import('./features/settings/SettingsView').then((module) => ({ default: module.SettingsView })));
 const OrganizationInvitationInbox = lazy(() => import('./features/settings/OrganizationInvitationInbox').then((module) => ({ default: module.OrganizationInvitationInbox })));
 const OrganizationOnboardingPage = lazy(() => import('./features/organizations/OrganizationOnboardingPage').then((module) => ({ default: module.OrganizationOnboardingPage })));
-const TopNavbar = lazy(() => import('./components/layout/TopNavbar').then((module) => ({ default: module.TopNavbar })));
+const AppHeader = lazy(() => import('./components/layout/AppHeader').then((module) => ({ default: module.AppHeader })));
 const MobileBottomNav = lazy(() => import('./components/layout/MobileBottomNav').then((module) => ({ default: module.MobileBottomNav })));
 const CommandPalette = lazy(() => import('./components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
 const OfflineIndicator = lazy(() => import('./components/pwa/OfflineIndicator').then((module) => ({ default: module.OfflineIndicator })));
@@ -373,7 +373,7 @@ function MainApp() {
       </Suspense>
       {/* Top Navbar */}
       <Suspense fallback={null}>
-        <TopNavbar
+        <AppHeader
           onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
         />
       </Suspense>

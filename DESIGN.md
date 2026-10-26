@@ -120,8 +120,8 @@ Implementasi bridge di `src/index.css` memetakan token ini lewat `@theme inline`
 ## 3. Layout & Navigasi
 
 ### 3.1 Desktop (≥ 1024px)
-- **Sidebar kiri** (komponen shadcn `Sidebar`, `collapsible="icon"`): 256px expanded, 72px rail ikon, grup menu bisa dilipat, `Ctrl/Cmd+B` untuk toggle, status tersimpan. Latar netral `--surface`, teks `--text`, item aktif `--surface-2` (D-UI-1).
-- **Top bar** 64px (bayangan tipis saat konten di-scroll): breadcrumb berbasis route, **pemilih proyek**, pencarian global (`Ctrl/Cmd+K` command palette), notifikasi, toggle tema, menu profil.
+- **Sidebar kiri** (`AppSidebar`, komponen shadcn `Sidebar`, `collapsible="icon"`): 256px expanded, 72px rail ikon, grup menu bisa dilipat, `Ctrl/Cmd+B` untuk toggle, status tersimpan. Latar netral `--surface`, teks `--text`, item aktif `--surface-2` (D-UI-1).
+- **Top bar** (`AppHeader`) 64px (bayangan tipis saat konten di-scroll): breadcrumb berbasis route, **pemilih proyek**, pencarian global (`Ctrl/Cmd+K` command palette), notifikasi, toggle tema, menu profil.
 - Area konten dengan header halaman (judul, deskripsi singkat, aksi utama di kanan).
 
 ### 3.2 Tablet (640–1023px)
@@ -273,4 +273,5 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 
 Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel ini (nama, alasan, tanggal).
 
+- Shell aktif menggunakan `AppSidebar` dan `AppHeader`; `Sidebar.tsx` legacy dihapus, sedangkan header aktif dipindahkan dari `TopNavbar.tsx` setelah paritas dikonfirmasi. — 2026-10-27
 - Komponen shell hasil `shadcn add` (Sidebar, Sheet, Tooltip, Separator, Collapsible, ScrollArea, Avatar, Breadcrumb, DropdownMenu, Skeleton, serta Button/Input pendukung) memakai helper `cn` yang sudah ada di `components/ui/utils`; import helper dan komponen saudara memakai path relatif agar Vite tetap menyelesaikannya di Windows dengan path workspace ber-spasi. Variabel warna sidebar bawaan generator dihapus agar seluruhnya mengikuti token §2.7. Sidebar memakai breakpoint `sm` (640px) agar konsisten dengan bottom nav; konten mobile meneruskan atribut aksesibilitas dan class aman-area ke Sheet. — 2026-10-27

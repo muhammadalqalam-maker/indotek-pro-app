@@ -27,7 +27,7 @@ import {
   LogOut,
 } from 'lucide-react';
 
-export const TopNavbar: React.FC<{
+export const AppHeader: React.FC<{
   onOpenCreateOrgModal: () => void;
 }> = ({ onOpenCreateOrgModal }) => {
   const location = useLocation();
