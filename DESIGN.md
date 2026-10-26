@@ -259,8 +259,8 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Command palette ⌘K | Ya | Ada (kustom) + animasi | Rencana (UI-D) |
 | Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
 | Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom + animasi | Audit: timing source Sonner tidak ditetapkan lokal; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
-| Toggle tema | Ya | Ya (kunci `indotek_theme`) | Rencana (UI-C) |
-| Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Rencana | Audit: source terverifikasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
+| Toggle tema | Ya | Ya (kunci `indotek_theme`) | Selesai (UI-C.3; kunci tetap dipertahankan) |
+| Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Breadcrumb route, pemilih organisasi/proyek, notifikasi, toggle tema, pencarian perintah, bayangan saat scroll >10px | Selesai (UI-C.3); perilaku referensi: [laporan](docs/ui/shadcn-admin-parity.md) |
 | Progress bar saat pindah route | Bar 2px saat TanStack Router pending | — | Audit: indikator status router, bukan sinkronisasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
 | Tabel: state di URL, filter facet, toolbar aksi massal | Ya | Rencana | Rencana (UI-E) |
 | Config drawer (varian layout/sidebar) | Ya | Tidak | Disengaja (di luar scope) |

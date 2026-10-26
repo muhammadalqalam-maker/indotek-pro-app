@@ -1,5 +1,13 @@
 export * from './Badge';
 export * from './Button';
+export {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../shadcn/breadcrumb';
 export * from './Card';
 export * from './Checkbox';
 export * from './CardList';

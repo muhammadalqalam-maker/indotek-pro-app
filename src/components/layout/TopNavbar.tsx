@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useApp } from '../../context/AppContext';
 import { UserRole, ROLE_LABELS, ROLE_BADGE_COLORS } from '../../utils/permissions';
 import { organizationMessages, shellMessages } from '../../i18n/id';
 import { PWAInstallButton } from '../pwa/PWAInstallButton';
 import { NotificationCenter } from '../../features/notifications/components/NotificationCenter';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '../ui';
+import { NAVIGATION_ROUTES, getProjectIdForPathname } from '../../routes/navigation';
 import {
   Building2,
   ChevronDown,
@@ -15,7 +25,6 @@ import {
   Shield,
   Layers,
   Menu,
-  X,
   LogOut,
 } from 'lucide-react';
 
@@ -24,6 +33,7 @@ export const TopNavbar: React.FC<{
   onToggleMobileSidebar: () => void;
   isMobileSidebarOpen: boolean;
 }> = ({ onOpenCreateOrgModal, onToggleMobileSidebar, isMobileSidebarOpen }) => {
+  const location = useLocation();
   const {
     currentOrg,
     organizations,
@@ -46,6 +56,31 @@ export const TopNavbar: React.FC<{
 
   const [orgDropdownOpen, setOrgDropdownOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const scrollContainer = document.querySelector<HTMLElement>('main[aria-busy]');
+    const header = headerRef.current;
+    if (!scrollContainer || !header) return;
+
+    const updateScrollState = () => {
+      const isScrolled = scrollContainer.scrollTop > 10;
+      header.dataset.scrolled = String(isScrolled);
+      header.classList.toggle('shadow-sm', isScrolled);
+    };
+    updateScrollState();
+    scrollContainer.addEventListener('scroll', updateScrollState, { passive: true });
+    return () => scrollContainer.removeEventListener('scroll', updateScrollState);
+  }, []);
+
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
+  const projectDetailId = getProjectIdForPathname(normalizedPath);
+  const activeRoute = NAVIGATION_ROUTES.find(({ path }) => path === normalizedPath);
+  const routeLabel = activeRoute
+    ? shellMessages.navigationLabels[activeRoute.tab]
+    : projectDetailId
+      ? projects.find(({ id }) => id === projectDetailId)?.name ?? shellMessages.navigationLabels.projects
+      : shellMessages.routeNotFound;
 
   const handleProjectChange = (projectId: string) => {
     setSelectedProjectId(projectId);
@@ -64,7 +99,11 @@ export const TopNavbar: React.FC<{
   ];
 
   return (
-    <header className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-wrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-2 py-2 backdrop-blur-md sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0">
+    <header
+      ref={headerRef}
+      className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-wrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-2 py-2 backdrop-blur-md transition-shadow sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0"
+      data-scrolled="false"
+    >
       {/* Left: Mobile Toggle & Brand & Org Selector */}
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         {/* Mobile menu button */}
@@ -113,7 +152,7 @@ export const TopNavbar: React.FC<{
             <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
             <div className="truncate">
               <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate leading-tight">
-                {currentOrg?.name || 'Pilih Organisasi'}
+                {currentOrg?.name || shellMessages.selectOrganization}
               </p>
               <p className="hidden text-xs text-muted-foreground leading-tight sm:block">
                 Kode: {currentOrg?.company_code} • {currentOrg?.timezone}
@@ -127,7 +166,7 @@ export const TopNavbar: React.FC<{
             <div role="menu" aria-label={organizationMessages.organizationList} className="absolute left-0 mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 sm:w-72">
               <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Daftar Perusahaan (Multi-tenant)
+                  {shellMessages.organizationListTitle}
                 </p>
               </div>
               <div className="max-h-56 overflow-y-auto py-1">
@@ -176,6 +215,33 @@ export const TopNavbar: React.FC<{
           )}
         </div>
 
+        <Breadcrumb className="hidden min-w-0 flex-1 px-2 md:block">
+          <BreadcrumbList className="flex-nowrap overflow-hidden text-xs">
+            {projectDetailId ? (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/projects">{shellMessages.navigationLabels.projects}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </>
+            ) : activeRoute?.tab !== 'dashboard' && activeRoute ? (
+              <>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link to="/dashboard">{shellMessages.home}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </>
+            ) : null}
+            <BreadcrumbItem className="min-w-0 truncate">
+              <BreadcrumbPage className="truncate">{routeLabel}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         {/* Global Project Context Selector */}
         <div className="hidden items-center gap-1.5 lg:flex">
           <Layers className="w-3.5 h-3.5 text-muted-foreground" />
@@ -201,13 +267,13 @@ export const TopNavbar: React.FC<{
         {/* Command Palette Trigger */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-muted-foreground hover:text-text hover:border-slate-300 dark:hover:border-slate-700 text-xs transition"
-          title="Buka Command Palette"
-          aria-label="Cari dan jalankan perintah"
+          className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-2 text-muted-foreground transition hover:text-text md:min-w-0 md:px-3 md:py-1.5"
+          title={shellMessages.commandPalette}
+          aria-label={shellMessages.commandPalette}
         >
           <Search className="w-3.5 h-3.5" />
-          <span>Cari perintah...</span>
-          <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-500 dark:border-slate-700 dark:bg-slate-800">
+          <span className="hidden text-xs md:inline">{shellMessages.commandPalettePlaceholder}</span>
+          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground lg:inline">
             Ctrl/⌘ K
           </kbd>
         </button>

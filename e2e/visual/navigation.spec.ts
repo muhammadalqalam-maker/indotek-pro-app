@@ -159,6 +159,43 @@ test('desktop sidebar groups routes and persists keyboard collapse state', async
   await expect.poll(() => page.evaluate(() => document.cookie)).toContain('sidebar_state=true');
 });
 
+test('header shows route breadcrumbs and gains a shadow when content scrolls', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const header = page.getByRole('banner');
+  const breadcrumbs = header.getByRole('navigation', { name: 'breadcrumb' });
+  const main = page.locator('main[aria-busy="false"]');
+  await expect(breadcrumbs).toContainText('Dashboard Eksekutif');
+  await expect(header).toHaveAttribute('data-scrolled', 'false');
+  await expect(header.getByRole('button', { name: 'Ganti organisasi' })).toBeVisible();
+  await expect(header.getByRole('combobox', { name: 'Konteks proyek' })).toBeVisible();
+  await expect(header.getByRole('button', { name: 'Cari dan jalankan perintah' })).toBeVisible();
+
+  await main.evaluate((element) => {
+    const spacer = document.createElement('div');
+    spacer.setAttribute('aria-hidden', 'true');
+    spacer.style.height = '1200px';
+    element.append(spacer);
+    element.scrollTop = 20;
+  });
+  await expect(header).toHaveAttribute('data-scrolled', 'true');
+
+  await page.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: 'Pengaturan & Tim' }).click();
+  await expect(breadcrumbs).toContainText('Beranda');
+  await expect(breadcrumbs).toContainText('Pengaturan & Tim');
+});
+
 test('browser back and forward restore route and scroll position', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {
@@ -225,6 +262,7 @@ test('project details have a refreshable project-specific URL', async ({ page })
   await page.getByRole('button', { name: /^Buka detail/ }).first().click();
   await expect(page).toHaveURL(new RegExp(`${localOrigin.replaceAll('.', '\\.')}\\/projects\\/[^/]+$`));
   await expect(page.getByRole('tablist')).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'breadcrumb' })).toContainText('Manajemen Proyek');
 
   const detailUrl = page.url();
   await page.reload();
