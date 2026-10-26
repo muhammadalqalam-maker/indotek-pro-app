@@ -62,7 +62,7 @@ for (const tab of Object.keys(NAVIGATION_MODULES)) {
         if (tab !== 'dashboard') {
           const tabButton = page
             .getByRole('navigation', { name: 'Navigasi aplikasi' })
-            .getByRole('button', { name: navigationLabels[tab] });
+            .getByRole('link', { name: navigationLabels[tab] });
           await tabButton.click();
           await expect(tabButton).toHaveAttribute('aria-current', 'page');
           await page.waitForLoadState('networkidle');
@@ -121,6 +121,44 @@ test('navigation routes load directly and remain available after refresh', async
   }
 });
 
+test('desktop sidebar groups routes and persists keyboard collapse state', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const navigation = page.getByRole('navigation', { name: 'Navigasi aplikasi' });
+  const sidebar = page.locator('[data-slot="sidebar"][data-collapsible]');
+  await expect(navigation.getByRole('link', { name: 'Dashboard Eksekutif' })).toHaveAttribute('aria-current', 'page');
+  await expect(navigation.getByText('Operasional Proyek')).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'Pengaturan & Tim' })).toHaveAttribute('href', '/settings');
+  await expect(sidebar).toHaveAttribute('data-collapsible', '');
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await expect(sidebar).toHaveAttribute('data-collapsible', 'icon');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(sidebar).toHaveAttribute('data-collapsible', '');
+
+  await page.keyboard.press('Control+b');
+  await expect(sidebar).toHaveAttribute('data-collapsible', 'icon');
+  await expect.poll(() => page.evaluate(() => document.cookie)).toContain('sidebar_state=false');
+
+  await page.reload();
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');
+
+  await page.keyboard.press('Control+b');
+  await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', '');
+  await expect.poll(() => page.evaluate(() => document.cookie)).toContain('sidebar_state=true');
+});
+
 test('browser back and forward restore route and scroll position', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {
@@ -144,7 +182,7 @@ test('browser back and forward restore route and scroll position', async ({ page
   await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(400);
 
   await page.getByRole('navigation', { name: 'Navigasi aplikasi' })
-    .getByRole('button', { name: 'Pengaturan & Tim' }).click();
+    .getByRole('link', { name: 'Pengaturan & Tim' }).click();
   await expect(page).toHaveURL(`${localOrigin}/settings`);
   await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(0);
   await main.evaluate((element) => { element.scrollTop = 250; });
@@ -208,6 +246,8 @@ test('restricted route shows a 403 page instead of rendering protected content',
   await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
   await page.getByTitle('Ganti Peran Pengguna untuk Simulasi RBAC').click();
   await page.getByRole('button', { name: 'Site Manager / Pelaksana' }).click();
+  await expect(page.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: 'Pengaturan & Tim' })).toHaveCount(0);
   await page.evaluate(() => {
     window.history.pushState({}, '', '/settings');
     window.dispatchEvent(new PopStateEvent('popstate'));

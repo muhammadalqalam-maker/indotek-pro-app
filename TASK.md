@@ -45,7 +45,7 @@
 ## FASE UI-C — Shell
 
 - [x] **T-UI.C.1** `shadcn add` untuk sidebar, sheet, tooltip, separator, collapsible, scroll-area, avatar, breadcrumb, dropdown-menu, skeleton. *Selesai bila:* tidak ada file di `components/ui/` yang tertimpa. — 2026-10-27 — CLI membuat 10 komponen dan Button/Input pendukung di `components/shadcn`; memakai helper `cn` dan token warna yang tersedia. Baseline visual tidak berubah; tidak ada file `components/ui/` tertimpa.
-- [ ] **T-UI.C.2** `AppSidebar` baru: grup menu dari konfigurasi yang ada, filter `<Can>`, `collapsible="icon"`, Rail, `Ctrl/Cmd+B`, status tersimpan, link via router.
+- [x] **T-UI.C.2** `AppSidebar` baru: grup menu dari konfigurasi yang ada, filter `<Can>`, `collapsible="icon"`, Rail, `Ctrl/Cmd+B`, status tersimpan, link via router. — 2026-10-27 — Sidebar shadcn menggantikan navigasi desktop/tablet; mobile lama dipertahankan untuk C.4. Preferensi tersimpan di cookie, default tablet ikon, navigasi dan filter izin diuji. Baseline visual diperbarui; typecheck, lint, build, 198 unit, 8 e2e, 23 visual lulus.
 - [ ] **T-UI.C.3** Header: breadcrumb berbasis route, org switcher, pemilih proyek, notifikasi, toggle tema (kunci `indotek_theme` dipertahankan), tombol command palette, bayangan saat scroll.
 - [ ] **T-UI.C.4** Mobile: pertahankan bottom nav + FAB; sidebar sebagai sheet lewat "Menu"; safe-area; target sentuh ≥ 44px.
 - [ ] **T-UI.C.5** Hapus `Sidebar`/`TopNavbar` lama **setelah** paritas dikonfirmasi pengguna.

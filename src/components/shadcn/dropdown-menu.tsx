@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/components/ui/utils"
+import { cn } from "../ui/utils"
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 
