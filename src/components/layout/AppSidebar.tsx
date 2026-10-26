@@ -9,13 +9,16 @@ import {
   FolderArchive,
   FolderKanban,
   HardHat,
+  Layers,
   LayoutDashboard,
+  LogOut,
   Settings,
   ShieldAlert,
   ShoppingCart,
   Truck,
   Users,
   Users2,
+  X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -41,7 +44,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '../shadcn/sidebar';
-import { useIsMobile } from '../../hooks/use-mobile';
 
 type NavigationItem = {
   tab: NavigationTab;
@@ -104,9 +106,17 @@ export function hasSavedAppSidebarState(): boolean {
 }
 
 export function AppSidebar() {
-  const isMobile = useIsMobile();
-  const { state } = useSidebar();
-  const { currentOrg, projects } = useApp();
+  const { state, isMobile, setOpenMobile } = useSidebar();
+  const {
+    authSession,
+    closeProjectDetail,
+    currentOrg,
+    isSupabaseLive,
+    projects,
+    selectedProjectId,
+    signOut,
+    setSelectedProjectId,
+  } = useApp();
   const location = useLocation();
   const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
   const knownTab = navigationGroups
@@ -117,80 +127,136 @@ export function AppSidebar() {
     ? getTabForPathname(normalizedPath)
     : null;
 
-  if (isMobile) return null;
-
   return (
     <Sidebar
-      aria-label={shellMessages.sidebarNavigation}
-      className="top-16 bottom-0 h-auto"
+      className="safe-area-sidebar md:top-16 md:bottom-0 md:h-auto"
       collapsible="icon"
       id="app-sidebar"
-      role="navigation"
     >
       <SidebarHeader>
-        <div className="flex min-w-0 items-center gap-2 px-2 py-1">
-          <Building2 aria-hidden="true" className="size-5 shrink-0" />
-          <span className={`truncate text-sm font-semibold ${state === 'collapsed' ? 'sr-only' : ''}`}>
-            {currentOrg?.name || 'Indotek Pro'}
-          </span>
+        <div className="flex min-w-0 items-center justify-between gap-2 px-2 py-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <Building2 aria-hidden="true" className="size-5 shrink-0" />
+            <span className={`truncate text-sm font-semibold ${state === 'collapsed' && !isMobile ? 'sr-only' : ''}`}>
+              {currentOrg?.name || 'Indotek Pro'}
+            </span>
+          </div>
+          {isMobile && (
+            <button
+              aria-label={shellMessages.closeMenu}
+              className="flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              onClick={() => setOpenMobile(false)}
+              type="button"
+            >
+              <X aria-hidden="true" className="size-5" />
+            </button>
+          )}
         </div>
       </SidebarHeader>
 
       <SidebarSeparator />
 
+      {isMobile && (
+        <div className="space-y-2 px-4 py-3">
+          <label
+            className="flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
+            htmlFor="mobile-project-context"
+          >
+            <Layers aria-hidden="true" className="size-4 shrink-0" />
+            <span>{shellMessages.projectContext}</span>
+          </label>
+          <select
+            className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-sm text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            id="mobile-project-context"
+            onChange={(event) => {
+              setSelectedProjectId(event.currentTarget.value);
+              closeProjectDetail();
+            }}
+            value={selectedProjectId}
+          >
+            <option value="all">{shellMessages.allProjects(projects.length)}</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.code} - {project.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <SidebarContent>
-        {navigationGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map(({ tab, label, icon: Icon }) => {
-                  const isActive = activeTab === tab;
-                  return (
-                    <Can key={tab} module={NAVIGATION_MODULES[tab]} action="view">
-                      <SidebarMenuItem>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          size="lg"
-                          tooltip={label}
-                        >
-                          <Link
-                            aria-current={isActive ? 'page' : undefined}
-                            to={getPathForTab(tab)}
+        <nav aria-label={shellMessages.sidebarNavigation}>
+          {navigationGroups.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map(({ tab, label, icon: Icon }) => {
+                    const isActive = activeTab === tab;
+                    return (
+                      <Can key={tab} module={NAVIGATION_MODULES[tab]} action="view">
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            size="lg"
+                            tooltip={isMobile ? undefined : label}
                           >
-                            <Icon aria-hidden="true" />
-                            <span className={state === 'collapsed' ? 'sr-only' : undefined}>
-                              {label}
-                            </span>
-                            {tab === 'projects' && (
-                              <SidebarMenuBadge>{projects.length}</SidebarMenuBadge>
-                            )}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    </Can>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                            <Link
+                              aria-current={isActive ? 'page' : undefined}
+                              onClick={() => setOpenMobile(false)}
+                              to={getPathForTab(tab)}
+                            >
+                              <Icon aria-hidden="true" />
+                              <span className={state === 'collapsed' && !isMobile ? 'sr-only' : undefined}>
+                                {label}
+                              </span>
+                              {tab === 'projects' && (
+                                <SidebarMenuBadge>{projects.length}</SidebarMenuBadge>
+                              )}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </Can>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </nav>
       </SidebarContent>
 
       <SidebarSeparator />
 
-      <SidebarFooter>
-        <SidebarTrigger
-          aria-label="Ciutkan atau lebarkan navigasi"
-          className="size-10 self-end"
-          title="Ciutkan atau lebarkan navigasi"
-        />
-      </SidebarFooter>
-      <SidebarRail
-        aria-label="Ciutkan atau lebarkan navigasi"
-        title="Ciutkan atau lebarkan navigasi"
-      />
+      {!isMobile && (
+        <>
+          <SidebarFooter>
+            <SidebarTrigger
+              aria-label="Ciutkan atau lebarkan navigasi"
+              className="size-10 self-end"
+              title="Ciutkan atau lebarkan navigasi"
+            />
+          </SidebarFooter>
+          <SidebarRail
+            aria-label="Ciutkan atau lebarkan navigasi"
+            title="Ciutkan atau lebarkan navigasi"
+          />
+        </>
+      )}
+      {isMobile && isSupabaseLive && authSession && (
+        <SidebarFooter>
+          <button
+            aria-label="Keluar"
+            className="flex min-h-11 w-full items-center gap-2 rounded-md px-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            onClick={() => void signOut()}
+            type="button"
+          >
+            <LogOut aria-hidden="true" className="size-4" />
+            Keluar
+          </button>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

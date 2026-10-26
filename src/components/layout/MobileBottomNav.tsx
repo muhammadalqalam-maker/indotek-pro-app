@@ -13,13 +13,13 @@ import {
   X,
 } from 'lucide-react';
 import { shellMessages } from '../../i18n/id';
+import { useSidebar } from '../shadcn/sidebar';
 
 export const MobileBottomNav: React.FC<{
   onOpenCreateProject: () => void;
-  onToggleMobileDrawer: () => void;
-  isMenuOpen: boolean;
-}> = ({ onOpenCreateProject, onToggleMobileDrawer, isMenuOpen }) => {
+}> = ({ onOpenCreateProject }) => {
   const { activeTab, setActiveTab, can } = useApp();
+  const { openMobile, setOpenMobile } = useSidebar();
   const [fabMenuOpen, setFabMenuOpen] = useState(false);
   const hasQuickActions = can('projects', 'create')
     || can('field_reports', 'create')
@@ -176,11 +176,11 @@ export const MobileBottomNav: React.FC<{
           type="button"
           onClick={() => {
             setFabMenuOpen(false);
-            onToggleMobileDrawer();
+            setOpenMobile(true);
           }}
           className="flex min-h-12 min-w-12 flex-col items-center justify-center gap-1 text-xs font-semibold text-muted-foreground transition"
           aria-label={shellMessages.openMenu}
-          aria-expanded={isMenuOpen}
+          aria-expanded={openMobile}
           aria-controls="app-sidebar"
         >
           <Menu className="h-5 w-5" />

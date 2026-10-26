@@ -24,15 +24,12 @@ import {
   Check,
   Shield,
   Layers,
-  Menu,
   LogOut,
 } from 'lucide-react';
 
 export const TopNavbar: React.FC<{
   onOpenCreateOrgModal: () => void;
-  onToggleMobileSidebar: () => void;
-  isMobileSidebarOpen: boolean;
-}> = ({ onOpenCreateOrgModal, onToggleMobileSidebar, isMobileSidebarOpen }) => {
+}> = ({ onOpenCreateOrgModal }) => {
   const location = useLocation();
   const {
     currentOrg,
@@ -101,26 +98,18 @@ export const TopNavbar: React.FC<{
   return (
     <header
       ref={headerRef}
-      className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-wrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-2 py-2 backdrop-blur-md transition-shadow sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0"
+      className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-nowrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-2 py-2 backdrop-blur-md transition-shadow sm:flex-wrap sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0"
       data-scrolled="false"
     >
       {/* Left: Mobile Toggle & Brand & Org Selector */}
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
-        {/* Mobile menu button */}
-        <button
-          onClick={onToggleMobileSidebar}
-          className="flex min-h-12 min-w-12 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:hidden"
-          aria-label={shellMessages.openMenu}
-          aria-expanded={isMobileSidebarOpen}
-          aria-controls="app-sidebar"
-        >
-          <Menu className="w-5 h-5" />
-        </button>
-
         {/* Brand */}
-        <div className="flex shrink-0 items-center gap-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:flex-none">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20 text-slate-950 font-black tracking-wider text-sm">
             IP
+          </div>
+          <div className="block min-w-0 flex-1 truncate text-sm font-semibold sm:hidden">
+            {routeLabel}
           </div>
           <div className="hidden sm:block">
             <div className="flex items-center gap-1.5">
@@ -147,10 +136,10 @@ export const TopNavbar: React.FC<{
               setOrgDropdownOpen((prev) => !prev);
               setRoleDropdownOpen(false);
             }}
-            className="flex min-h-12 min-w-0 max-w-28 items-center gap-2 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-left transition sm:min-h-0 sm:max-w-[220px] disabled:cursor-wait disabled:opacity-70"
+            className="flex size-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 p-0 text-left transition hover:bg-surface sm:min-h-0 sm:w-auto sm:max-w-[220px] sm:justify-start sm:p-2.5 disabled:cursor-wait disabled:opacity-70"
           >
-            <Building2 className="w-4 h-4 text-amber-500 shrink-0" />
-            <div className="truncate">
+            <Building2 className="size-4 shrink-0 text-muted-foreground" />
+            <div className="hidden truncate sm:block">
               <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate leading-tight">
                 {currentOrg?.name || shellMessages.selectOrganization}
               </p>
@@ -158,7 +147,7 @@ export const TopNavbar: React.FC<{
                 Kode: {currentOrg?.company_code} • {currentOrg?.timezone}
               </p>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0 ml-auto" />
+            <ChevronDown className="hidden size-3.5 shrink-0 text-muted-foreground sm:block sm:ml-auto" />
           </button>
 
           {/* Org Dropdown */}
@@ -351,7 +340,7 @@ export const TopNavbar: React.FC<{
             type="button"
             onClick={() => void signOut()}
             aria-label="Keluar"
-            className="flex min-h-12 min-w-12 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:h-auto sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
+            className="hidden min-h-12 min-w-12 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:flex sm:h-auto sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
             title={authSession.user.email || 'Keluar'}
           >
             <LogOut className="h-4 w-4 sm:hidden" />
@@ -366,7 +355,7 @@ export const TopNavbar: React.FC<{
         </div>
       </div>
 
-      <label className="flex min-h-12 w-full items-center gap-2 text-xs text-muted-foreground lg:hidden">
+      <label className="hidden min-h-12 w-full items-center gap-2 text-xs text-muted-foreground sm:flex lg:hidden">
         <Layers className="h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="shrink-0">{shellMessages.projectContext}</span>
         <select

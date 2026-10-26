@@ -86,6 +86,10 @@ for (const tab of Object.keys(NAVIGATION_MODULES)) {
 
         for (const viewport of viewports) {
           await page.setViewportSize({ width: viewport.width, height: viewport.height });
+          if (tab === 'dashboard') {
+            await expect(page.locator('main[aria-busy="false"]')
+              .getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible({ timeout: 30_000 });
+          }
           await expect(page).toHaveScreenshot(`${tab}-${viewport.name}-${theme}.png`, {
             animations: 'disabled',
             caret: 'hide',
@@ -194,6 +198,56 @@ test('header shows route breadcrumbs and gains a shadow when content scrolls', a
     .getByRole('link', { name: 'Pengaturan & Tim' }).click();
   await expect(breadcrumbs).toContainText('Beranda');
   await expect(breadcrumbs).toContainText('Pengaturan & Tim');
+});
+
+test('mobile Menu opens the navigation sheet and preserves bottom navigation actions', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const bottomNavigation = page.getByRole('navigation', { name: 'Navigasi utama' });
+  const menuButton = bottomNavigation.getByRole('button', { name: 'Buka menu navigasi' });
+  await expect.poll(() => page.getByRole('banner').boundingBox()
+    .then((box) => box?.height ?? Number.POSITIVE_INFINITY)).toBeLessThanOrEqual(72);
+  await expect(bottomNavigation).toBeVisible();
+  await expect(bottomNavigation.getByRole('button', { name: 'Aksi cepat' })).toBeVisible();
+  await expect.poll(() => bottomNavigation.getByRole('button', { name: 'Aksi cepat' })
+    .evaluate((button) => button.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+  await expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+
+  await menuButton.click();
+  const mobileSidebar = page.locator('[data-sidebar="sidebar"][data-mobile="true"]');
+  await expect(mobileSidebar).toBeVisible();
+  await expect(mobileSidebar).toHaveAttribute('id', 'app-sidebar');
+  await expect(mobileSidebar.getByRole('combobox', { name: 'Konteks proyek' })).toBeVisible();
+  await expect(mobileSidebar.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: 'Pengaturan & Tim' })).toBeVisible();
+  await expect.poll(() => mobileSidebar.getByRole('button', { name: 'Tutup navigasi' })
+    .evaluate((button) => button.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+
+  await mobileSidebar.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: 'Pengaturan & Tim' }).click();
+  await expect(page).toHaveURL(`${localOrigin}/settings`);
+  await expect(mobileSidebar).toBeHidden();
+
+  await menuButton.click();
+  await expect(mobileSidebar).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(mobileSidebar).toBeHidden();
+
+  await page.setViewportSize({ width: 639, height: 812 });
+  await expect(bottomNavigation).toBeVisible();
+  await page.setViewportSize({ width: 640, height: 900 });
+  await expect(bottomNavigation).toBeHidden();
+  await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');
 });
 
 test('browser back and forward restore route and scroll position', async ({ page }) => {

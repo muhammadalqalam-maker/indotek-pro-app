@@ -41,7 +41,6 @@ const SettingsView = lazy(() => import('./features/settings/SettingsView').then(
 const OrganizationInvitationInbox = lazy(() => import('./features/settings/OrganizationInvitationInbox').then((module) => ({ default: module.OrganizationInvitationInbox })));
 const OrganizationOnboardingPage = lazy(() => import('./features/organizations/OrganizationOnboardingPage').then((module) => ({ default: module.OrganizationOnboardingPage })));
 const TopNavbar = lazy(() => import('./components/layout/TopNavbar').then((module) => ({ default: module.TopNavbar })));
-const Sidebar = lazy(() => import('./components/layout/Sidebar').then((module) => ({ default: module.Sidebar })));
 const MobileBottomNav = lazy(() => import('./components/layout/MobileBottomNav').then((module) => ({ default: module.MobileBottomNav })));
 const CommandPalette = lazy(() => import('./components/layout/CommandPalette').then((module) => ({ default: module.CommandPalette })));
 const OfflineIndicator = lazy(() => import('./components/pwa/OfflineIndicator').then((module) => ({ default: module.OfflineIndicator })));
@@ -174,8 +173,6 @@ function MainApp() {
     () => window.matchMedia('(max-width: 1023px)').matches,
   );
   const [sidebarOpen, setSidebarOpen] = useState(getAppSidebarDefaultOpen);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
   useEffect(() => {
     const tabletOrSmaller = window.matchMedia('(max-width: 1023px)');
     const syncSidebarForViewport = (event: MediaQueryListEvent) => {
@@ -378,8 +375,6 @@ function MainApp() {
       <Suspense fallback={null}>
         <TopNavbar
           onOpenCreateOrgModal={() => setIsCreateOrgModalOpen(true)}
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
-          isMobileSidebarOpen={isMobileSidebarOpen}
         />
       </Suspense>
       {(authError || authNotice) && (
@@ -420,16 +415,6 @@ function MainApp() {
         >
           {/* Sidebar Navigation */}
           <AppSidebar />
-          <Suspense fallback={null}>
-            <div className="md:hidden">
-              <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                setIsCollapsed={setIsSidebarCollapsed}
-                isMobileOpen={isMobileSidebarOpen}
-                setIsMobileOpen={setIsMobileSidebarOpen}
-              />
-            </div>
-          </Suspense>
 
           {/* Content View Container */}
           <main
@@ -466,17 +451,11 @@ function MainApp() {
               <AuthenticatedRouteViews routes={routes} />
             )}
           </main>
+          <Suspense fallback={null}>
+            <MobileBottomNav onOpenCreateProject={handleOpenCreateProject} />
+          </Suspense>
         </SidebarProvider>
       </div>
-
-      {/* Mobile Bottom Navigation */}
-      <Suspense fallback={null}>
-        <MobileBottomNav
-          onOpenCreateProject={handleOpenCreateProject}
-          onToggleMobileDrawer={() => setIsMobileSidebarOpen(true)}
-          isMenuOpen={isMobileSidebarOpen}
-        />
-      </Suspense>
 
       {/* Offline Status Pill */}
       <Suspense fallback={null}>

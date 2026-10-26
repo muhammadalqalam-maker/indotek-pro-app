@@ -130,7 +130,7 @@ Implementasi bridge di `src/index.css` memetakan token ini lewat `@theme inline`
 ### 3.3 Mobile (< 640px)
 - **Bottom navigation** 5 item maks: Beranda, Proyek, + (aksi cepat), Tugas/Approval, Menu. Tinggi 64px + safe-area.
 - **FAB / aksi cepat** (warna aksen): Laporan Harian, Foto, Permintaan Material, Absensi.
-- **Drawer/sheet** untuk menu lengkap dan filter.
+- **Drawer/sheet** untuk menu lengkap, filter, dan pemilih proyek.
 - Header ringkas 56px dengan judul, tombol kembali, aksi utama.
 - Tabel → **card list**; aksi sekunder via menu titik tiga atau swipe.
 - Hormati safe-area (`env(safe-area-inset-*)`).
@@ -253,8 +253,8 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 
 | Elemen | shadcn-admin | Indotek Pro | Status |
 |---|---|---|---|
-| Sidebar collapsible ke ikon | Ya | shadcn `Sidebar` | Rencana (UI-C) |
-| Sidebar di mobile | Sheet | Sheet **+ bottom nav + FAB** | Disengaja (pengguna lapangan) |
+| Sidebar collapsible ke ikon | Ya | shadcn `Sidebar` | Selesai (UI-C.2) |
+| Sidebar di mobile | Sheet | shadcn `Sidebar` sebagai Sheet **+ bottom nav + FAB** | Selesai (UI-C.4); bottom nav untuk akses lapangan |
 | Grup menu bisa dilipat | Ya | Ya | Rencana (UI-C/D) |
 | Command palette ⌘K | Ya | Ada (kustom) + animasi | Rencana (UI-D) |
 | Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
@@ -273,4 +273,4 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 
 Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel ini (nama, alasan, tanggal).
 
-- Komponen shell hasil `shadcn add` (Sidebar, Sheet, Tooltip, Separator, Collapsible, ScrollArea, Avatar, Breadcrumb, DropdownMenu, Skeleton, serta Button/Input pendukung) memakai helper `cn` yang sudah ada di `components/ui/utils`; import helper dan komponen saudara memakai path relatif agar Vite tetap menyelesaikannya di Windows dengan path workspace ber-spasi. Variabel warna sidebar bawaan generator dihapus agar seluruhnya mengikuti token §2.7. — 2026-10-27
+- Komponen shell hasil `shadcn add` (Sidebar, Sheet, Tooltip, Separator, Collapsible, ScrollArea, Avatar, Breadcrumb, DropdownMenu, Skeleton, serta Button/Input pendukung) memakai helper `cn` yang sudah ada di `components/ui/utils`; import helper dan komponen saudara memakai path relatif agar Vite tetap menyelesaikannya di Windows dengan path workspace ber-spasi. Variabel warna sidebar bawaan generator dihapus agar seluruhnya mengikuti token §2.7. Sidebar memakai breakpoint `sm` (640px) agar konsisten dengan bottom nav; konten mobile meneruskan atribut aksesibilitas dan class aman-area ke Sheet. — 2026-10-27
