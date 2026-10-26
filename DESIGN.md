@@ -81,21 +81,21 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 
 ### 2.6 Z-index & Motion
 - Z-index: base 0 · sticky 20 · sidebar 30 · dropdown 40 · modal 50 · toast 60.
-- Durasi: 120ms (hover), 200ms (transisi umum), 300ms (sheet/drawer). Easing `cubic-bezier(.2,.8,.2,1)`.
+- Default transisi Tailwind: 150ms, `cubic-bezier(.4,0,.2,1)`; gunakan nilai khusus per komponen sesuai tabel. Durasi 150ms untuk kelas animasi `tw-animate-css` tanpa modifier, easing `ease`.
 - Hormati `prefers-reduced-motion`: matikan animasi non-esensial.
 
-**Spesifikasi motion** (nilai final disalin dari audit T-UI.0.2; bila berbeda, hasil audit yang menang):
+**Spesifikasi motion** (diaudit terhadap source shadcn-admin v2.2.1; detail dan batasan ada di [laporan paritas](docs/ui/shadcn-admin-parity.md)):
 
 | Elemen | Efek | Masuk / Keluar | Easing |
 |---|---|---|---|
-| Dialog, AlertDialog | overlay fade; konten fade + zoom 95→100 | 200ms / 150ms | ease-out |
-| Sheet (kiri/kanan/bawah) | slide dari tepi | 300ms / 200ms | ease-out |
-| Dropdown, Popover, Select, Tooltip | fade + zoom 95→100 + geser 2px | 150ms / 100ms | ease-out |
-| Sidebar collapse/expand | lebar 256↔72px | 200ms | linear |
-| Grup menu (Collapsible) | tinggi + chevron berputar | 200ms | ease-out |
-| Toast | slide + fade | 200ms / 150ms | ease-out |
-| Hover/fokus (tombol, baris, tab) | warna/bayangan | 120ms | ease-out |
-| Skeleton | pulse | 2s berulang | ease-in-out |
+| Dialog, AlertDialog | overlay fade; konten fade + zoom 95→100 | konten masuk/keluar 200ms; overlay default 150ms | `ease` default |
+| Sheet (kiri/kanan/atas/bawah) | slide dari tepi; overlay fade | panel masuk 500ms / keluar 300ms; overlay default 150ms | `ease-in-out` panel; overlay `ease` |
+| Dropdown, Popover, Select, Tooltip | fade + zoom + slide 8px (`slide-*-2`) | 150ms / 150ms | `ease` default |
+| Sidebar collapse/expand | lebar 16rem↔3rem (gap varian inset/floating terpisah) | 200ms | `linear` |
+| Grup menu (Collapsible) | tinggi; chevron berputar terpisah | tinggi 300ms; chevron 200ms | tinggi `ease-out`; chevron default transisi |
+| Toast | animasi dikelola Sonner; source tidak menetapkan timing lokal | Tidak ditetapkan lokal (masa tampil 5000ms bukan durasi animasi) | Dikelola Sonner |
+| Hover/fokus (tombol, baris, tab) | transisi warna/bayangan bila kelas `transition` digunakan | default 150ms | `cubic-bezier(.4,0,.2,1)` |
+| Skeleton | pulse | 2s berulang | `cubic-bezier(.4,0,.6,1)` |
 
 Tanpa animasi pada properti layout berat (`width`/`height` pada daftar panjang) selain yang di tabel. Semua animasi mati/dipersingkat di bawah `prefers-reduced-motion: reduce`.
 
@@ -258,10 +258,10 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Grup menu bisa dilipat | Ya | Ya | Rencana (UI-C/D) |
 | Command palette ⌘K | Ya | Ada (kustom) + animasi | Rencana (UI-D) |
 | Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
-| Toast | Ya | Toast kustom + animasi | Audit |
+| Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom + animasi | Audit: timing source Sonner tidak ditetapkan lokal; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
 | Toggle tema | Ya | Ya (kunci `indotek_theme`) | Rencana (UI-C) |
-| Header: bayangan saat scroll, breadcrumb | Ya | Rencana | Audit |
-| Progress bar saat pindah route | Verifikasi | — | Audit |
+| Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Rencana | Audit: source terverifikasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
+| Progress bar saat pindah route | Bar 2px saat TanStack Router pending | — | Audit: indikator status router, bukan sinkronisasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
 | Tabel: state di URL, filter facet, toolbar aksi massal | Ya | Rencana | Rencana (UI-E) |
 | Config drawer (varian layout/sidebar) | Ya | Tidak | Disengaja (di luar scope) |
 | RTL | Ya | Tidak | Disengaja |

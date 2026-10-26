@@ -20,7 +20,7 @@
 ## FASE UI-0 — Persiapan
 
 - [x] **T-UI.0.1** Buat branch; tambahkan baseline screenshot Playwright (375/768/1280, light/dark) untuk setiap tab di `NAVIGATION_MODULES` (mode demo). — 2026-10-26 — Branch redesign sudah aktif; baseline 15 tab (90 screenshot) dan `npm run e2e:visual` lulus dua kali berturut-turut. Typecheck, lint, build, 198 unit test, dan 5 e2e lulus.
-- [ ] **T-UI.0.2** Audit shadcn-admin v2.x: clone ke folder **di luar repo** (hanya referensi), rekam video interaksi, baca source. Tulis `docs/ui/shadcn-admin-parity.md`: elemen, perilaku, durasi/easing, kelas sumber. Perbarui status kolom *Audit* di DESIGN §13 dan nilai tabel motion §2.6. *Selesai bila:* semua baris *Audit* terisi.
+- [x] **T-UI.0.2** Audit shadcn-admin v2.x: clone referensi `v2.2.1` di luar repo; rekam interaksi desktop/mobile; dokumentasikan perilaku, timing, kelas dan batasan source di `docs/ui/shadcn-admin-parity.md`; isi temuan *Audit* di DESIGN §13 dan nilai motion §2.6. — 2026-10-26 — Rekaman dan source tag dipertahankan di luar repo; semua baris Audit terisi.
 - [ ] **T-UI.0.3** Keputusan pengguna **D-UI-1** (identitas: navy+amber *atau* netral) dan persetujuan D-UI-2…4 di bawah. *Selesai bila:* kolom Status Decision Log terisi.
 
 ## FASE UI-A — Fondasi (tampilan tidak boleh berubah)
