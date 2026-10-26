@@ -31,7 +31,7 @@
 ## FASE UI-A — Fondasi (tampilan tidak boleh berubah)
 
 - [x] **T-UI.A.1** Tabrakan token `muted`: tambahkan `--color-muted-foreground`, migrasikan kelas teks lama, lalu petakan `--color-muted` ke `--surface-2`. — 2026-10-26 — 594 kelas di 131 file; tidak ada sisa kelas lama atau perubahan baseline visual.
-- [ ] **T-UI.A.2** Pasang `tw-animate-css` (import di `index.css`) dan `class-variance-authority`. *Selesai bila:* Dialog yang ada kini benar-benar beranimasi (verifikasi di browser) tanpa regresi.
+- [x] **T-UI.A.2** Pasang `tw-animate-css` (import di `index.css`) dan `class-variance-authority`. — 2026-10-26 — Dialog memakai fade + zoom; animasi masuk/keluar diverifikasi di browser (konten 200ms, overlay 150ms); typecheck, lint, build, unit test, e2e, dan baseline visual lulus.
 - [ ] **T-UI.A.3** Token bridge di `index.css` sesuai DESIGN §2.7 (`@theme inline`, light + `.dark`). Tidak menambah warna baru, radius tidak ditimpa. *Selesai bila:* kontras primary dark ≥ 4.5:1 terdokumentasi.
 - [ ] **T-UI.A.4** `components.json` (alias `ui` → `@/components/shadcn`, CSS `src/index.css`, `cssVariables: true`). Uji `shadcn add separator` lalu hapus bila tak dipakai. *Selesai bila:* tidak ada file di `src/components/ui/` yang berubah.
 - [ ] **T-UI.A.5** Aturan global `prefers-reduced-motion`; putuskan nasib paket `motion` (0 import saat ini) → hapus atau catat alasan pakai di Decision Log.
