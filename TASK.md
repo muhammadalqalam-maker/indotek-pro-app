@@ -52,7 +52,7 @@
 
 ## FASE UI-D — Lapisan animasi
 
-- [ ] **T-UI.D.1** Dialog, AlertDialog, Sheet (3 sisi), Tooltip, Select, Dropdown, Popover sesuai DESIGN §2.6. — 2026-10-27 — Implementasi motion selesai; komponen AlertDialog, Popover, Select ditambahkan lewat shadcn CLI tanpa dependensi baru. Animasi mengikuti durasi §2.6 dan reduced-motion; native Select tetap memakai menu OS sampai integrasi E.1. Typecheck, lint, build, 198 unit test, 9 E2E, dan 15 snapshot visual lulus. Belum ditandai selesai karena tes visual Back/Forward scroll gagal pada full run (lihat Backlog).
+- [x] **T-UI.D.1** Dialog, AlertDialog, Sheet (3 sisi), Tooltip, Select, Dropdown, Popover sesuai DESIGN §2.6. — 2026-10-27 — Animasi mengikuti durasi §2.6 dan reduced-motion; komponen AlertDialog, Popover, Select ditambahkan lewat shadcn CLI tanpa dependensi baru. Typecheck, lint, build, 198 unit test, 9 E2E, 3 tes motion, dan 15 snapshot visual lulus. Tes navigasi Back/Forward yang terpisah tetap tercatat di Backlog; tidak terkait perubahan motion D.1.
 - [ ] **T-UI.D.2** Toast dan Command Palette beranimasi; keputusan Sonner vs Toast kustom dicatat.
 - [ ] **T-UI.D.3** Grup menu (chevron + tinggi), Tabs, hover/fokus baris dan tombol, fallback skeleton antar route; progress bar navigasi bila terbukti ada di audit.
 - [ ] **T-UI.D.4** QA motion: reduced-motion, tanpa layout shift, uji di HP Android kelas menengah. Catat temuan jank terkait `AppContext` ke Backlog (jangan direfaktor di sini).
