@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from 'react';
+import { Badge as ShadcnBadge } from '../shadcn/badge';
 import { cn } from './utils';
 
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'outline';
@@ -14,5 +15,15 @@ const variants: Record<BadgeVariant, string> = {
 };
 
 export function Badge({ variant = 'default', className, ...props }: HTMLAttributes<HTMLSpanElement> & { variant?: BadgeVariant }) {
-  return <span className={cn('inline-flex min-h-6 items-center gap-1 rounded-full px-2.5 text-xs font-semibold', variants[variant], className)} {...props} />;
+  return (
+    <ShadcnBadge
+      variant={variant === 'outline' ? 'outline' : 'default'}
+      className={cn(
+        'min-h-6 gap-1 px-2.5 font-semibold',
+        variants[variant],
+        className,
+      )}
+      {...props}
+    />
+  );
 }

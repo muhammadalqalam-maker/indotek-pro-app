@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
+  Badge,
   Button,
   Card,
   CardDescription,
@@ -36,6 +37,7 @@ function NavigationMotionHarness() {
           <CardDescription>Deskripsi card uji</CardDescription>
         </CardHeader>
       </Card>
+      <Badge variant="success">Status berhasil</Badge>
       <Tabs defaultValue="summary">
         <TabsList aria-label="Bagian uji">
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>
