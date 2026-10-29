@@ -254,7 +254,7 @@ Header entitas (nama, status pill, metadata utama, aksi), lalu **Tabs** untuk se
 
 ## 13. Paritas dengan shadcn-admin
 
-Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari template, dengan alasan) · **Audit** (isi dari T-UI.0.2, lalu ubah statusnya).
+Status paritas telah difinalisasi setelah audit T-UI.0.2 dan implementasi Fase UI. **Disengaja** menandai perbedaan yang dipertahankan dengan alasan.
 
 | Elemen | shadcn-admin | Indotek Pro | Status |
 |---|---|---|---|
@@ -262,7 +262,7 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Sidebar di mobile | Sheet | shadcn `Sidebar` sebagai Sheet **+ bottom nav + FAB** | Selesai (UI-C.4); bottom nav untuk akses lapangan |
 | Grup menu bisa dilipat | Ya | Ya, dengan chevron | Selesai (UI-D.3) |
 | Command palette ⌘K | Ya | Ada (kustom), instan | Disengaja (UI-D.2; shortcut berfrekuensi tinggi) |
-| Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
+| Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Sesuai §2.6, termasuk reduced-motion | Selesai (UI-D.1) |
 | Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom, masa tampil 5000ms, transisi opacity + translateY 400ms | Disengaja: pertahankan API yang sudah dipakai luas tanpa dependensi baru; animasi lokal sesuai §2.6 |
 | Toggle tema | Ya | Ya (kunci `indotek_theme`) | Selesai (UI-C.3; kunci tetap dipertahankan) |
 | Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Breadcrumb route, pemilih organisasi/proyek, notifikasi, toggle tema, pencarian perintah, bayangan saat scroll >10px | Selesai (UI-C.3); perilaku referensi: [laporan](docs/ui/shadcn-admin-parity.md) |
@@ -296,3 +296,4 @@ Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel in
 - QA motion mengganti `transition-all` pada Button menjadi `transition-colors`, membatasi transisi SidebarRail ke posisi/transform, dan menghapus tween margin tak terpakai pada shell konten. — 2026-10-29
 - Tabel shadcn ditambahkan melalui CLI; import `cn` generator diarahkan ke helper lokal untuk kompatibilitas workspace Windows. `DataTable` memakai TanStack Table v8, sedangkan wrapper `PageShell`, `LoadingState`, dan `OfflineState` disediakan melalui barrel UI; status 403 tetap ditangani `RouteStatusPage`. State tabel memakai prefiks query per `tableId`; pencarian mengganti entri URL, sedangkan filter, sort, ukuran halaman, dan paginasi mendukung Back/Forward. — 2026-10-29
 - T-UI.F.1 memigrasikan utilitas warna ke token semantik; badge peran dinetralkan agar warna status tidak menyiratkan makna jabatan, sedangkan warna amber brand memakai token `accent-*`. Tooltip dan varian destructive Button/Badge memakai pasangan foreground token. Dua puluh scrim modal tetap `bg-black/60` agar overlay konsisten di kedua tema. — 2026-10-29
+- Audit UI-F.3 mengonfirmasi tidak ada lagi `Sidebar.tsx`/`TopNavbar.tsx` legacy. `DataTable` dipertahankan sebagai komponen bersama yang diuji melalui harness E2E dan sesuai pola §4/E.2. Import primitive Radix memakai paket `radix-ui`; dependensi langsung primitive lama yang tidak diimpor source dihapus. — 2026-10-29
