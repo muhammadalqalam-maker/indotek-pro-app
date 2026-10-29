@@ -119,7 +119,7 @@ export function GoodsReceiptWorkspace({
                         setSuccessMessage('');
                         setSelectedOrder(order);
                       }}
-                      className="min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                      className="min-h-11 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {messages.receiveGoods}
                     </button>

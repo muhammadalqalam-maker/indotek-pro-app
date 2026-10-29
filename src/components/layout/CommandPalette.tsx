@@ -283,12 +283,12 @@ export const CommandPalette: React.FC = () => {
         role="dialog"
         aria-modal="true"
         aria-label="Pencarian dan perintah"
-        className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+        className="w-full max-w-xl rounded-2xl bg-surface dark:bg-surface border border-border dark:border-border shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-slate-800">
-          <Search className="w-5 h-5 text-slate-400 shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border dark:border-border">
+          <Search className="w-5 h-5 text-subtle shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -298,22 +298,22 @@ export const CommandPalette: React.FC = () => {
               : 'Cari perintah, navigasi, proyek, atau simulasi role...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+            className="w-full bg-transparent text-sm text-text placeholder:text-subtle focus:outline-none"
           />
           <button
             type="button"
             onClick={() => setCommandPaletteOpen(false)}
             aria-label="Tutup pencarian"
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"
+            className="text-subtle hover:text-muted-foreground dark:hover:text-muted-foreground p-1 rounded-lg"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Results List */}
-        <div className="p-2 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 max-h-96">
+        <div className="p-2 overflow-y-auto divide-y divide-border dark:divide-border/60 max-h-96">
           {filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-500">
+            <div className="p-8 text-center text-sm text-muted-foreground">
               Tidak ada hasil yang cocok dengan "{search}"
             </div>
           ) : (
@@ -327,17 +327,17 @@ export const CommandPalette: React.FC = () => {
                     className="flex min-h-11 w-full items-center justify-between rounded-xl p-2.5 text-left transition hover:bg-surface-2 group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-amber-500 group-hover:text-slate-950 transition shrink-0">
+                      <div className="p-2 rounded-lg bg-surface-2 text-muted-foreground group-hover:bg-accent group-hover:text-text transition shrink-0">
                         <Icon className="w-4 h-4" />
                       </div>
                       <div className="truncate">
-                        <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                        <p className="text-xs font-semibold text-text truncate">
                           {item.title}
                         </p>
-                        <p className="text-[10px] text-slate-400">{item.category}</p>
+                        <p className="text-[10px] text-subtle">{item.category}</p>
                       </div>
                     </div>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-500 group-hover:translate-x-0.5 transition shrink-0 ml-2" />
+                    <ArrowRight className="w-3.5 h-3.5 text-subtle group-hover:text-accent-600 group-hover:translate-x-0.5 transition shrink-0 ml-2" />
                   </button>
                 );
               })}
@@ -346,10 +346,10 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-950/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+        <div className="px-4 py-2.5 bg-bg dark:bg-surface/50 border-t border-border dark:border-border flex items-center justify-between text-[11px] text-subtle">
           <span>Ketik untuk mencari</span>
           <div className="flex items-center gap-2">
-            <span>Tutup: <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px]">ESC</kbd></span>
+            <span>Tutup: <kbd className="px-1.5 py-0.5 rounded bg-surface-2 dark:bg-surface-2 text-muted-foreground dark:text-muted-foreground font-mono text-[10px]">ESC</kbd></span>
           </div>
         </div>
       </div>

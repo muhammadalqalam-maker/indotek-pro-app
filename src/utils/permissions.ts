@@ -96,17 +96,17 @@ export const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export const ROLE_BADGE_COLORS: Record<UserRole, string> = {
-  owner: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30',
-  admin: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30',
-  project_manager: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30',
-  site_manager: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30',
-  estimator: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
-  procurement: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  finance: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30',
-  warehouse: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30',
-  safety_officer: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/30',
-  subcontractor: 'bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30',
-  client_viewer: 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30',
+  owner: 'bg-neutral/10 text-neutral border-neutral/30',
+  admin: 'bg-neutral/10 text-neutral border-neutral/30',
+  project_manager: 'bg-neutral/10 text-neutral border-neutral/30',
+  site_manager: 'bg-neutral/10 text-neutral border-neutral/30',
+  estimator: 'bg-neutral/10 text-neutral border-neutral/30',
+  procurement: 'bg-neutral/10 text-neutral border-neutral/30',
+  finance: 'bg-neutral/10 text-neutral border-neutral/30',
+  warehouse: 'bg-neutral/10 text-neutral border-neutral/30',
+  safety_officer: 'bg-neutral/10 text-neutral border-neutral/30',
+  subcontractor: 'bg-neutral/10 text-neutral border-neutral/30',
+  client_viewer: 'bg-neutral/10 text-neutral border-neutral/30',
 };
 
 // Default permissions matrix per role

@@ -94,7 +94,7 @@ export function PayablesPanel({
               {payable.notes && <p className="break-words rounded-md bg-surface-2 p-2 text-xs text-muted-foreground">{payable.notes}</p>}
               {canPay && !isPaid && (
                 <div className="border-t border-border pt-3">
-                  <button className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary-700 px-3 text-sm font-semibold text-white hover:bg-primary-600" onClick={() => onPay(payable)} type="button">
+                  <button className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" onClick={() => onPay(payable)} type="button">
                     <CreditCard aria-hidden="true" className="h-4 w-4" />
                     {messages.payPayable}
                   </button>
@@ -112,7 +112,7 @@ export function PayablesPanel({
       <AgingSummary title={messages.agingTitlePayable} totals={aging} />
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-base font-semibold text-text">{messages.payablesTab}</h2>
-        <button className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md bg-primary-700 px-3 text-sm font-semibold text-white hover:bg-primary-600" onClick={onAdd} type="button">
+        <button className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90" onClick={onAdd} type="button">
           <Plus aria-hidden="true" className="h-4 w-4" />
           {messages.addPayable}
         </button>

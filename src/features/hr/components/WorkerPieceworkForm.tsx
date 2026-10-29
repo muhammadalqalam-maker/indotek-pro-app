@@ -97,7 +97,7 @@ export function WorkerPieceworkForm({
         }}
         disabled={!isOnline || workers.length === 0}
         aria-expanded={showForm}
-        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Plus className="size-4" aria-hidden="true" />
         {messages.pieceworkTitle}
@@ -157,7 +157,7 @@ export function WorkerPieceworkForm({
             <p role="alert" className="text-sm text-destructive sm:col-span-2">{formMessage}</p>
           )}
           <div className="flex justify-end sm:col-span-2">
-            <button type="submit" disabled={isSaving} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60">
+            <button type="submit" disabled={isSaving} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60">
               <Save className="size-4" aria-hidden="true" />
               {isSaving ? messages.pieceworkSaving : messages.pieceworkSave}
             </button>

@@ -38,7 +38,7 @@ export function Switch({ checked, onCheckedChange, label, className, disabled, i
         aria-label={props['aria-label']}
         aria-labelledby={labelledBy}
         className={cn(
-          'data-[size=default]:h-6 data-[size=default]:w-11 data-[state=checked]:bg-primary-700 data-[state=unchecked]:bg-border-strong',
+          'data-[size=default]:h-6 data-[size=default]:w-11 data-[state=checked]:bg-primary data-[state=unchecked]:bg-border-strong',
           className,
         )}
       />

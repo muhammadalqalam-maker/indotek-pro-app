@@ -90,7 +90,7 @@ export function WorkerWageRateForm({
         <button type="button" onClick={onCancel} disabled={isSaving} className="min-h-11 rounded-md border border-border px-3 text-sm font-semibold text-text hover:bg-surface-2">
           {messages.cancelWorkerRates}
         </button>
-        <button type="submit" disabled={isSaving} className="min-h-11 rounded-md bg-primary-700 px-3 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60">
+        <button type="submit" disabled={isSaving} className="min-h-11 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60">
           {messages.saveWorkerRates}
         </button>
       </div>

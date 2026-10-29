@@ -105,7 +105,7 @@ export const AppHeader: React.FC<{
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         {/* Brand */}
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:flex-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-md shadow-amber-500/20 text-slate-950 font-black tracking-wider text-sm">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-md shadow-accent-500/20 text-primary-900 font-black tracking-wider text-sm">
             IP
           </div>
           <div className="block min-w-0 flex-1 truncate text-sm font-semibold sm:hidden">
@@ -113,8 +113,8 @@ export const AppHeader: React.FC<{
           </div>
           <div className="hidden sm:block">
             <div className="flex items-center gap-1.5">
-              <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                Indotek<span className="text-amber-500">Pro</span>
+              <span className="font-extrabold text-base tracking-tight text-text">
+                Indotek<span className="text-accent-600">Pro</span>
               </span>
             </div>
             <p className="text-xs text-muted-foreground -mt-0.5 font-medium">Manajemen Konstruksi</p>
@@ -122,7 +122,7 @@ export const AppHeader: React.FC<{
         </div>
 
         {/* Divider */}
-        <div className="hidden md:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+        <div className="hidden md:block h-6 w-px bg-surface-2 dark:bg-surface-2 mx-1" />
 
         {/* Organization Switcher */}
         <div className="relative">
@@ -140,7 +140,7 @@ export const AppHeader: React.FC<{
           >
             <Building2 className="size-4 shrink-0 text-muted-foreground" />
             <div className="hidden truncate sm:block">
-              <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate leading-tight">
+              <p className="text-[11px] font-bold text-text truncate leading-tight">
                 {currentOrg?.name || shellMessages.selectOrganization}
               </p>
               <p className="hidden text-xs text-muted-foreground leading-tight sm:block">
@@ -152,8 +152,8 @@ export const AppHeader: React.FC<{
 
           {/* Org Dropdown */}
           {orgDropdownOpen && (
-            <div role="menu" aria-label={organizationMessages.organizationList} className="absolute left-0 mt-2 w-60 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 sm:w-72">
-              <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
+            <div role="menu" aria-label={organizationMessages.organizationList} className="absolute left-0 mt-2 w-60 rounded-2xl bg-surface dark:bg-surface border border-border dark:border-border shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150 sm:w-72">
+              <div className="px-3 py-1.5 border-b border-border dark:border-border">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {shellMessages.organizationListTitle}
                 </p>
@@ -171,8 +171,8 @@ export const AppHeader: React.FC<{
                         setCurrentOrgId(org.id);
                         setOrgDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 transition ${
-                        isCurrent ? 'bg-amber-500/10 text-amber-600 font-semibold' : 'text-slate-700 dark:text-slate-300'
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-bg dark:hover:bg-surface-2/80 transition ${
+                        isCurrent ? 'bg-accent-500/10 text-accent-600 font-semibold' : 'text-muted-foreground'
                       }`}
                     >
                       <div className="truncate pr-2">
@@ -181,12 +181,12 @@ export const AppHeader: React.FC<{
                           {org.city || 'Indonesia'} • {org.company_code}
                         </p>
                       </div>
-                      {isCurrent && <Check className="w-4 h-4 text-amber-500 shrink-0" />}
+                      {isCurrent && <Check className="w-4 h-4 text-accent-600 shrink-0" />}
                     </button>
                   );
                 })}
               </div>
-              <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 px-2">
+              <div className="pt-1.5 border-t border-border dark:border-border px-2">
                 <button
                   onClick={() => {
                     setOrgDropdownOpen(false);
@@ -194,7 +194,7 @@ export const AppHeader: React.FC<{
                   }}
                   type="button"
                   role="menuitem"
-                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition"
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold bg-accent-500/10 text-accent-600 hover:bg-accent-500/20 transition"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {organizationMessages.addOrganization}
@@ -239,7 +239,7 @@ export const AppHeader: React.FC<{
             onChange={(e) => handleProjectChange(e.target.value)}
             disabled={isLoading || projects.length === 0}
             aria-label={shellMessages.projectContext}
-            className="text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 px-2.5 py-1.5 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-amber-500 max-w-[190px]"
+            className="text-xs rounded-xl border border-border bg-bg px-2.5 py-1.5 text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500 max-w-[190px]"
           >
             <option value="all">{shellMessages.allProjects(projects.length)}</option>
             {projects.map((p) => (
@@ -275,7 +275,7 @@ export const AppHeader: React.FC<{
               setOrgDropdownOpen(false);
             }}
             className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition ${
-              ROLE_BADGE_COLORS[currentRole] || 'border-slate-200'
+              ROLE_BADGE_COLORS[currentRole] || 'border-border'
             }`}
             title="Ganti Peran Pengguna untuk Simulasi RBAC"
           >
@@ -285,8 +285,8 @@ export const AppHeader: React.FC<{
           </button>
 
           {roleDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
+            <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-surface dark:bg-surface border border-border dark:border-border shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-3 py-1.5 border-b border-border dark:border-border">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   Simulasi Akses Peran (RBAC)
                 </p>
@@ -304,15 +304,15 @@ export const AppHeader: React.FC<{
                         setCurrentRole(r);
                         setRoleDropdownOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-slate-50 dark:hover:bg-slate-800/80 transition ${
-                        isCurrent ? 'bg-amber-500/10 text-amber-600 font-bold' : 'text-slate-700 dark:text-slate-300'
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-bg dark:hover:bg-surface-2/80 transition ${
+                        isCurrent ? 'bg-accent-500/10 text-accent-600 font-bold' : 'text-muted-foreground'
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'}`} />
+                        <span className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-accent-500' : 'bg-surface-2'}`} />
                         <span>{ROLE_LABELS[r]}</span>
                       </div>
-                      {isCurrent && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                      {isCurrent && <Check className="w-3.5 h-3.5 text-accent-600" />}
                     </button>
                   );
                 })}
@@ -329,10 +329,10 @@ export const AppHeader: React.FC<{
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-xl p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition sm:min-h-0 sm:min-w-0"
+          className="flex min-h-12 min-w-12 items-center justify-center rounded-xl p-2 text-muted-foreground dark:text-muted-foreground hover:bg-surface-2 dark:hover:bg-surface-2 transition sm:min-h-0 sm:min-w-0"
           aria-label={isDark ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
         >
-          {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+          {isDark ? <Sun className="w-4 h-4 text-accent-500" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
         </button>
 
         {isSupabaseLive && authSession && (
@@ -340,7 +340,7 @@ export const AppHeader: React.FC<{
             type="button"
             onClick={() => void signOut()}
             aria-label="Keluar"
-            className="hidden min-h-12 min-w-12 items-center justify-center rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:flex sm:h-auto sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
+            className="hidden min-h-12 min-w-12 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-surface-2 dark:border-border dark:text-muted-foreground dark:hover:bg-surface-2 sm:flex sm:h-auto sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
             title={authSession.user.email || 'Keluar'}
           >
             <LogOut className="h-4 w-4 sm:hidden" />
@@ -349,7 +349,7 @@ export const AppHeader: React.FC<{
         )}
         {/* User Avatar */}
         <div className="hidden items-center pl-1 sm:flex">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-amber-400 flex items-center justify-center font-bold text-xs ring-2 ring-amber-500/30">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary-900 to-primary-900 text-accent-500 flex items-center justify-center font-bold text-xs ring-2 ring-accent-500/30">
             {(authSession?.user.email?.[0] || 'BS').toUpperCase()}
           </div>
         </div>

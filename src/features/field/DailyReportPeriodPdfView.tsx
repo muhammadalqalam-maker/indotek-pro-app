@@ -108,7 +108,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
             type="button"
             onClick={() => void handleDownload()}
             disabled={!reports.length || reportsQuery.isPending || isDownloading}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Download className="h-4 w-4" aria-hidden="true" />
             {isDownloading ? periodMessages.generating : periodMessages.download}
@@ -125,7 +125,7 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
                   type="button"
                   aria-pressed={period === value}
                   onClick={() => setPeriod(value)}
-                  className={`min-h-9 flex-1 rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${period === value ? 'bg-primary-600 text-white' : 'text-muted-foreground hover:text-text'}`}
+                  className={`min-h-9 flex-1 rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${period === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-text'}`}
                 >
                   {value === 'weekly' ? periodMessages.weekly : periodMessages.monthly}
                 </button>

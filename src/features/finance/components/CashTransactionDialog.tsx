@@ -116,11 +116,11 @@ export function CashTransactionDialog({
               <fieldset className="space-y-2 sm:col-span-2">
                 <legend className="text-sm text-text">{messages.flow}</legend>
                 <div className="grid grid-cols-2 gap-2">
-                  <label className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm ${flowType === CASH_TRANSACTION_TYPES.outflow ? 'border-primary-500 bg-primary-50 text-primary-900 dark:bg-primary-900/30 dark:text-white' : 'border-border bg-surface text-text'}`}>
+                  <label className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm ${flowType === CASH_TRANSACTION_TYPES.outflow ? 'border-primary-500 bg-primary-50 text-primary-900 dark:bg-primary-900/30 dark:text-primary-500' : 'border-border bg-surface text-text'}`}>
                     <input className="accent-primary-700" type="radio" value={CASH_TRANSACTION_TYPES.outflow} {...register('type')} />
                     {messages.outflow}
                   </label>
-                  <label className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm ${flowType === CASH_TRANSACTION_TYPES.inflow ? 'border-primary-500 bg-primary-50 text-primary-900 dark:bg-primary-900/30 dark:text-white' : 'border-border bg-surface text-text'}`}>
+                  <label className={`flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm ${flowType === CASH_TRANSACTION_TYPES.inflow ? 'border-primary-500 bg-primary-50 text-primary-900 dark:bg-primary-900/30 dark:text-primary-500' : 'border-border bg-surface text-text'}`}>
                     <input className="accent-primary-700" type="radio" value={CASH_TRANSACTION_TYPES.inflow} {...register('type')} />
                     {messages.inflow}
                   </label>
@@ -173,7 +173,7 @@ export function CashTransactionDialog({
             {submitError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{submitError}</p>}
             <div className="flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end">
               <button className="min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={onClose} type="button">{messages.cancel}</button>
-              <button className="min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60" disabled={isSubmitting} type="submit">
+              <button className="min-h-11 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60" disabled={isSubmitting} type="submit">
                 {isSubmitting ? messages.saving : messages.recordTransaction}
               </button>
             </div>

@@ -118,7 +118,7 @@ export function EquipmentUsageForm({
       )}
       <div className="flex justify-end gap-2 sm:col-span-2">
         <button type="button" onClick={onCancel} disabled={isSaving} className="min-h-11 rounded-md border border-border px-4 text-sm font-semibold text-text">{messages.cancel}</button>
-        <button type="submit" disabled={isSaving || eligibleAssets.length === 0} className="min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60">{isSaving ? messages.saving : messages.save}</button>
+        <button type="submit" disabled={isSaving || eligibleAssets.length === 0} className="min-h-11 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60">{isSaving ? messages.saving : messages.save}</button>
       </div>
     </form>
   );

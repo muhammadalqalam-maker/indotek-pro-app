@@ -173,7 +173,7 @@ export function ProcurementWorkflowWorkspace({
                           <button type="button" onClick={() => setQuoteRequest(request)} disabled={activeVendors.length === 0} className="min-h-11 rounded-md border border-border px-3 text-sm font-medium text-text disabled:opacity-50">
                             {messages.addQuote}
                           </button>
-                          <button type="button" onClick={() => setOrderRequest(request)} disabled={!mayCreateOrder} className="min-h-11 rounded-md bg-primary-700 px-3 text-sm font-semibold text-white disabled:opacity-50">
+                          <button type="button" onClick={() => setOrderRequest(request)} disabled={!mayCreateOrder} className="min-h-11 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground disabled:opacity-50">
                             {messages.createOrder}
                           </button>
                         </div>

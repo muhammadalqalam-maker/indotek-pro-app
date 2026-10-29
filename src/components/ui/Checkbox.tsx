@@ -119,7 +119,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Che
         aria-invalid={ariaInvalid}
         aria-required={required || ariaRequired}
         className={cn(
-          'group size-5 shrink-0 rounded-[6px] border-border-strong bg-surface text-white data-[state=checked]:border-primary-700 data-[state=checked]:bg-primary-700 data-[state=indeterminate]:border-primary-700 data-[state=indeterminate]:bg-primary-700 focus-visible:border-primary-700 focus-visible:ring-2 focus-visible:ring-primary-500',
+          'group size-5 shrink-0 rounded-[6px] border-border-strong bg-surface text-primary-foreground data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:border-primary data-[state=indeterminate]:bg-primary focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary-500',
           className,
         )}
         onFocus={handleCheckboxFocus}

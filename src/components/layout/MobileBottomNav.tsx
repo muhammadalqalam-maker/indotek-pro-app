@@ -62,7 +62,7 @@ export const MobileBottomNav: React.FC<{
                   setFabMenuOpen(false);
                   onOpenCreateProject();
                 }}
-                className="flex min-h-11 items-center gap-2.5 rounded-full bg-accent-500 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-xl active:scale-95"
+                className="flex min-h-11 items-center gap-2.5 rounded-full bg-accent-500 px-4 py-2.5 text-xs font-bold text-primary-900 shadow-xl active:scale-95"
               >
                 <span>+ Proyek Baru</span>
                 <FolderKanban className="w-4 h-4" />
@@ -151,7 +151,7 @@ export const MobileBottomNav: React.FC<{
               onClick={() => setFabMenuOpen((prev) => !prev)}
               aria-label={shellMessages.quickActions}
               aria-expanded={fabMenuOpen}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-500 text-slate-950 shadow-lg transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-500 text-primary-900 shadow-lg transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               {fabMenuOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6 stroke-[3]" />}
             </button>

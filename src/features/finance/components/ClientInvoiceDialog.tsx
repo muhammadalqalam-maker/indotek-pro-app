@@ -208,7 +208,7 @@ export function ClientInvoiceDialog({ projects, organizationId, onClose, onSubmi
             {submitError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{submitError}</p>}
             <div className="flex flex-col-reverse gap-2 border-t border-border pt-3 sm:flex-row sm:justify-end">
               <button className="min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={onClose} type="button">Batal</button>
-              <button className="min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60" disabled={isSubmitting || projects.length === 0} type="submit">
+              <button className="min-h-11 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60" disabled={isSubmitting || projects.length === 0} type="submit">
                 {isSubmitting ? 'Menyimpan…' : 'Terbitkan invoice'}
               </button>
             </div>

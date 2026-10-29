@@ -230,7 +230,7 @@ export function WorkerDirectory({
                 <button
                   type="submit"
                   disabled={isSaving || !isOnline}
-                  className="min-h-11 rounded-md bg-primary-700 px-5 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-60"
+                  className="min-h-11 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                 >
                   {isSaving ? messages.savingWorker : messages.saveWorker}
                 </button>

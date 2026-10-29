@@ -42,7 +42,7 @@ export function DailyReportConflictPanel({
               </button>
               <button
                 type="button"
-                className="min-h-11 rounded-md bg-primary-600 px-3 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                className="min-h-11 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 disabled={!isOnline || resolvingId === conflict.reportId}
                 onClick={() => onKeepLocal(conflict.reportId)}
               >

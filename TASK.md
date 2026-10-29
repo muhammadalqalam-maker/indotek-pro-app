@@ -72,7 +72,7 @@
 
 ## FASE UI-F — Pengerasan
 
-- [ ] **T-UI.F.1** Codemod ±749 kelas warna hard-coded ke token; daftar pengecualian bila ada.
+- [x] **T-UI.F.1** Codemod ±749 kelas warna hard-coded ke token; daftar pengecualian bila ada. — 2026-10-29 — Audit reproducible pada tracked `src/` menemukan 286 utilitas legacy (198 warna palet + 88 putih/hitam), bukan ±749; 266 dimigrasikan ke token. Dua puluh `bg-black/60` pada scrim modal/sheet tetap sebagai pengecualian. Badge peran dinetralkan dan amber brand memakai `accent-*`; 13 snapshot terdampak diperbarui. Typecheck, lint, build, 198 unit test, dan seluruh snapshot visual lulus; visual suite 38/39 karena timeout direct-refresh lama yang sudah tercatat di Backlog.
 - [ ] **T-UI.F.2** Aksesibilitas, Lighthouse PWA, ukuran bundle sebelum/sesudah (peringatan chunk >500 kB tidak boleh bertambah).
 - [ ] **T-UI.F.3** Hapus kode mati (Sidebar lama, `DataTable` lama bila tak dipakai, paket Radix tak terpakai); finalisasi DESIGN §13.
 - [ ] **T-UI.F.4** Uji PWA terpasang di HP asli (safe-area, bottom nav, Back); siapkan rilis menunggu persetujuan merge.

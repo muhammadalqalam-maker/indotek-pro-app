@@ -178,7 +178,7 @@ export function WorkerAttendanceForm({
         <button
           type="submit"
           disabled={isSaving}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary-700 px-5 text-sm font-semibold text-white transition hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Check className="size-4" aria-hidden="true" />
           {isSaving ? messages.savingAttendance : messages.saveAttendance}

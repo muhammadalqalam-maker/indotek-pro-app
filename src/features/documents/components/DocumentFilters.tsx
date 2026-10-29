@@ -31,7 +31,7 @@ export function DocumentFilters({
           aria-pressed={selectedCategory === 'all'}
           onClick={() => onCategoryChange('all')}
           className={`min-h-11 shrink-0 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-            selectedCategory === 'all' ? 'border-primary-700 bg-primary-700 text-white' : 'border-border bg-surface text-text'
+            selectedCategory === 'all' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-text'
           }`}
         >
           {messages.allCategories}
@@ -43,7 +43,7 @@ export function DocumentFilters({
             aria-pressed={selectedCategory === category}
             onClick={() => onCategoryChange(category)}
             className={`min-h-11 shrink-0 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-              selectedCategory === category ? 'border-primary-700 bg-primary-700 text-white' : 'border-border bg-surface text-text'
+              selectedCategory === category ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-text'
             }`}
           >
             {messages.categories[category]}

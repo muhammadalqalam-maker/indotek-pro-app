@@ -26,7 +26,7 @@ export function RouteStatusPage({ status }: { status: 'forbidden' | 'not-found' 
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       <Link
-        className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary-700 px-4 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+        className="inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-150 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         to="/dashboard"
       >
         {messages.returnHome}

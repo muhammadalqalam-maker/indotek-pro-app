@@ -109,7 +109,7 @@ export function ApprovalFlowEditor({
             }}
             className={`min-h-11 rounded-md border px-3 text-sm font-medium transition ${
               selectedType === resourceType
-                ? 'border-primary-700 bg-primary-700 text-white'
+                ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-surface text-muted-foreground hover:text-text'
             }`}
           >

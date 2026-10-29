@@ -108,7 +108,7 @@ export function PunchListCard({
                 type="button"
                 onClick={() => setShowClosureForm((open) => !open)}
                 disabled={isSaving}
-                className="min-h-11 rounded-md bg-success px-3 text-sm font-semibold text-white disabled:opacity-60"
+                className="min-h-11 rounded-md bg-success px-3 text-sm font-semibold text-surface disabled:opacity-60"
               >
                 {messages.punchCloseButton}
               </button>
