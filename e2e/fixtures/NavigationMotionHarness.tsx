@@ -11,6 +11,7 @@ import {
   DataTable,
   Input,
   Select,
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
@@ -29,6 +30,7 @@ function NavigationMotionHarness() {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState('alpha');
   const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
+  const [isSwitchChecked, setIsSwitchChecked] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[100] space-y-6 overflow-auto bg-bg p-6">
@@ -54,6 +56,11 @@ function NavigationMotionHarness() {
         />
       </form>
       <Checkbox label="Pilihan sebagian" indeterminate />
+      <Switch
+        label="Notifikasi uji"
+        checked={isSwitchChecked}
+        onCheckedChange={setIsSwitchChecked}
+      />
       <form id="select-form">
         <Select
           label="Pilihan uji"

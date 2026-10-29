@@ -270,6 +270,12 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
     .evaluate((form) => new FormData(form as HTMLFormElement).get('test-checkbox'));
   expect(submittedCheckboxValue).toBe('enabled');
   await expect(page.getByRole('checkbox', { name: 'Pilihan sebagian' })).toHaveAttribute('aria-checked', 'mixed');
+  const testSwitch = page.getByRole('switch', { name: 'Notifikasi uji' });
+  await expect(testSwitch).toHaveAttribute('aria-checked', 'false');
+  await page.getByText('Notifikasi uji', { exact: true }).click();
+  await expect(testSwitch).toHaveAttribute('aria-checked', 'true');
+  await testSwitch.press('Space');
+  await expect(testSwitch).toHaveAttribute('aria-checked', 'false');
   const testSelect = page.getByRole('combobox', { name: 'Pilihan uji' });
   await expect(testSelect).toHaveAttribute('aria-describedby', 'test-select-message');
   await expect(page.locator('#test-select-message')).toHaveText('Pilih satu opsi');
