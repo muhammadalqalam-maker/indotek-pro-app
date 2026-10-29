@@ -167,16 +167,16 @@ export function ApprovalRequestCard({
               <span className="break-all font-mono text-xs text-muted-foreground">{request.reference_number}</span>
             </div>
             <h3 className="mt-2 break-words text-base font-semibold text-text">{request.title}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 break-words text-sm text-muted-foreground">
               {messages.project}: {request.project_name} · {messages.requester}: {request.requester_name}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {messages.submittedAt}: {formatTanggal(request.created_at, { withTime: true })}
             </p>
           </div>
-          <div className="shrink-0 sm:text-right">
+          <div className="min-w-0 shrink-0 sm:text-right">
             <p className="text-xs text-muted-foreground">{messages.amount}</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums text-text">
+            <p className="mt-1 break-words text-lg font-semibold tabular-nums text-text">
               {request.amount > 0 ? formatRupiah(request.amount) : messages.noAmount}
             </p>
           </div>

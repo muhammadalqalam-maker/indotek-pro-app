@@ -1,6 +1,17 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
-import { Button, ConfirmDialog, EmptyState, ErrorState, Input, Skeleton } from '../../../components/ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  ConfirmDialog,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageHeader,
+  PageShell,
+  Skeleton,
+} from '../../../components/ui';
 import { useToast } from '../../../components/ui/Toast';
 import { useApp } from '../../../context/AppContext';
 import type { UserRole } from '../../../utils/permissions';
@@ -96,6 +107,18 @@ export function DocumentsWorkspace({ projectId }: { projectId?: string }) {
     || workspace.addVersion.isPending
     || workspace.update.isPending
     || workspace.archive.isPending;
+  const pageHeader = (
+    <PageHeader
+      title={messages.title}
+      description={activeProject ? messages.projectDescription.replace('{project}', activeProject.name) : messages.description}
+      actions={isSupabaseLive && currentOrg && canView && projects.length > 0 && canManage && !showForm ? (
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="size-4" aria-hidden="true" />
+          {messages.newDocument}
+        </Button>
+      ) : undefined}
+    />
+  );
 
   const loadPreview = async (version: ProjectDocumentVersion) => {
     const requestId = ++previewRequestId.current;
@@ -173,38 +196,61 @@ export function DocumentsWorkspace({ projectId }: { projectId?: string }) {
 
   if (!isSupabaseLive) {
     return (
-      <div role="alert" className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-text">
-        {messages.connectionRequired}
-      </div>
+      <PageShell className="mx-auto max-w-6xl" header={pageHeader}>
+        <div role="note" className="rounded-lg border border-warning/30 bg-warning-bg p-4 text-sm text-warning">
+          {messages.connectionRequired}
+        </div>
+      </PageShell>
     );
   }
   if (!currentOrg) {
-    return <ErrorState title={messages.loadError} description={organizationDataError || messages.organizationRequired} />;
+    return (
+      <PageShell className="mx-auto max-w-6xl" header={pageHeader}>
+        <ErrorState title={messages.loadError} description={organizationDataError || messages.organizationRequired} />
+      </PageShell>
+    );
   }
   if (!canView) {
-    return <ErrorState title={messages.permissionDenied} description={messages.permissionDeniedDescription} />;
+    return (
+      <PageShell className="mx-auto max-w-6xl" header={pageHeader}>
+        <ErrorState title={messages.permissionDenied} description={messages.permissionDeniedDescription} />
+      </PageShell>
+    );
   }
   if (projects.length === 0) {
-    return <EmptyState title={messages.noProjects} description={messages.noProjectsDescription} />;
+    return (
+      <PageShell className="mx-auto max-w-6xl" header={pageHeader}>
+        <EmptyState title={messages.noProjects} description={messages.noProjectsDescription} />
+      </PageShell>
+    );
   }
 
   return (
-    <section className="grid gap-5">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-text sm:text-2xl">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-            {activeProject ? messages.projectDescription.replace('{project}', activeProject.name) : messages.description}
-          </p>
-        </div>
-        {canManage && !showForm && (
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="size-4" aria-hidden="true" />
-            {messages.newDocument}
-          </Button>
-        )}
-      </header>
-
+    <PageShell
+      className="mx-auto max-w-6xl"
+      header={pageHeader}
+      filters={(
+        <Card>
+          <CardContent className="grid gap-4 p-4 sm:p-5">
+            <DocumentFilters
+              projectScoped={Boolean(projectId)}
+              projects={projects}
+              selectedProjectId={selectedProjectId}
+              onProjectChange={setSelectedProjectId}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+            <Input
+              label={messages.search}
+              placeholder={messages.searchPlaceholder}
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.currentTarget.value)}
+              prefix={<Search className="size-4" aria-hidden="true" />}
+            />
+          </CardContent>
+        </Card>
+      )}
+    >
       {showForm && canManage && (
         <DocumentForm
           projects={projects}
@@ -214,23 +260,6 @@ export function DocumentsWorkspace({ projectId }: { projectId?: string }) {
           onSave={createDocument}
         />
       )}
-
-      <DocumentFilters
-        projectScoped={Boolean(projectId)}
-        projects={projects}
-        selectedProjectId={selectedProjectId}
-        onProjectChange={setSelectedProjectId}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-      />
-
-      <Input
-        label={messages.search}
-        placeholder={messages.searchPlaceholder}
-        value={searchTerm}
-        onChange={(event) => setSearchTerm(event.currentTarget.value)}
-        prefix={<Search className="size-4" aria-hidden="true" />}
-      />
 
       {workspace.query.isPending ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-label={messages.loading}>
@@ -292,6 +321,6 @@ export function DocumentsWorkspace({ projectId }: { projectId?: string }) {
         loading={workspace.archive.isPending}
         onConfirm={() => { void archiveDocument(); }}
       />
-    </section>
+    </PageShell>
   );
 }
