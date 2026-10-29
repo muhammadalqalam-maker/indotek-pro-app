@@ -52,3 +52,63 @@ test('overlay components animate with the specified durations', async ({ page })
   await expect(popover).toHaveCSS('animation-name', 'enter');
   await expect(popover).toHaveCSS('animation-duration', '0.15s');
 });
+
+test('overlay components minimize motion when reduced motion is requested', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+  await page.goto('/');
+  await page.evaluate(async (harnessPath) => {
+    const { mountOverlayAnimationHarness } = await import(harnessPath);
+    mountOverlayAnimationHarness();
+  }, '/e2e/fixtures/OverlayAnimationHarness.ts');
+
+  const expectReducedAnimation = async (selector: string) => {
+    await expect.poll(() => page.locator(selector).evaluate((element) => (
+      Number.parseFloat(getComputedStyle(element).animationDuration)
+    ))).toBeLessThanOrEqual(0.001);
+  };
+
+  const alertTrigger = page.locator('button').filter({ hasText: 'Open alert dialog' });
+  await alertTrigger.scrollIntoViewIfNeeded();
+  const alertTriggerBounds = await alertTrigger.evaluate((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+  await alertTrigger.click();
+  await expectReducedAnimation('[role="alertdialog"]');
+  await expectReducedAnimation('div.fixed.inset-0[data-state="open"]');
+  const alertTriggerBoundsAfter = await alertTrigger.evaluate((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    return { x, y, width, height };
+  });
+  expect(alertTriggerBoundsAfter).toEqual(alertTriggerBounds);
+  await page.getByRole('button', { name: 'Confirm action' }).click();
+
+  for (const side of ['left', 'right', 'bottom'] as const) {
+    await page.getByRole('button', { name: `Open ${side} sheet` }).click();
+    await expectReducedAnimation('[role="dialog"]');
+    await expectReducedAnimation('div.fixed.inset-0[data-state="open"]');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Sheet motion test' })).toBeHidden();
+  }
+
+  await page.getByRole('button', { name: 'Hover tooltip' }).hover();
+  await expectReducedAnimation('[role="tooltip"]');
+
+  await page.getByRole('combobox').click();
+  await expectReducedAnimation('[role="listbox"]');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Open dropdown' }).click();
+  await expectReducedAnimation('[role="menu"]');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Open popover' }).click();
+  await expectReducedAnimation('[data-radix-popper-content-wrapper] [data-state="open"]');
+});

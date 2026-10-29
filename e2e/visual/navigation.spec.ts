@@ -179,10 +179,15 @@ test('sidebar groups animate height and chevrons, remaining expanded in icon rai
 
   const navigation = page.getByRole('navigation', { name: 'Navigasi aplikasi' });
   const sidebar = page.locator('[data-slot="sidebar"][data-collapsible]');
+  const main = page.locator('main[aria-busy="false"]');
   const trigger = navigation.getByRole('button', { name: 'Pengadaan & Logistik' });
   const group = trigger.locator('xpath=ancestor::*[@data-slot="collapsible"]');
   const content = group.locator('[data-slot="collapsible-content"]');
   const chevron = trigger.locator('.sidebar-group-chevron');
+  const mainBounds = await main.evaluate((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    return { x, y, width, height };
+  });
 
   await expect(trigger).toHaveAttribute('aria-expanded', 'true');
   await expect(chevron).toHaveCSS('transition-duration', '0.2s');
@@ -193,6 +198,10 @@ test('sidebar groups animate height and chevrons, remaining expanded in icon rai
   });
   await trigger.click();
   await expect(content).toHaveAttribute('data-animation-started', 'true');
+  await expect.poll(() => main.evaluate((element) => {
+    const { x, y, width, height } = element.getBoundingClientRect();
+    return { x, y, width, height };
+  })).toEqual(mainBounds);
   await expect(trigger).toHaveAttribute('aria-expanded', 'false');
   await expect(content).toHaveAttribute('data-state', 'closed');
   await expect(content).toHaveCSS('animation-duration', '0.3s');
