@@ -484,6 +484,7 @@ test('mobile quick actions trap focus and restore it when closed', async ({ page
   const dialog = page.getByRole('dialog', { name: 'Aksi cepat' });
   const controls = dialog.getByRole('button');
   await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Tutup dialog' })).toHaveCount(0);
   await expect(controls.first()).toBeFocused();
 
   await page.keyboard.press('Shift+Tab');

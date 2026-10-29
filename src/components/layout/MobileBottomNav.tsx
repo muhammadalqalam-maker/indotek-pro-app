@@ -43,6 +43,7 @@ export const MobileBottomNav: React.FC<{
   return (
     <Dialog open={fabMenuOpen} onOpenChange={setFabMenuOpen}>
       <DialogContent
+        showCloseButton={false}
         className="fixed inset-x-4 bottom-20 left-auto top-auto z-50 block max-h-[calc(100dvh-7rem)] w-auto max-w-[calc(100vw-2rem)] translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 bg-transparent p-0 pt-12 text-text shadow-none outline-none sm:hidden"
       >
         <DialogTitle className="sr-only">{shellMessages.quickActions}</DialogTitle>
