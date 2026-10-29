@@ -16,6 +16,7 @@ import {
   ErrorState,
   KpiCard,
   PageHeader,
+  PageShell,
 } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
@@ -105,42 +106,47 @@ export const DashboardView: React.FC<{
   const rangeError = period === 'custom' && !dateRange.isValid;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={messages.title}
-        description={messages.description(currentOrg.name)}
-        actions={(
-          <Can module="projects" action="create">
-            <Button onClick={onOpenCreateProject}>
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              {messages.addProject}
-            </Button>
-          </Can>
-        )}
-      />
+    <PageShell
+      header={(
+        <>
+          <PageHeader
+            title={messages.title}
+            description={messages.description(currentOrg.name)}
+            actions={(
+              <Can module="projects" action="create">
+                <Button onClick={onOpenCreateProject}>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  {messages.addProject}
+                </Button>
+              </Can>
+            )}
+          />
 
-      {!isSupabaseLive && (
-        <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-bg p-3 text-sm text-warning" role="note">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p>{messages.demoNotice}</p>
-        </div>
+          {!isSupabaseLive && (
+            <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-bg p-3 text-sm text-warning" role="note">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <p>{messages.demoNotice}</p>
+            </div>
+          )}
+
+          <div className="flex items-start gap-2 rounded-md border border-info/30 bg-info-bg p-3 text-sm text-info" role="note">
+            <CalendarRange className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p>{messages.scopeNotice}</p>
+          </div>
+        </>
       )}
-
-      <div className="flex items-start gap-2 rounded-md border border-info/30 bg-info-bg p-3 text-sm text-info" role="note">
-        <CalendarRange className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-        <p>{messages.scopeNotice}</p>
-      </div>
-
-      <DashboardFilters
-        period={period}
-        startDate={customStartDate}
-        endDate={customEndDate}
-        rangeError={rangeError}
-        onPeriodChange={setPeriod}
-        onStartDateChange={setCustomStartDate}
-        onEndDateChange={setCustomEndDate}
-      />
-
+      filters={(
+        <DashboardFilters
+          period={period}
+          startDate={customStartDate}
+          endDate={customEndDate}
+          rangeError={rangeError}
+          onPeriodChange={setPeriod}
+          onStartDateChange={setCustomStartDate}
+          onEndDateChange={setCustomEndDate}
+        />
+      )}
+    >
       {rangeError ? (
         <EmptyState
           title={messages.invalidRange}
@@ -212,6 +218,6 @@ export const DashboardView: React.FC<{
           </section>
         </>
       )}
-    </div>
+    </PageShell>
   );
 };

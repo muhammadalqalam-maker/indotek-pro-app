@@ -65,14 +65,14 @@ export function DashboardInsights({
 
   return (
     <>
-      <section className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
-        <Card>
+      <section className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle as="h2">{messages.progressChart}</CardTitle>
             <p className="text-sm text-muted-foreground">{messages.progressChartDescription}</p>
           </CardHeader>
-          <CardContent>
-            <div className="h-72 min-w-0">
+          <CardContent className="min-w-0">
+            <div className="h-72 w-full min-w-0 overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={progressChartData} margin={{ top: 8, right: 8, left: -20, bottom: 4 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
@@ -96,7 +96,7 @@ export function DashboardInsights({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle as="h2">{messages.projectStatus}</CardTitle>
             <p className="text-sm text-muted-foreground">{messages.projectCount}: {metrics.projectCount}</p>
@@ -125,13 +125,13 @@ export function DashboardInsights({
         </Card>
       </section>
 
-      <Card>
+      <Card className="min-w-0">
         <CardHeader>
           <CardTitle as="h2">{messages.budgetChart}</CardTitle>
           <p className="text-sm text-muted-foreground">{messages.budgetChartDescription}</p>
         </CardHeader>
-        <CardContent>
-          <div className="h-72 min-w-0">
+        <CardContent className="min-w-0">
+          <div className="h-72 w-full min-w-0 overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={budgetChartData} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
