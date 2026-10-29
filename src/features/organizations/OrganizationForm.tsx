@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Button, Card, CardContent, CardDescription, CardHeader, Input, Textarea } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { organizationMessages as messages } from '../../i18n/id';
 import { organizationSchema, type NewOrganizationData, type OrganizationFormValues } from './schemas/organization.schema';
@@ -11,10 +12,6 @@ type OrganizationFormProps = {
   onComplete?: () => void;
   onCancel?: () => void;
 };
-
-const inputClassName = 'mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2.5 text-base text-slate-900 outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-white dark:focus-visible:ring-offset-slate-900';
-const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900 sm:w-auto';
-const secondaryButtonClassName = 'min-h-11 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-900';
 
 function errorMessage(error: unknown): string {
   if (!(error instanceof Error)) return messages.createFailure;
@@ -80,7 +77,7 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/^-|-$/g, '');
         if (!slug) {
-          setFieldError('name', { type: 'validate', message: 'Nama organisasi perlu memuat huruf atau angka.' });
+          setFieldError('name', { type: 'validate', message: messages.nameNeedsLetter });
           return;
         }
         const organizationData: NewOrganizationData = {
@@ -109,91 +106,56 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
   };
 
   return (
-    <section className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-      <header className="mb-6">
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary-500">Indotek Pro</p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">
+    <Card className="w-full max-w-2xl shadow-lg">
+      <CardHeader>
+        <p className="text-sm font-semibold uppercase tracking-widest text-primary">Indotek Pro</p>
+        <h1 className="text-2xl font-semibold leading-snug text-text">
           {required ? messages.onboardingTitle : messages.createTitle}
         </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          {messages.description}
-        </p>
-      </header>
+        <CardDescription>{messages.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
 
-      {error && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300" role="alert">{error}</p>}
+      {error && <p className="mb-4 rounded-md border border-danger/30 bg-danger-bg px-3 py-2 text-sm text-danger" role="alert">{error}</p>}
       {pendingOrganization && (
-        <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200" role="status">
+        <p className="mb-4 rounded-md border border-warning/30 bg-warning-bg px-3 py-2 text-sm text-warning-foreground" role="status">
           {messages.organizationCreated} {logo ? messages.uploadToContinue : messages.uploadOrContinue}
         </p>
       )}
 
       <form className="space-y-5" noValidate onSubmit={handleSubmit(onSubmit)}>
         <fieldset disabled={isSubmitting || Boolean(pendingOrganization)} className="space-y-5 disabled:opacity-75">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-name">
-              {messages.name} <span aria-hidden="true">*</span>
-              <input
-                {...register('name', {
-                  onChange: (event) => {
-                    if (getValues('companyCode')) return;
-                    const code = event.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase();
-                    setValue('companyCode', code, { shouldDirty: true });
-                  },
-                })}
-                id="organization-name"
-                className={inputClassName}
-                autoComplete="organization"
-                aria-required="true"
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? 'organization-name-error' : undefined}
-              />
-            </label>
-            {errors.name && <p id="organization-name-error" className="mt-1 text-xs text-red-600">{errors.name.message}</p>}
-          </div>
+          <Input
+            {...register('name', {
+              onChange: (event) => {
+                if (getValues('companyCode')) return;
+                const code = event.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 3).toUpperCase();
+                setValue('companyCode', code, { shouldDirty: true });
+              },
+            })}
+            id="organization-name"
+            label={`${messages.name} *`}
+            autoComplete="organization"
+            aria-required="true"
+            error={errors.name?.message}
+          />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-code">
-                {messages.companyCode} <span aria-hidden="true">*</span>
-                <input {...register('companyCode')} id="organization-code" className={inputClassName} autoComplete="off" maxLength={6} aria-required="true" aria-invalid={Boolean(errors.companyCode)} aria-describedby={errors.companyCode ? 'organization-code-error' : undefined} />
-              </label>
-              {errors.companyCode && <p id="organization-code-error" className="mt-1 text-xs text-red-600">{errors.companyCode.message}</p>}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-npwp">
-                {messages.npwp} <span className="font-normal text-slate-500">({messages.optional})</span>
-                <input {...register('npwp')} id="organization-npwp" className={inputClassName} autoComplete="off" inputMode="numeric" />
-              </label>
-            </div>
+            <Input {...register('companyCode')} id="organization-code" label={`${messages.companyCode} *`} autoComplete="off" maxLength={6} aria-required="true" error={errors.companyCode?.message} />
+            <Input {...register('npwp')} id="organization-npwp" label={`${messages.npwp} (${messages.optional})`} autoComplete="off" inputMode="numeric" />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-address">
-              {messages.address} <span aria-hidden="true">*</span>
-              <textarea {...register('address')} id="organization-address" className={`${inputClassName} min-h-24 resize-y`} autoComplete="street-address" aria-required="true" aria-invalid={Boolean(errors.address)} aria-describedby={errors.address ? 'organization-address-error' : undefined} />
-            </label>
-            {errors.address && <p id="organization-address-error" className="mt-1 text-xs text-red-600">{errors.address.message}</p>}
-          </div>
+          <Textarea {...register('address')} id="organization-address" label={`${messages.address} *`} autoComplete="street-address" aria-required="true" error={errors.address?.message} />
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-city">
-                {messages.city} <span className="font-normal text-slate-500">({messages.optional})</span>
-                <input {...register('city')} id="organization-city" className={inputClassName} autoComplete="address-level2" />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-province">
-                {messages.province} <span className="font-normal text-slate-500">({messages.optional})</span>
-                <input {...register('province')} id="organization-province" className={inputClassName} autoComplete="address-level1" />
-              </label>
-            </div>
+            <Input {...register('city')} id="organization-city" label={`${messages.city} (${messages.optional})`} autoComplete="address-level2" />
+            <Input {...register('province')} id="organization-province" label={`${messages.province} (${messages.optional})`} autoComplete="address-level1" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-timezone">
+            <label className="grid gap-1.5 text-sm font-medium text-text" htmlFor="organization-timezone">
               {messages.timezone}
-              <select {...register('timezone')} id="organization-timezone" className={inputClassName}>
+              <select {...register('timezone')} id="organization-timezone" className="min-h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2.5 text-base text-text outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
                 <option value="WIB">WIB</option>
                 <option value="WITA">WITA</option>
                 <option value="WIT">WIT</option>
@@ -203,11 +165,11 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
         </fieldset>
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="organization-logo">
-            {messages.logo} <span className="font-normal text-slate-500">({messages.logoRequirements})</span>
+          <label className="grid gap-1.5 text-sm font-medium text-text" htmlFor="organization-logo">
+            {messages.logo} <span className="font-normal text-muted-foreground">({messages.logoRequirements})</span>
             <input
               id="organization-logo"
-              className={`${inputClassName} file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1 file:text-sm dark:file:bg-slate-800`}
+              className="min-h-11 w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-text file:mr-3 file:rounded-md file:border-0 file:bg-muted file:px-3 file:py-1 file:text-sm file:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
               type="file"
               accept="image/jpeg,image/png,image/webp"
               disabled={isSubmitting || !isSupabaseLive}
@@ -219,28 +181,29 @@ export function OrganizationForm({ required = false, onComplete, onCancel }: Org
               aria-describedby={errors.logo ? 'organization-logo-error' : undefined}
             />
           </label>
-          {errors.logo && <p id="organization-logo-error" className="mt-1 text-xs text-red-600">{errors.logo.message}</p>}
-          {logoPreview && <img src={logoPreview} alt={messages.logoPreview} className="mt-3 h-20 w-20 rounded-lg border border-slate-200 object-contain p-2 dark:border-slate-700" />}
-          <p className="mt-1 text-xs text-slate-500">{messages.logoCompress}</p>
-          {!isSupabaseLive && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{messages.uploadUnavailable}</p>}
+          {errors.logo && <p id="organization-logo-error" className="mt-1 text-xs text-danger">{errors.logo.message}</p>}
+          {logoPreview && <img src={logoPreview} alt={messages.logoPreview} className="mt-3 h-20 w-20 rounded-lg border border-border object-contain p-2" />}
+          <p className="mt-1 text-xs text-muted-foreground">{messages.logoCompress}</p>
+          {!isSupabaseLive && <p className="mt-1 text-xs text-warning-foreground">{messages.uploadUnavailable}</p>}
         </div>
 
-        <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end dark:border-slate-800">
+        <div className="flex flex-col-reverse gap-3 border-t border-border pt-4 sm:flex-row sm:justify-end">
           {!required && onCancel && (
-            <button className={secondaryButtonClassName} type="button" onClick={onCancel} disabled={isSubmitting || Boolean(pendingOrganization)}>
-            {messages.cancel}
-            </button>
+            <Button className="sm:w-auto" variant="outline" type="button" onClick={onCancel} disabled={isSubmitting || Boolean(pendingOrganization)}>
+              {messages.cancel}
+            </Button>
           )}
-          <button className={primaryButtonClassName} type="submit" disabled={isSubmitting}>
-          {isSubmitting ? messages.saving : pendingOrganization ? messages.retryButton : messages.createButton}
-          </button>
+          <Button className="sm:w-auto" type="submit" loading={isSubmitting} disabled={isSubmitting}>
+            {isSubmitting ? messages.saving : pendingOrganization ? messages.retryButton : messages.createButton}
+          </Button>
           {pendingOrganization && (
-            <button className={secondaryButtonClassName} type="button" onClick={() => finishOnboarding(pendingOrganization)} disabled={isSubmitting}>
-            {messages.continueWithoutLogo}
-            </button>
+            <Button className="sm:w-auto" variant="outline" type="button" onClick={() => finishOnboarding(pendingOrganization)} disabled={isSubmitting}>
+              {messages.continueWithoutLogo}
+            </Button>
           )}
         </div>
       </form>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

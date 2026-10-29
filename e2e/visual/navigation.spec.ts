@@ -307,6 +307,33 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
   await expect(row).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
 });
 
+test('settings sections support arrow-key navigation', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const settingsLink = page
+    .getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: navigationLabels.settings });
+  await settingsLink.click();
+
+  const companyTab = page.getByRole('tab', { name: 'Profil perusahaan' });
+  const teamTab = page.getByRole('tab', { name: /Tim & anggota/ });
+  await expect(companyTab).toHaveAttribute('aria-selected', 'true');
+  await companyTab.focus();
+  await page.keyboard.press('ArrowRight');
+
+  await expect(teamTab).toBeFocused();
+  await expect(teamTab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tabpanel')).toContainText('Undang Pengguna Baru');
+});
+
 test('lazy route fallback shows token skeleton and an indeterminate progress bar', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {

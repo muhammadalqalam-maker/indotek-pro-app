@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { Button, Card, CardContent, CardDescription, CardHeader, Input } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { authMessages as messages } from '../../i18n/id';
 import { credentialsSchema, emailSchema, resetPasswordSchema } from './schemas/auth.schema';
@@ -10,10 +11,6 @@ type AuthFormValues = {
   password: string;
   confirmPassword: string;
 };
-
-const fieldClassName = 'mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-3 text-base text-slate-900 outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:border-slate-700 dark:text-white dark:focus-visible:ring-offset-slate-900';
-const primaryButtonClassName = 'min-h-11 w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:ring-offset-slate-900';
-const linkButtonClassName = 'min-h-11 w-full rounded-md text-sm text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:text-blue-400 dark:focus-visible:ring-offset-slate-900';
 
 export function AuthView() {
   const {
@@ -92,134 +89,116 @@ export function AuthView() {
   }[authMode];
 
   return (
-    <main className="min-h-screen grid place-items-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
-      <section className="w-full max-w-md space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl sm:p-8 dark:border-slate-800 dark:bg-slate-900">
-        <header>
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary-500">{messages.appName}</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{title}</h1>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
-        </header>
+    <main className="grid min-h-screen place-items-center bg-muted/40 px-4 py-12">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="space-y-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary">{messages.appName}</p>
+          <h1 className="text-2xl font-semibold leading-snug text-text">{title}</h1>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
 
         {authMode === 'update_password' && !authSession ? (
           <div className="space-y-3">
-            <p role="status" className="text-sm text-amber-700 dark:text-amber-300">{messages.recoveryLinkInvalid}</p>
-            <button className={primaryButtonClassName} type="button" onClick={() => setAuthMode('forgot_password')}>
+            <p role="status" className="text-sm text-warning-foreground">{messages.recoveryLinkInvalid}</p>
+            <Button className="w-full" type="button" onClick={() => setAuthMode('forgot_password')}>
               {messages.requestNewLink}
-            </button>
-            <button className={linkButtonClassName} type="button" onClick={() => setAuthMode('sign_in')}>
+            </Button>
+            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
               {messages.backToSignIn}
-            </button>
+            </Button>
           </div>
         ) : (
           <form className="space-y-4" noValidate onSubmit={handleSubmit(onSubmit)}>
             {authMode !== 'update_password' && (
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="auth-email">
-                {messages.email}
-                <input
-                  {...register('email')}
-                  id="auth-email"
-                  className={fieldClassName}
-                  type="email"
-                  autoComplete="email"
-                  autoCapitalize="none"
-                  inputMode="email"
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'auth-email-error' : undefined}
-                  aria-required="true"
-                  disabled={authBusy}
-                />
-                {errors.email && <span id="auth-email-error" className="mt-1 block text-xs text-red-600">{errors.email.message}</span>}
-              </label>
+              <Input
+                {...register('email')}
+                id="auth-email"
+                label={messages.email}
+                type="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                inputMode="email"
+                error={errors.email?.message}
+                aria-required="true"
+                disabled={authBusy}
+              />
             )}
 
             {(authMode === 'sign_in' || authMode === 'sign_up') && (
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="auth-password">
-                {messages.password}
-                <input
-                  {...register('password')}
-                  id="auth-password"
-                  className={fieldClassName}
-                  type="password"
-                  autoComplete={authMode === 'sign_in' ? 'current-password' : 'new-password'}
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={errors.password ? 'auth-password-error' : undefined}
-                  aria-required="true"
-                  disabled={authBusy}
-                />
-                {errors.password && <span id="auth-password-error" className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}
-              </label>
+              <Input
+                {...register('password')}
+                id="auth-password"
+                label={messages.password}
+                type="password"
+                autoComplete={authMode === 'sign_in' ? 'current-password' : 'new-password'}
+                error={errors.password?.message}
+                aria-required="true"
+                disabled={authBusy}
+              />
             )}
 
             {authMode === 'update_password' && (
               <>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="auth-password">
-                  {messages.password}
-                  <input
-                    {...register('password')}
-                    id="auth-password"
-                    className={fieldClassName}
-                    type="password"
-                    autoComplete="new-password"
-                    aria-invalid={Boolean(errors.password)}
-                    aria-describedby={errors.password ? 'auth-password-error' : undefined}
-                    aria-required="true"
-                    disabled={authBusy}
-                  />
-                  {errors.password && <span id="auth-password-error" className="mt-1 block text-xs text-red-600">{errors.password.message}</span>}
-                </label>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="auth-confirm-password">
-                  {messages.confirmPassword}
-                  <input
-                    {...register('confirmPassword')}
-                    id="auth-confirm-password"
-                    className={fieldClassName}
-                    type="password"
-                    autoComplete="new-password"
-                    aria-invalid={Boolean(errors.confirmPassword)}
-                    aria-describedby={errors.confirmPassword ? 'auth-confirm-password-error' : undefined}
-                    aria-required="true"
-                    disabled={authBusy}
-                  />
-                  {errors.confirmPassword && <span id="auth-confirm-password-error" className="mt-1 block text-xs text-red-600">{errors.confirmPassword.message}</span>}
-                </label>
+                <Input
+                  {...register('password')}
+                  id="auth-password"
+                  label={messages.password}
+                  type="password"
+                  autoComplete="new-password"
+                  error={errors.password?.message}
+                  aria-required="true"
+                  disabled={authBusy}
+                />
+                <Input
+                  {...register('confirmPassword')}
+                  id="auth-confirm-password"
+                  label={messages.confirmPassword}
+                  type="password"
+                  autoComplete="new-password"
+                  error={errors.confirmPassword?.message}
+                  aria-required="true"
+                  disabled={authBusy}
+                />
               </>
             )}
 
-            {authError && <p role="alert" className="text-sm text-red-600">{authError}</p>}
-            {authNotice && <p role="status" className="text-sm text-emerald-700 dark:text-emerald-300">{authNotice}</p>}
+            {authError && <p role="alert" className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger">{authError}</p>}
+            {authNotice && <p role="status" className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success">{authNotice}</p>}
 
-            <button className={primaryButtonClassName} type="submit" disabled={authBusy}>
+            <Button className="w-full" type="submit" loading={authBusy} disabled={authBusy}>
               {authBusy ? messages.submitting : {
                 sign_in: messages.signIn,
                 sign_up: messages.signUp,
                 forgot_password: messages.sendResetLink,
                 update_password: messages.savePassword,
               }[authMode]}
-            </button>
+            </Button>
           </form>
         )}
 
         {authMode === 'sign_in' && (
           <div className="space-y-1">
-            <button className={linkButtonClassName} type="button" onClick={() => setAuthMode('forgot_password')}>
+            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('forgot_password')}>
               {messages.forgotPassword}
-            </button>
-            <button className={linkButtonClassName} type="button" onClick={() => setAuthMode('sign_up')}>
+            </Button>
+            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_up')}>
               {messages.noAccount}
-            </button>
+            </Button>
           </div>
         )}
         {authMode === 'sign_up' && (
-          <button className={linkButtonClassName} type="button" onClick={() => setAuthMode('sign_in')}>
+          <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
             {messages.hasAccount}
-          </button>
+          </Button>
         )}
         {authMode === 'forgot_password' && (
-          <button className={linkButtonClassName} type="button" onClick={() => setAuthMode('sign_in')}>
+          <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
             {messages.backToSignIn}
-          </button>
+          </Button>
         )}
-      </section>
+        </CardContent>
+      </Card>
     </main>
   );
 }

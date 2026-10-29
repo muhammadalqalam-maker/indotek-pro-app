@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import {
   EmptyState,
   ErrorState,
+  PageShell,
   Skeleton,
   useToast,
 } from '../../components/ui';
@@ -176,34 +177,30 @@ export function ReportsAnalyticsView() {
 
   if (!isSupabaseLive) {
     return (
-      <section className="space-y-6">
-        <ReportPageHeading />
+      <PageShell header={<ReportPageHeading />}>
         <EmptyState title={messages.liveDataRequired} />
-      </section>
+      </PageShell>
     );
   }
 
   if (!currentOrg) {
     return (
-      <section className="space-y-6">
-        <ReportPageHeading />
+      <PageShell header={<ReportPageHeading />}>
         <EmptyState title={messages.organizationRequired} />
-      </section>
+      </PageShell>
     );
   }
 
   if (!activeReportType) {
     return (
-      <section className="space-y-6">
-        <ReportPageHeading />
+      <PageShell header={<ReportPageHeading />}>
         <EmptyState title={messages.permissionDenied} />
-      </section>
+      </PageShell>
     );
   }
 
   return (
-    <section className="space-y-6">
-      <ReportPageHeading />
+    <PageShell header={<ReportPageHeading />}>
 
       <ReportFilters
         reportTypes={visibleReportTypes}
@@ -285,6 +282,6 @@ export function ReportsAnalyticsView() {
           onExport={(format) => void handleExport(format)}
         />
       ) : null}
-    </section>
+    </PageShell>
   );
 }
