@@ -284,4 +284,5 @@ Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel in
 - Button di balik barrel memakai primitive shadcn; wrapper menjaga varian `primary`/`accent`, ukuran `md`, dan prop `loading` agar konsumen lama tidak perlu diubah. — 2026-10-29
 - Card di balik barrel memakai primitive shadcn; wrapper menjaga API `CardSection`, pilihan heading `CardTitle`, elemen paragraf `CardDescription`, dan padding desain lama. `CardTitle` shadcn menerima prop `as` untuk mempertahankan heading semantik. — 2026-10-29
 - Badge di balik barrel memakai primitive shadcn; varian status lokal tetap menggunakan token warna semantik Indotek. — 2026-10-29
+- Input di balik barrel memakai primitive shadcn; wrapper mempertahankan label, hint/error, prefix/suffix, dan integrasi input form melalui ref serta atribut native. — 2026-10-29
 - QA motion mengganti `transition-all` pada Button menjadi `transition-colors`, membatasi transisi SidebarRail ke posisi/transform, dan menghapus tween margin tak terpakai pada shell konten. — 2026-10-29

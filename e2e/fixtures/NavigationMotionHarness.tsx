@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
   DataTable,
+  Input,
   Tabs,
   TabsContent,
   TabsList,
@@ -38,6 +39,7 @@ function NavigationMotionHarness() {
         </CardHeader>
       </Card>
       <Badge variant="success">Status berhasil</Badge>
+      <Input label="Kode uji" hint="Petunjuk input" prefix="Rp" name="test-code" />
       <Tabs defaultValue="summary">
         <TabsList aria-label="Bagian uji">
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>

@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import type { InputHTMLAttributes, ReactNode } from 'react';
+import { Input as ShadcnInput } from '../shadcn/input';
 import { cn } from './utils';
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'prefix'> & {
@@ -22,11 +23,14 @@ export function Input({ label, hint, error, prefix, suffix, id, className, ...pr
         error ? 'border-danger' : 'border-border-strong',
       )}>
         {prefix && <span className="shrink-0 text-muted-foreground">{prefix}</span>}
-        <input
+        <ShadcnInput
           id={inputId}
           aria-invalid={Boolean(error)}
           aria-describedby={error || hint ? messageId : undefined}
-          className={cn('min-w-0 flex-1 bg-transparent outline-none placeholder:text-subtle disabled:cursor-not-allowed disabled:opacity-50', className)}
+          className={cn(
+            'h-auto min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-base shadow-none outline-none placeholder:text-subtle focus-visible:border-0 focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
+            className,
+          )}
           {...props}
         />
         {suffix && <span className="shrink-0 text-muted-foreground">{suffix}</span>}
