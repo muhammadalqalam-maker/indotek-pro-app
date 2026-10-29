@@ -2,7 +2,19 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRightLeft, Boxes, Package, Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { useToast } from '../../components/ui/Toast';
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  PageHeader,
+  PageShell,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  useToast,
+} from '../../components/ui';
 import { getMessages } from '../../i18n';
 import { fetchWarehouseData, recordWarehouseMovement, registerInventoryItem, updateInventoryMinimum } from './services/warehouse.service';
 import type { WarehouseInventoryItem } from './types';
@@ -150,71 +162,60 @@ export function WarehouseWorkspace() {
   };
 
   if (!can('warehouse', 'view')) {
-    return (
-      <section className="rounded-xl border border-danger/30 bg-danger/10 p-5 text-sm text-danger" role="alert">
-        {messages.noPermission}
-      </section>
-    );
+    return <p className="rounded-lg border border-danger/30 bg-danger-bg p-4 text-sm text-danger" role="alert">{messages.noPermission}</p>;
   }
 
   if (!currentOrg) {
-    return (
-      <section className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground" role="status">
-        {messages.noOrganization}
-      </section>
-    );
+    return <p className="rounded-lg border border-border bg-surface p-4 text-sm text-muted-foreground" role="status">{messages.noOrganization}</p>;
   }
 
   return (
-    <section className="min-w-0 space-y-5" aria-labelledby="warehouse-page-title">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 id="warehouse-page-title" className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
-        </div>
-        {canCreate && (
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <button
-              type="button"
-              disabled={!isSupabaseLive || projects.length === 0}
-              onClick={() => setItemDialogOpen(true)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Package className="h-4 w-4" aria-hidden="true" />
-              {messages.createItem}
-            </button>
-            <button
-              type="button"
-              disabled={!isSupabaseLive || inventoryItems.length === 0}
-              onClick={() => setMovementDialogOpen(true)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              {messages.createMovement}
-            </button>
-          </div>
-        )}
-      </header>
+    <PageShell
+      className="mx-auto max-w-6xl min-w-0"
+      header={(
+        <PageHeader
+          title={messages.title}
+          description={messages.description}
+          actions={canCreate ? (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!isSupabaseLive || projects.length === 0}
+                onClick={() => setItemDialogOpen(true)}
+              >
+                <Package className="size-4" aria-hidden="true" />
+                {messages.createItem}
+              </Button>
+              <Button
+                type="button"
+                disabled={!isSupabaseLive || inventoryItems.length === 0}
+                onClick={() => setMovementDialogOpen(true)}
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                {messages.createMovement}
+              </Button>
+            </>
+          ) : undefined}
+        />
+      )}
+    >
 
       {!isSupabaseLive && (
-        <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
+        <p role="status" className="rounded-lg border border-warning/30 bg-warning-bg p-3 text-sm text-warning">
           {messages.liveUnavailable}
         </p>
       )}
 
       {query.isError && (
-        <div role="alert" className="flex flex-col gap-2 rounded-xl border border-danger/30 bg-danger/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div role="alert" className="flex flex-col gap-2 rounded-xl border border-danger/30 bg-danger-bg p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="break-words text-sm text-danger">
             {messages.loadFailed} {query.error instanceof Error ? query.error.message : ''}
           </p>
-          <button
-            type="button"
-            onClick={() => void query.refetch()}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md border border-danger/30 px-4 text-sm font-semibold text-danger"
-          >
+          <Button type="button" variant="outline" onClick={() => void query.refetch()}>
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
             {messages.retry}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -228,40 +229,39 @@ export function WarehouseWorkspace() {
         <>
           <WarehouseSummaryCards inventoryItems={inventoryItems} movements={movements} />
 
-          <div className="flex min-w-0 gap-2 overflow-x-auto border-b border-border" role="tablist" aria-label={messages.title}>
-            <button
+          <Tabs value={activeTab} onValueChange={(value) => {
+            if (value === 'inventory' || value === 'movements') setActiveTab(value);
+          }}>
+          <TabsList aria-label={messages.title}>
+            <TabsTrigger
+              value="inventory"
               type="button"
-              role="tab"
-              aria-selected={activeTab === 'inventory'}
-              onClick={() => setActiveTab('inventory')}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'inventory' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted-foreground'}`}
             >
               <Boxes className="h-4 w-4" aria-hidden="true" />
               {messages.inventory} ({filteredInventory.length})
-            </button>
-            <button
+            </TabsTrigger>
+            <TabsTrigger
+              value="movements"
               type="button"
-              role="tab"
-              aria-selected={activeTab === 'movements'}
-              onClick={() => setActiveTab('movements')}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${activeTab === 'movements' ? 'border-primary-500 text-primary-500' : 'border-transparent text-muted-foreground'}`}
             >
               <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
               {messages.movementLog} ({filteredMovements.length})
-            </button>
-          </div>
+            </TabsTrigger>
+          </TabsList>
 
-          <label className="block max-w-xl">
-            <span className="sr-only">{messages.search}</span>
-            <input
-              type="search"
-              placeholder={messages.search}
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-base text-text placeholder:text-muted-foreground"
-            />
-          </label>
+          <Card>
+            <CardContent className="p-4">
+              <Input
+                label={messages.search}
+                type="search"
+                placeholder={messages.search}
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.currentTarget.value)}
+              />
+            </CardContent>
+          </Card>
 
+          <TabsContent value={activeTab}>
           {activeTab === 'inventory' ? (
             filteredInventory.length === 0 ? (
               <WarehouseEmptyState
@@ -300,6 +300,8 @@ export function WarehouseWorkspace() {
               <p className="text-center text-xs text-muted-foreground">{messages.limitNote}</p>
             </div>
           )}
+          </TabsContent>
+          </Tabs>
         </>
       )}
 
@@ -326,6 +328,6 @@ export function WarehouseWorkspace() {
           onSave={saveMovement}
         />
       )}
-    </section>
+    </PageShell>
   );
 }

@@ -3,6 +3,21 @@ import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
 import { formatRupiah, formatDateIndo } from '../../utils/format';
 import { PurchaseOrder } from '../../types/database';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  EmptyState,
+  Input,
+  PageHeader,
+  PageShell,
+  Select,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../components/ui';
 import { VendorWorkspace } from './components/VendorWorkspace';
 import { ProcurementWorkflowWorkspace } from './components/ProcurementWorkflowWorkspace';
 import { GoodsReceiptWorkspace } from './components/GoodsReceiptWorkspace';
@@ -13,7 +28,6 @@ import { PurchaseOrderDetailsDialog } from './components/PurchaseOrderDetailsDia
 import {
   ShoppingCart,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   FileText,
@@ -24,7 +38,8 @@ import {
 } from 'lucide-react';
 
 export const ProcurementView: React.FC = () => {
-  const messages = getMessages().procurementWorkflow.purchaseOrderPdf;
+  const workflowMessages = getMessages().procurementWorkflow;
+  const messages = workflowMessages.purchaseOrderPdf;
   const {
     currentOrg,
     purchaseOrders,
@@ -67,198 +82,182 @@ export const ProcurementView: React.FC = () => {
   const getStatusBadge = (status: PurchaseOrder['status']) => {
     switch (status) {
       case 'approved':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-            <CheckCircle2 className="w-3 h-3" /> Disetujui
-          </span>
-        );
+        return <Badge variant="success"><CheckCircle2 className="size-3" />Disetujui</Badge>;
       case 'pending_approval':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
-            <Clock className="w-3 h-3" /> Menunggu Approval
-          </span>
-        );
+        return <Badge variant="warning"><Clock className="size-3" />Menunggu Approval</Badge>;
       case 'received':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400">
-            <Truck className="w-3 h-3" /> Barang Diterima
-          </span>
-        );
+        return <Badge variant="info"><Truck className="size-3" />Barang Diterima</Badge>;
       case 'rejected':
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
-            <X className="w-3 h-3" /> Ditolak
-          </span>
-        );
+        return <Badge variant="danger"><X className="size-3" />Ditolak</Badge>;
       default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
-            {status}
-          </span>
-        );
+        return <Badge variant="neutral">{status}</Badge>;
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Pengadaan & Procurement
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              Modul E
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manajemen alur pengadaan: Purchase Request (PR) &gt; Purchase Order (PO) &gt; Surat Jalan & Penerimaan Barang (GRN)
-          </p>
-        </div>
-
-      </div>
+    <PageShell
+      className="mx-auto max-w-6xl"
+      header={(
+        <PageHeader
+          title="Pengadaan & Procurement"
+          description="Manajemen alur pengadaan: Purchase Request (PR) > Purchase Order (PO) > Surat Jalan & Penerimaan Barang (GRN)"
+        />
+      )}
+    >
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Purchase Orders</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{purchaseOrders.length}</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Semua proyek aktif</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Menunggu Approval</p>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
+        <Card><CardContent className="p-4">
+          <p className="text-xs font-medium text-muted-foreground">Total Purchase Orders</p>
+          <p className="mt-1 text-2xl font-bold text-text">{purchaseOrders.length}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Semua proyek aktif</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <p className="text-xs font-medium text-warning">Menunggu Approval</p>
+          <p className="mt-1 text-2xl font-bold text-warning">
             {purchaseOrders.filter((p) => p.status === 'pending_approval').length}
           </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Memerlukan persetujuan Direksi/PM</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">PO Disetujui & Dipesan</p>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+          <p className="mt-0.5 text-xs text-muted-foreground">Memerlukan persetujuan Direksi/PM</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <p className="text-xs font-medium text-success">PO Disetujui & Dipesan</p>
+          <p className="mt-1 text-2xl font-bold text-success">
             {purchaseOrders.filter((p) => p.status === 'approved' || p.status === 'received').length}
           </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Siap / sedang dikirim supplier</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Master Rekanan / Vendor</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{vendors.length}</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Supplier terverifikasi</p>
-        </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">Siap / sedang dikirim supplier</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-4">
+          <p className="text-xs font-medium text-muted-foreground">Master Rekanan / Vendor</p>
+          <p className="mt-1 text-2xl font-bold text-text">{vendors.length}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">Supplier terverifikasi</p>
+        </CardContent></Card>
       </div>
 
       {/* Sub-tab Navigation */}
-      <div className="flex gap-6 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={() => setActiveSubTab('po')}
-          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            activeSubTab === 'po'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
+      <Tabs value={activeSubTab} onValueChange={(value) => {
+        if (value === 'po' || value === 'pr' || value === 'material' || value === 'grn' || value === 'vendors') {
+          setActiveSubTab(value);
+        }
+      }}>
+      <TabsList aria-label="Area pengadaan" className="w-full justify-start">
+        <TabsTrigger value="po">
           <FileText className="w-4 h-4" />
           <span>Purchase Orders (PO)</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <Badge variant="neutral" className="ml-1">
             {filteredPOs.length}
-          </span>
-        </button>
+          </Badge>
+        </TabsTrigger>
 
-        <button
-          onClick={() => setActiveSubTab('pr')}
-          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            activeSubTab === 'pr'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
+        <TabsTrigger value="pr">
           <ShoppingCart className="w-4 h-4" />
           <span>Purchase Requests (PR)</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <Badge variant="neutral" className="ml-1">
             {purchaseRequests.length}
-          </span>
-        </button>
+          </Badge>
+        </TabsTrigger>
 
-        <button
-          onClick={() => setActiveSubTab('material')}
-          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            activeSubTab === 'material'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
+        <TabsTrigger value="material">
           <ShoppingCart className="w-4 h-4" />
           <span>Permintaan Material</span>
-        </button>
+        </TabsTrigger>
 
-        <button
-          onClick={() => setActiveSubTab('grn')}
-          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            activeSubTab === 'grn'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
+        <TabsTrigger value="grn">
           <Truck className="w-4 h-4" />
           <span>Penerimaan Barang (GRN)</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <Badge variant="neutral" className="ml-1">
             {goodsReceipts.length}
-          </span>
-        </button>
+          </Badge>
+        </TabsTrigger>
 
-        <button
-          onClick={() => setActiveSubTab('vendors')}
-          className={`shrink-0 whitespace-nowrap pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
-            activeSubTab === 'vendors'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
+        <TabsTrigger value="vendors">
           <Building className="w-4 h-4" />
           <span>Master Vendor & Supplier</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <Badge variant="neutral" className="ml-1">
             {vendors.length}
-          </span>
-        </button>
-      </div>
+          </Badge>
+        </TabsTrigger>
+      </TabsList>
 
       {/* Tab: Purchase Orders */}
-      {activeSubTab === 'po' && (
+      <TabsContent value="po">
         <div className="space-y-4">
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
+          <Card>
+            <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <Input
+                label="Cari purchase order"
                 placeholder="Cari nomor PO, vendor, atau proyek..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                onChange={(event) => setSearchTerm(event.currentTarget.value)}
+                prefix={<Search className="size-4" aria-hidden="true" />}
               />
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <select
+              <Select
+                label="Status"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-medium"
+                onChange={(event) => setStatusFilter(event.currentTarget.value)}
               >
                 <option value="all">Semua Status</option>
                 <option value="pending_approval">Menunggu Approval</option>
                 <option value="approved">Disetujui</option>
                 <option value="received">Barang Diterima</option>
                 <option value="rejected">Ditolak</option>
-              </select>
-            </div>
-          </div>
+              </Select>
+            </CardContent>
+          </Card>
 
           {/* PO Table */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
+          {filteredPOs.length === 0 ? (
+            <EmptyState
+              title={purchaseOrders.length === 0 ? workflowMessages.noPurchaseOrders : workflowMessages.noMatchingPurchaseOrders}
+              description={purchaseOrders.length === 0 ? workflowMessages.noPurchaseOrdersHint : undefined}
+              icon={<ShoppingCart aria-hidden="true" />}
+            />
+          ) : (
+          <Card className="overflow-hidden">
+            <div className="grid gap-3 p-3 lg:hidden">
+              {filteredPOs.map((po) => (
+                <article key={po.id} className="grid gap-3 rounded-lg border border-border p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <FileText className="size-4 shrink-0 text-accent-500" aria-hidden="true" />
+                      <span className="break-all font-semibold text-text">{po.po_number}</span>
+                    </div>
+                    {getStatusBadge(po.status)}
+                  </div>
+                  <dl className="grid gap-2 text-sm sm:grid-cols-2">
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Proyek</dt>
+                      <dd className="break-words font-medium text-text">{po.project_name}</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">Vendor / Supplier</dt>
+                      <dd className="break-words font-medium text-text">{po.vendor_name}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Tanggal pesanan</dt>
+                      <dd className="text-text">{formatDateIndo(po.order_date)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Tenggat kirim</dt>
+                      <dd className="text-text">{formatDateIndo(po.delivery_deadline)}</dd>
+                    </div>
+                  </dl>
+                  <div className="flex items-center justify-between gap-3 border-t border-border pt-3">
+                    <div className="min-w-0">
+                      <p className="text-xs text-muted-foreground">Nilai total</p>
+                      <p className="break-words font-semibold tabular-nums text-text">{formatRupiah(po.grand_total)}</p>
+                    </div>
+                    <Button type="button" variant="outline" onClick={() => setSelectedPOForDetail(po)}>
+                      <Eye className="size-4" aria-hidden="true" />
+                      {messages.detailTitle}
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+            <div className="hidden overflow-x-auto lg:block">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                <thead className="border-b border-border bg-surface-2 text-xs font-semibold text-muted-foreground">
                   <tr>
                     <th className="py-3 px-4">No. PO & Tanggal</th>
                     <th className="py-3 px-4">Proyek</th>
@@ -269,37 +268,37 @@ export const ProcurementView: React.FC = () => {
                     <th className="py-3 px-4 text-center">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border">
                   {filteredPOs.map((po) => (
                     <tr
                       key={po.id}
-                      className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition"
+                      className="transition-colors hover:bg-surface-2"
                     >
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                          <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+                        <div className="flex items-center gap-1.5 font-bold text-text">
+                          <FileText className="size-4 shrink-0 text-accent-500" />
                           <span>{po.po_number}</span>
                         </div>
-                        <div className="text-xs text-slate-400 mt-0.5">{formatDateIndo(po.order_date)}</div>
+                        <div className="mt-0.5 text-xs text-muted-foreground">{formatDateIndo(po.order_date)}</div>
                       </td>
-                      <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                      <td className="max-w-48 truncate px-4 py-3.5 text-xs font-medium text-text">
                         {po.project_name}
                       </td>
                       <td className="py-3.5 px-4">
-                        <div className="font-semibold text-xs text-slate-900 dark:text-white">
+                        <div className="text-xs font-semibold text-text">
                           {po.vendor_name}
                         </div>
-                        <div className="text-[11px] text-slate-400">{po.vendor_contact}</div>
+                        <div className="text-xs text-muted-foreground">{po.vendor_contact}</div>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="font-bold text-xs text-slate-900 dark:text-white">
+                        <div className="text-xs font-bold text-text">
                           {formatRupiah(po.grand_total)}
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-xs text-muted-foreground">
                           Subtotal: {formatRupiah(po.subtotal)}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
+                      <td className="px-4 py-3.5 text-xs text-muted-foreground">
                         {formatDateIndo(po.delivery_deadline)}
                       </td>
                       <td className="py-3.5 px-4">{getStatusBadge(po.status)}</td>
@@ -310,7 +309,7 @@ export const ProcurementView: React.FC = () => {
                             onClick={() => setSelectedPOForDetail(po)}
                             aria-label={messages.detailTitle}
                             title={messages.detailTitle}
-                            className="grid min-h-11 min-w-11 place-items-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white"
+                            className="grid min-h-11 min-w-11 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-2 hover:text-text"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -321,13 +320,14 @@ export const ProcurementView: React.FC = () => {
                 </tbody>
               </table>
             </div>
-          </div>
+          </Card>
+          )}
         </div>
-      )}
+      </TabsContent>
 
       {/* Tab: Purchase Requests */}
-      {activeSubTab === 'pr' && (
-        currentOrg ? (
+      <TabsContent value="pr">
+        {currentOrg ? (
           <ProcurementWorkflowWorkspace
             organizationId={currentOrg.id}
             projects={projects}
@@ -336,11 +336,12 @@ export const ProcurementView: React.FC = () => {
             projectId={selectedProjectId}
             onOrdersChanged={reloadAllData}
           />
-        ) : null
-      )}
+        ) : null}
+      </TabsContent>
 
       {/* Tab: Permintaan Material */}
-      {activeSubTab === 'material' && currentOrg && (
+      <TabsContent value="material">
+      {currentOrg && (
         <MaterialRequestWorkspace
           organizationId={currentOrg.id}
           projects={projects}
@@ -349,10 +350,11 @@ export const ProcurementView: React.FC = () => {
           inventoryItems={inventoryItems}
         />
       )}
+      </TabsContent>
 
       {/* Tab: Penerimaan Barang (GRN) */}
-      {activeSubTab === 'grn' && (
-        currentOrg ? (
+      <TabsContent value="grn">
+        {currentOrg ? (
           <GoodsReceiptWorkspace
             organizationId={currentOrg.id}
             projectId={selectedProjectId}
@@ -367,13 +369,12 @@ export const ProcurementView: React.FC = () => {
             error={organizationDataError}
             onRetry={() => { void reloadAllData(); }}
           />
-        ) : null
-      )}
+        ) : null}
+      </TabsContent>
 
       {/* Tab: Master Vendor */}
-      {activeSubTab === 'vendors' && (
-        <VendorWorkspace />
-      )}
+      <TabsContent value="vendors"><VendorWorkspace /></TabsContent>
+      </Tabs>
 
       {selectedPOForDetail && currentOrg && (
         <PurchaseOrderDetailsDialog
@@ -383,6 +384,6 @@ export const ProcurementView: React.FC = () => {
         />
       )}
 
-    </div>
+    </PageShell>
   );
 };

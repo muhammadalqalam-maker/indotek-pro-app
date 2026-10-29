@@ -1,7 +1,17 @@
 import { useMemo, useState } from 'react';
 import { Plus, Wrench } from 'lucide-react';
-import { Skeleton } from '../../components/ui';
-import { useToast } from '../../components/ui/Toast';
+import {
+  Button,
+  Card,
+  CardContent,
+  Input,
+  PageHeader,
+  PageShell,
+  Skeleton,
+  Tabs,
+  TabsContent,
+  useToast,
+} from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
 import { EquipmentAssetCard } from './components/EquipmentAssetCard';
@@ -105,52 +115,55 @@ export function EquipmentView() {
   };
 
   if (!can('warehouse', 'view')) {
-    return <section role="alert" className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">Akun Anda tidak memiliki izin untuk melihat peralatan.</section>;
+    return <p role="alert" className="rounded-lg border border-danger/30 bg-danger-bg p-4 text-sm text-danger">Akun Anda tidak memiliki izin untuk melihat peralatan.</p>;
   }
 
   return (
-    <section className="grid gap-5">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
-        </div>
-        {canCreate && (
-          <button
+    <PageShell
+      className="mx-auto max-w-6xl min-w-0"
+      header={(
+        <PageHeader
+          title={messages.title}
+          description={messages.description}
+          actions={canCreate ? (
+            <Button
             type="button"
             onClick={() => setAssetForm(null)}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white hover:bg-primary-600"
           >
             <Plus className="size-4" aria-hidden="true" />
             {messages.addAsset}
-          </button>
-        )}
-      </header>
+          </Button>
+          ) : undefined}
+        />
+      )}
+    >
 
       <EquipmentSummaryPanel summary={summary} />
 
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-        <label className="grid gap-1.5 text-sm font-medium text-text">
-          {messages.search}
-          <input
+      <Card>
+        <CardContent className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <Input
             type="search"
+            label={messages.search}
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            className="min-h-11 w-full rounded-md border border-border bg-surface px-3 text-base"
+            onChange={(event) => setSearchTerm(event.currentTarget.value)}
           />
-        </label>
-        <label className="grid gap-1.5 text-sm font-medium text-text">
-          {messages.usageDate}
-          <input
-            type="month"
-            value={month}
-            onChange={(event) => setMonth(event.target.value || getCurrentMonth())}
-            className="min-h-11 rounded-md border border-border bg-surface px-3 text-base"
-          />
-        </label>
-      </div>
+          <label className="grid gap-1.5 text-sm font-medium text-text">
+            {messages.usageDate}
+            <input
+              type="month"
+              value={month}
+              onChange={(event) => setMonth(event.target.value || getCurrentMonth())}
+              className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text"
+            />
+          </label>
+        </CardContent>
+      </Card>
 
-      <EquipmentWorkspaceTabs activeTab={activeTab} onChange={setActiveTab} />
+      <Tabs value={activeTab} onValueChange={(value) => {
+        if (value === 'assets' || value === 'usage' || value === 'maintenance') setActiveTab(value);
+      }}>
+      <EquipmentWorkspaceTabs />
 
       {assetForm !== undefined && (
         <EquipmentAssetForm
@@ -185,9 +198,9 @@ export function EquipmentView() {
       )}
 
       {!isSupabaseLive ? (
-        <section role="alert" className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning-foreground">{messages.loadError}</section>
+        <section role="status" className="rounded-xl border border-warning/30 bg-warning-bg p-4 text-sm text-warning">{messages.loadError}</section>
       ) : !currentOrg ? (
-        <section role="alert" className="rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+        <section role="alert" className="rounded-xl border border-danger/30 bg-danger-bg p-4 text-sm text-danger">
           {organizationDataError || messages.loadError}
         </section>
       ) : workspace.query.isPending ? (
@@ -197,25 +210,28 @@ export function EquipmentView() {
           <Skeleton className="h-24 w-full" />
         </div>
       ) : workspace.query.isError ? (
-        <section role="alert" className="grid gap-3 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger">
+        <section role="alert" className="grid gap-3 rounded-xl border border-danger/30 bg-danger-bg p-4 text-sm text-danger">
           <p>{messages.loadError}</p>
-          <button type="button" onClick={() => void workspace.query.refetch()} className="min-h-11 w-fit rounded-md border border-current px-3 font-semibold">
+          <Button type="button" variant="outline" onClick={() => void workspace.query.refetch()}>
             {messages.retry}
-          </button>
+          </Button>
         </section>
       ) : (
-        <section role="tabpanel" className="grid gap-3">
+        <TabsContent value={activeTab}>
+        <section className="grid gap-3">
           {activeTab === 'assets' && (
             filteredAssets.length === 0 ? (
-              <div className="rounded-xl border border-border bg-surface p-6 text-center">
+              <Card>
+              <CardContent className="p-6 text-center">
                 <Wrench className="mx-auto size-7 text-muted-foreground" aria-hidden="true" />
                 <p className="mt-2 text-sm font-semibold text-text">{messages.noAssets}</p>
                 {canCreate && (
-                  <button type="button" onClick={() => setAssetForm(null)} className="mt-4 min-h-11 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white">
+                  <Button type="button" onClick={() => setAssetForm(null)} className="mt-4">
                     {messages.addAsset}
-                  </button>
+                  </Button>
                 )}
-              </div>
+              </CardContent>
+              </Card>
             ) : (
               <div className="grid gap-3 lg:grid-cols-2">
                 {filteredAssets.map((asset) => (
@@ -236,10 +252,10 @@ export function EquipmentView() {
           {activeTab === 'usage' && (
             <>
               {canCreate && (
-                <button type="button" onClick={() => setUsageFormOpen((open) => !open)} disabled={projects.length === 0 || assets.length === 0} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60">
+                <Button type="button" onClick={() => setUsageFormOpen((open) => !open)} disabled={projects.length === 0 || assets.length === 0}>
                   <Plus className="size-4" aria-hidden="true" />
                   {messages.recordUsage}
-                </button>
+                </Button>
               )}
               {projects.length === 0 ? (
                 <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noProjects}</p>
@@ -259,10 +275,10 @@ export function EquipmentView() {
           {activeTab === 'maintenance' && (
             <>
               {canCreate && (
-                <button type="button" onClick={() => setMaintenanceFormOpen((open) => !open)} disabled={assets.length === 0} className="inline-flex min-h-11 w-fit items-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60">
+                <Button type="button" onClick={() => setMaintenanceFormOpen((open) => !open)} disabled={assets.length === 0}>
                   <Plus className="size-4" aria-hidden="true" />
                   {messages.recordMaintenance}
-                </button>
+                </Button>
               )}
               {filteredMaintenance.length === 0 ? (
                 <p className="rounded-xl border border-border bg-surface p-5 text-sm text-muted-foreground">{messages.noMaintenance}</p>
@@ -277,7 +293,9 @@ export function EquipmentView() {
             </>
           )}
         </section>
+        </TabsContent>
       )}
-    </section>
+      </Tabs>
+    </PageShell>
   );
 }

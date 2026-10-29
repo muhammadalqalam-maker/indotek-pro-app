@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import { getMessages } from '../../../i18n';
 import { getSupabase } from '../../../lib/supabase';
+import { Button, PageHeader, Skeleton } from '../../../components/ui';
 import type { Project, Vendor } from '../../../types/database';
 import type { UserRole } from '../../../utils/permissions';
 import { formatRupiah, formatTanggal } from '../../../utils/format';
@@ -101,34 +102,32 @@ export function ProcurementWorkflowWorkspace({
 
   return (
     <section className="grid gap-4">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{messages.approvalFlow}</p>
-        </div>
-        {canRequest && (
-          <button
+      <PageHeader
+        title={messages.title}
+        description={messages.approvalFlow}
+        actions={canRequest ? (
+          <Button
             type="button"
             onClick={() => setRequestDialog(true)}
             disabled={!liveAvailable || projects.length === 0}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-50"
           >
-            <Plus className="h-4 w-4" aria-hidden="true" />{messages.createRequest}
-          </button>
-        )}
-      </header>
+            <Plus className="size-4" aria-hidden="true" />
+            {messages.createRequest}
+          </Button>
+        ) : undefined}
+      />
 
       {loading ? (
         <div className="grid gap-3" aria-label={messages.loading}>
-          {[0, 1, 2].map((item) => <div key={item} className="h-28 animate-pulse rounded-xl border border-border bg-surface-2" />)}
+          {[0, 1, 2].map((item) => <Skeleton key={item} className="h-28 rounded-xl" />)}
         </div>
       ) : loadError ? (
         <div role="alert" className="flex flex-col gap-3 rounded-lg border border-danger/30 bg-danger-bg p-4 text-sm text-danger sm:flex-row sm:items-center sm:justify-between">
           <span>{loadError}</span>
           {liveAvailable && (
-            <button type="button" onClick={() => void refresh()} className="inline-flex min-h-11 items-center gap-2 rounded-md border border-danger/30 px-3">
+            <Button type="button" variant="outline" onClick={() => void refresh()}>
               <RefreshCw className="h-4 w-4" aria-hidden="true" />{messages.retry}
-            </button>
+            </Button>
           )}
         </div>
       ) : requests.length === 0 ? (

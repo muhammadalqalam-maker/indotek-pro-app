@@ -7,6 +7,7 @@ import {
   EmptyState,
   ErrorState,
   Input,
+  PageHeader,
   Skeleton,
   useToast,
 } from '../../../components/ui';
@@ -141,17 +142,15 @@ export function VendorWorkspace() {
 
   return (
     <section className="grid gap-4">
-      <header className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-        <div>
-          <h2 className="text-lg font-semibold text-text">{messages.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{messages.description}</p>
-        </div>
-        {canCreate && (
+      <PageHeader
+        title={messages.title}
+        description={messages.description}
+        actions={canCreate ? (
           <Button onClick={() => setEditingVendorId('new')}>
             <Plus className="h-4 w-4" aria-hidden="true" />{messages.addVendor}
           </Button>
-        )}
-      </header>
+        ) : undefined}
+      />
 
       <Input
         label={messages.search}
