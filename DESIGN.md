@@ -152,8 +152,9 @@ Semua berbasis Radix + Tailwind, varian lewat `cva`. Komponen baru berasal dari 
 - **Badge/StatusPill:** warna semantik + ikon kecil.
 - **Avatar & AvatarGroup**, **Progress bar**, **Stepper** (alur approval), **Timeline** (aktivitas).
 - **Toast** (sukses/error/info) — posisi kanan-atas desktop, atas tengah mobile.
-- **Skeleton, EmptyState, ErrorState, ConfirmDialog.**
-- **DataTable:** sort, filter, pencarian, pagination server-side, pilih kolom, density, ekspor, baris dapat dipilih; header sticky; di mobile jadi `CardList`.
+- **Skeleton, EmptyState, ErrorState, OfflineState, LoadingState, ConfirmDialog.**
+- **PageShell / PageHeader:** susun judul, filter, konten, dan footer aksi dengan jarak konsisten.
+- **DataTable:** `@tanstack/react-table`, sort, filter facet, pencarian, pagination server-side; state tabel tersimpan di query URL; toolbar aksi massal, pilih kolom, density, ekspor, baris dapat dipilih; di mobile menjadi `CardList`.
 - **KPI Card:** label kecil, angka Display, delta (▲/▼ + warna), sparkline opsional.
 - **Chart (Recharts):** palet dari token (primary, accent, success, danger, neutral), sumbu halus, tooltip konsisten, legenda jelas; skema warna ramah buta warna.
 - **FileUploader:** drag & drop, preview, progres, kompres gambar, status antrian offline.
@@ -164,7 +165,7 @@ Semua berbasis Radix + Tailwind, varian lewat `cva`. Komponen baru berasal dari 
 ## 5. Pola Halaman
 
 ### 5.1 Struktur halaman standar
-`PageHeader` (judul + deskripsi + aksi) → filter bar → konten (KPI / tabel / kartu) → footer aksi (bila form).
+`PageShell` membungkus `PageHeader` (judul + deskripsi + aksi) → filter bar → konten (KPI / tabel / kartu) → footer aksi (bila form). State loading memakai skeleton yang mengikuti struktur halaman; state offline menjelaskan ketersediaan data dan aksi coba lagi tanpa menghalangi fungsi yang masih tersedia.
 
 ### 5.2 Daftar (List)
 Pencarian + filter chip di atas, tabel/card list, pagination, aksi massal bila perlu. Empty state menyertakan ilustrasi ringan + CTA ("Buat proyek pertama").
@@ -266,7 +267,7 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Toggle tema | Ya | Ya (kunci `indotek_theme`) | Selesai (UI-C.3; kunci tetap dipertahankan) |
 | Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Breadcrumb route, pemilih organisasi/proyek, notifikasi, toggle tema, pencarian perintah, bayangan saat scroll >10px | Selesai (UI-C.3); perilaku referensi: [laporan](docs/ui/shadcn-admin-parity.md) |
 | Progress bar saat pindah route | Bar 2px saat TanStack Router pending | Indikator indeterminate 2px hanya saat chunk route memunculkan Suspense fallback; skeleton tetap tampil | Selesai (UI-D.3); bukan indikator sinkronisasi |
-| Tabel: state di URL, filter facet, toolbar aksi massal | Ya | Rencana | Rencana (UI-E) |
+| Tabel: state di URL, filter facet, toolbar aksi massal | Ya | `@tanstack/react-table`; pencarian, sort, filter facet, dan pagination memakai query URL; aksi massal terpisah dari toolbar umum | Selesai (UI-E.2) |
 | Config drawer (varian layout/sidebar) | Ya | Tidak | Disengaja (di luar scope) |
 | RTL | Ya | Tidak | Disengaja |
 | Router | TanStack Router | React Router v7 | Disengaja (AGENTS §2) |
@@ -293,3 +294,4 @@ Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel in
 - Sheet di balik barrel memakai primitive shadcn; wrapper menjaga tiga sisi lama (default bawah), geometri, animasi masuk 500ms/keluar 300ms, dan tanpa tombol tutup tambahan. Overlay mengikuti token warna dan timing §2.6. — 2026-10-29
 - Tooltip di balik barrel memakai primitive shadcn; wrapper mempertahankan delay provider 700ms, side offset 6px, warna, dan animasi lama tanpa arrow. `TooltipContent` hasil CLI menerima `showArrow` agar komponen sidebar yang menggunakannya langsung tetap dapat memakai arrow bawaan. — 2026-10-29
 - QA motion mengganti `transition-all` pada Button menjadi `transition-colors`, membatasi transisi SidebarRail ke posisi/transform, dan menghapus tween margin tak terpakai pada shell konten. — 2026-10-29
+- Tabel shadcn ditambahkan melalui CLI; import `cn` generator diarahkan ke helper lokal untuk kompatibilitas workspace Windows. `DataTable` memakai TanStack Table v8, sedangkan wrapper `PageShell`, `LoadingState`, dan `OfflineState` disediakan melalui barrel UI; status 403 tetap ditangani `RouteStatusPage`. State tabel memakai prefiks query per `tableId`; pencarian mengganti entri URL, sedangkan filter, sort, ukuran halaman, dan paginasi mendukung Back/Forward. — 2026-10-29
