@@ -243,6 +243,13 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
   await button.focus();
   await expect(button).toBeFocused();
 
+  const primaryButton = page.getByRole('button', { name: 'Tombol utama' });
+  await expect(primaryButton).toHaveAttribute('data-variant', 'default');
+  await expect(primaryButton).toHaveCSS('min-height', '44px');
+  await expect(page.getByRole('button', { name: 'Tombol aksen' })).toHaveCSS('background-color', 'rgb(245, 158, 11)');
+  await expect(page.getByRole('button', { name: 'Memproses' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Memproses' })).toHaveAttribute('aria-busy', 'true');
+
   const tab = page.getByRole('tab', { name: 'Aktivitas' });
   await expect(tab).toHaveCSS('transition-duration', '0.15s');
   await tab.hover();

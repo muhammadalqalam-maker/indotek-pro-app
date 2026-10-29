@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { LoaderCircle } from 'lucide-react';
+import { Button as ShadcnButton } from '../shadcn/button';
 import { cn } from './utils';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive' | 'accent';
@@ -10,15 +11,6 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   size?: ButtonSize;
   loading?: boolean;
   children: ReactNode;
-};
-
-const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-primary-700 text-white hover:bg-primary-600 focus-visible:ring-primary-500',
-  secondary: 'bg-surface-2 text-text hover:bg-border focus-visible:ring-primary-500',
-  outline: 'border border-border-strong bg-surface text-text hover:bg-surface-2 focus-visible:ring-primary-500',
-  ghost: 'text-text hover:bg-surface-2 focus-visible:ring-primary-500',
-  destructive: 'bg-danger text-white hover:opacity-90 focus-visible:ring-danger',
-  accent: 'bg-accent-500 text-slate-950 hover:bg-accent-600 focus-visible:ring-accent-500',
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -37,20 +29,27 @@ export function Button({
   type = 'button',
   ...props
 }: ButtonProps) {
+  const shadcnVariant = variant === 'primary' || variant === 'accent'
+    ? 'default'
+    : variant;
+
   return (
-    <button
+    <ShadcnButton
       type={type}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      variant={shadcnVariant}
+      size={size === 'md' ? 'default' : size}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50',
-        variants[variant],
+        'font-semibold',
         sizes[size],
+        variant === 'accent' && 'bg-accent-500 text-text hover:bg-accent-600 focus-visible:ring-accent-500',
         className,
       )}
       {...props}
     >
       {loading && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />}
       {children}
-    </button>
+    </ShadcnButton>
   );
 }

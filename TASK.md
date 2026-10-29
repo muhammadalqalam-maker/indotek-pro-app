@@ -59,7 +59,7 @@
 
 ## FASE UI-E — Komponen & halaman
 
-- [ ] **T-UI.E.1** Ganti implementasi di balik barrel, **satu komponen per commit**, dengan wrapper kompatibel (`primary`→`default`, `md`→default, prop `loading`): Button, Card, Badge, Input, Select, Checkbox, Switch, Tabs, Dialog, Sheet, Tooltip, Toast. *Selesai bila:* 81 file konsumen lolos `typecheck` tanpa diubah.
+- [~] **T-UI.E.1** Ganti implementasi di balik barrel, **satu komponen per commit**, dengan wrapper kompatibel (`primary`→`default`, `md`→default, prop `loading`): Button, Card, Badge, Input, Select, Checkbox, Switch, Tabs, Dialog, Sheet, Tooltip, Toast. *Selesai bila:* 81 file konsumen lolos `typecheck` tanpa diubah. — 2026-10-29 — Button dimigrasikan terlebih dahulu; wrapper memetakan variant/size lama, mempertahankan `loading` dan target sentuh medium, tanpa mengubah konsumen. Komponen berikutnya masih dalam cakupan task.
 - [ ] **T-UI.E.2** Pola halaman: `PageHeader`/`PageShell`, empty/loading/error/offline/403 (DESIGN §5), pola tabel `@tanstack/react-table` (state di URL, filter facet, toolbar aksi massal, kartu di mobile).
 - [ ] **T-UI.E.3** Dashboard (ikut perbaiki chart yang melebihi 360px).
 - [ ] **T-UI.E.4** Daftar & detail proyek.

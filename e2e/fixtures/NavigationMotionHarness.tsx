@@ -23,6 +23,9 @@ function NavigationMotionHarness() {
   return (
     <div className="fixed inset-0 z-[100] space-y-6 overflow-auto bg-bg p-6">
       <Button variant="outline">Simpan</Button>
+      <Button variant="primary" size="md">Tombol utama</Button>
+      <Button variant="accent">Tombol aksen</Button>
+      <Button loading>Memproses</Button>
       <Tabs defaultValue="summary">
         <TabsList aria-label="Bagian uji">
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>
