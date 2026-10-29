@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ClipboardList, FileText, TrendingUp } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
+import { EmptyState, PageHeader, PageShell, Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui';
 import { DailyReportPeriodPdfView } from './DailyReportPeriodPdfView';
 import { DailyReportsWorkspace } from './DailyReportsWorkspace';
 import { SCurveProgressView } from './SCurveProgressView';
@@ -18,67 +19,47 @@ export function DailyReportsView() {
     ?? organizationProjects[0];
 
   return (
-    <main className="space-y-5">
-      <header className="space-y-1">
-        {activeProject && (
-          <p className="text-xs font-medium text-muted-foreground">
-            {activeProject.code} · {activeProject.name}
-          </p>
-        )}
-        <h1 className="text-2xl font-bold text-text">{messages.title}</h1>
-        <p className="max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
-      </header>
-
-      <div role="tablist" aria-label={messages.title} className="flex gap-2 overflow-x-auto border-b border-border">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'reports'}
-          onClick={() => setActiveTab('reports')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'reports' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
-        >
-          <ClipboardList className="h-4 w-4" aria-hidden="true" />
-          {messages.reportsTab}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'periodPdf'}
-          onClick={() => setActiveTab('periodPdf')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'periodPdf' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
-        >
-          <FileText className="h-4 w-4" aria-hidden="true" />
-          {messages.periodPdfTab}
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'scurve'}
-          onClick={() => setActiveTab('scurve')}
-          className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${activeTab === 'scurve' ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'}`}
-        >
-          <TrendingUp className="h-4 w-4" aria-hidden="true" />
-          {messages.scurveTab}
-        </button>
-      </div>
-
-      {activeTab === 'reports' ? (
-        <DailyReportsWorkspace />
-      ) : activeTab === 'periodPdf' ? (
-        activeProject ? (
-          <DailyReportPeriodPdfView project={activeProject} />
-        ) : (
-          <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">
-            {messages.noReportsProject}
-          </div>
-        )
-      ) : activeProject ? (
-        <SCurveProgressView projectId={activeProject.id} />
-      ) : (
-        <div className="rounded-lg border border-border bg-surface p-6 text-sm text-muted-foreground">
-          {messages.noProject}
-        </div>
+    <PageShell
+      className="mx-auto max-w-6xl"
+      header={(
+        <PageHeader
+          title={messages.title}
+          description={messages.description}
+          eyebrow={activeProject ? `${activeProject.code} · ${activeProject.name}` : undefined}
+        />
       )}
-    </main>
+    >
+      <Tabs value={activeTab} onValueChange={(value) => {
+        if (value === 'reports' || value === 'periodPdf' || value === 'scurve') setActiveTab(value);
+      }}>
+        <TabsList aria-label={messages.title} className="w-full justify-start">
+          <TabsTrigger value="reports" className="min-h-11">
+            <ClipboardList className="size-4" aria-hidden="true" />
+            {messages.reportsTab}
+          </TabsTrigger>
+          <TabsTrigger value="periodPdf" className="min-h-11">
+            <FileText className="size-4" aria-hidden="true" />
+            {messages.periodPdfTab}
+          </TabsTrigger>
+          <TabsTrigger value="scurve" className="min-h-11">
+            <TrendingUp className="size-4" aria-hidden="true" />
+            {messages.scurveTab}
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="reports">
+          <DailyReportsWorkspace />
+        </TabsContent>
+        <TabsContent value="periodPdf">
+          {activeProject
+            ? <DailyReportPeriodPdfView project={activeProject} />
+            : <EmptyState title={messages.noReportsProject} />}
+        </TabsContent>
+        <TabsContent value="scurve">
+          {activeProject
+            ? <SCurveProgressView projectId={activeProject.id} />
+            : <EmptyState title={messages.noProject} />}
+        </TabsContent>
+      </Tabs>
+    </PageShell>
   );
 }

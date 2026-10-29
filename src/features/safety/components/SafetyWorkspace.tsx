@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Plus, ShieldAlert, ShieldCheck, Users } from 'lucide-react';
-import { Skeleton } from '../../../components/ui';
+import { Button, Card, CardContent, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui';
 import { useToast } from '../../../components/ui/Toast';
 import { useApp } from '../../../context/AppContext';
 import { getMessages } from '../../../i18n';
@@ -106,18 +106,17 @@ export function SafetyWorkspace() {
           <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{messages.description}</p>
         </div>
         {canCreate && !activeForm && !activeIncidentActionId && (
-          <button
+          <Button
             type="button"
             onClick={() => {
               setActiveIncidentActionId(null);
               setActiveForm(activeTab);
             }}
             disabled={projects.length === 0}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60"
           >
             <Plus className="size-4" aria-hidden="true" />
             {addLabels[activeTab]}
-          </button>
+          </Button>
         )}
       </header>
 
@@ -128,44 +127,43 @@ export function SafetyWorkspace() {
           { label: messages.toolboxMeetings, value: data?.toolboxMeetings.length ?? 0 },
           { label: messages.findingsOpen, value: unresolvedFindingCount },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl border border-border bg-surface p-4">
-            <p className="text-xs font-medium text-muted-foreground">{label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-text">{value}</p>
-          </div>
+          <Card key={label}>
+            <CardContent className="p-4">
+              <p className="text-xs font-medium text-muted-foreground">{label}</p>
+              <p className="mt-1 text-2xl font-semibold tabular-nums text-text">{value}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
       {projects.length === 0 && (
         <p className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noProjects}</p>
       )}
 
-      <div role="tablist" aria-label={messages.title} className="flex gap-2 overflow-x-auto border-b border-border">
-        {tabs.map(({ id, label, count }) => {
-          const Icon = tabIcons[id];
-          return (
-            <button
-              key={id}
-              id={`safety-tab-${id}`}
-              type="button"
-              role="tab"
-              aria-selected={activeTab === id}
-              aria-controls={`safety-panel-${id}`}
-              disabled={activeForm !== null || activeIncidentActionId !== null}
-              onClick={() => {
-                setActiveTab(id);
-                setActiveForm(null);
-                setActiveIncidentActionId(null);
-              }}
-              className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${
-                activeTab === id ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'
-              } disabled:cursor-not-allowed disabled:opacity-50`}
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              {label}
-              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{count}</span>
-            </button>
-          );
-        })}
-      </div>
+      <Tabs value={activeTab} onValueChange={(value) => {
+        if (value === 'inspections' || value === 'incidents' || value === 'toolbox') {
+          setActiveTab(value);
+          setActiveForm(null);
+          setActiveIncidentActionId(null);
+        }
+      }}>
+        <TabsList aria-label={messages.title} className="w-full justify-start">
+          {tabs.map(({ id, label, count }) => {
+            const Icon = tabIcons[id];
+            return (
+              <TabsTrigger
+                key={id}
+                id={`safety-tab-${id}`}
+                value={id}
+                disabled={activeForm !== null || activeIncidentActionId !== null}
+                className="min-h-11"
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                {label}
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{count}</span>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
 
       {hasConnection && activeForm === 'inspections' && (
         <SafetyInspectionForm
@@ -220,9 +218,9 @@ export function SafetyWorkspace() {
           </button>
         </div>
       ) : (
-        <div
+        <TabsContent
+          value={activeTab}
           id={`safety-panel-${activeTab}`}
-          role="tabpanel"
           aria-labelledby={`safety-tab-${activeTab}`}
           className="grid gap-3"
         >
@@ -257,8 +255,9 @@ export function SafetyWorkspace() {
               onCreate={() => setActiveForm('toolbox')}
             />
           )}
-        </div>
+        </TabsContent>
       )}
+      </Tabs>
     </section>
   );
 }

@@ -1,6 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Banknote, CalendarDays, Users } from 'lucide-react';
-import { EmptyState, Skeleton } from '../../components/ui';
+import {
+  Card,
+  CardContent,
+  EmptyState,
+  ErrorState,
+  Input,
+  PageHeader,
+  PageShell,
+  Select,
+  Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { getMessages } from '../../i18n';
 import { SyncIndicator } from '../field/components/SyncIndicator';
@@ -83,31 +97,38 @@ export function HrManpowerView() {
     () => projects.find((project) => project.id === projectId),
     [projectId, projects],
   );
+  const header = <PageHeader title={messages.title} description={messages.description} />;
 
   if (!isSupabaseLive || !organizationId || !userId) {
     return (
-      <p className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">
-        {messages.liveRequired}
-      </p>
+      <PageShell className="mx-auto max-w-6xl" header={header}>
+        <p role="status" className="rounded-md border border-border bg-surface p-4 text-sm text-muted-foreground">
+          {messages.liveRequired}
+        </p>
+      </PageShell>
     );
   }
   if (!canAccessWorkforce) {
     return (
-      <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-        {messages.accessDenied}
-      </p>
+      <PageShell className="mx-auto max-w-6xl" header={header}>
+        <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {messages.accessDenied}
+        </p>
+      </PageShell>
     );
   }
 
   return (
-    <main className="mx-auto grid w-full max-w-6xl gap-6">
-      <header className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-text">{messages.title}</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{messages.description}</p>
-        </div>
-        <SyncIndicator isOnline={isOnline} onRetry={() => void retrySync()} />
-      </header>
+    <PageShell
+      className="mx-auto max-w-6xl"
+      header={(
+        <PageHeader
+          title={messages.title}
+          description={messages.description}
+          actions={<SyncIndicator isOnline={isOnline} onRetry={() => void retrySync()} />}
+        />
+      )}
+    >
 
       {!isOnline && (
         <p role="status" className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground">
@@ -125,144 +146,122 @@ export function HrManpowerView() {
         </p>
       )}
 
-      <section className="grid gap-4 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:p-5">
-        <label className="grid gap-2 text-sm font-medium text-text">
-          {messages.project}
-          <select
+      <Card>
+        <CardContent className="grid gap-4 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end sm:p-5">
+          <Select
+            label={messages.project}
             value={projectId}
             onChange={(event) => setProjectId(event.target.value)}
-            className="min-h-11 rounded-md border border-border bg-surface px-3 text-base text-text"
           >
             <option value="">{messages.selectProject}</option>
             {projects.map((project) => (
               <option key={project.id} value={project.id}>{project.name}</option>
             ))}
-          </select>
-        </label>
-        <label className="grid gap-2 text-sm font-medium text-text sm:min-w-56">
-          {messages.date}
-          <span className="relative">
-            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-            <input
-              type="date"
-              value={attendanceDate}
-              onChange={(event) => setAttendanceDate(event.target.value)}
-              className="min-h-11 w-full rounded-md border border-border bg-surface pl-10 pr-3 text-base text-text"
-            />
-          </span>
-        </label>
-      </section>
+          </Select>
+          <Input
+            label={messages.date}
+            type="date"
+            value={attendanceDate}
+            onChange={(event) => setAttendanceDate(event.currentTarget.value)}
+            className="sm:min-w-56"
+            prefix={<CalendarDays className="size-4" aria-hidden="true" />}
+          />
+        </CardContent>
+      </Card>
 
       {!projectId ? (
-        <p className="rounded-lg border border-border bg-surface p-5 text-sm text-muted-foreground">
-          {messages.projectRequired}
-        </p>
+        <EmptyState title={messages.projectRequired} icon={<Users className="size-5" aria-hidden="true" />} />
       ) : (
         <>
-          <nav className="flex flex-wrap gap-2 border-b border-border pb-3" aria-label={messages.title}>
-            <button
-              type="button"
-              aria-pressed={activeTab === 'attendance'}
-              onClick={() => setActiveTab('attendance')}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'attendance' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
-              }`}
-            >
-              <CalendarDays className="size-4" aria-hidden="true" />
-              {messages.attendanceTab}
-              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text">{recordedCount}</span>
-            </button>
-            <button
-              type="button"
-              aria-pressed={activeTab === 'workers'}
-              onClick={() => setActiveTab('workers')}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'workers' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
-              }`}
-            >
-              <Users className="size-4" aria-hidden="true" />
-              {messages.workersTab}
-              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text">{workerCount}</span>
-            </button>
-            <button
-              type="button"
-              aria-pressed={activeTab === 'wages'}
-              onClick={() => setActiveTab('wages')}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-md px-3 text-sm font-semibold ${
-                activeTab === 'wages' ? 'bg-primary-700 text-white' : 'text-muted-foreground hover:bg-surface-2 hover:text-text'
-              }`}
-            >
-              <Banknote className="size-4" aria-hidden="true" />
-              {messages.wagesTab}
-            </button>
-          </nav>
+          <Tabs value={activeTab} onValueChange={(value) => {
+            if (value === 'attendance' || value === 'workers' || value === 'wages') setActiveTab(value);
+          }}>
+            <TabsList aria-label={messages.title} className="w-full justify-start">
+              <TabsTrigger value="attendance" className="min-h-11">
+                <CalendarDays className="size-4" aria-hidden="true" />
+                {messages.attendanceTab}
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text">{recordedCount}</span>
+              </TabsTrigger>
+              <TabsTrigger value="workers" className="min-h-11">
+                <Users className="size-4" aria-hidden="true" />
+                {messages.workersTab}
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text">{workerCount}</span>
+              </TabsTrigger>
+              <TabsTrigger value="wages" className="min-h-11">
+                <Banknote className="size-4" aria-hidden="true" />
+                {messages.wagesTab}
+              </TabsTrigger>
+            </TabsList>
 
-          {(workersQuery.isPending || (activeTab === 'attendance' && attendanceQuery.isPending)) && (
-            <div className="grid gap-3" aria-label={messages.loadingWorkers}>
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
-            </div>
-          )}
-          {(workersQuery.isError || (activeTab === 'attendance' && attendanceQuery.isError)) && (
-            <section role="alert" className="grid gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
-              <p>{workersQuery.error?.message === messages.staleOffline ? messages.staleOffline : messages.loadError}</p>
-              <button
-                type="button"
-                onClick={() => {
+            {(workersQuery.isPending || (activeTab === 'attendance' && attendanceQuery.isPending)) && (
+              <div className="grid gap-3" aria-label={messages.loadingWorkers}>
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            )}
+            {(workersQuery.isError || (activeTab === 'attendance' && attendanceQuery.isError)) && (
+              <ErrorState
+                title={workersQuery.error?.message === messages.staleOffline ? messages.staleOffline : messages.loadError}
+                description={workersQuery.error?.message === messages.staleOffline ? messages.offline : messages.loadError}
+                onRetry={() => {
                   void workersQuery.refetch();
                   void attendanceQuery.refetch();
                 }}
-                className="min-h-11 w-fit rounded-md border border-current px-3 font-semibold"
-              >
-                {messages.retry}
-              </button>
-            </section>
-          )}
-          {workersQuery.data && activeTab === 'attendance' && !attendanceQuery.isPending && !attendanceQuery.isError && (
-            workersQuery.data.length === 0 ? (
-              <EmptyState title={messages.noWorkersTitle} description={messages.noWorkersDescription} />
-            ) : (
-              <WorkerAttendanceForm
-                workers={workersQuery.data}
-                attendance={attendanceQuery.data ?? []}
-                recordedCount={recordedCount}
-                projectName={selectedProject?.name ?? ''}
-                attendanceDate={attendanceDate}
-                isSaving={saveAttendance.isPending}
-                onSubmit={async (records: AttendanceRecordInput[]) => {
-                  await saveAttendance.mutateAsync(records);
-                }}
+                retryLabel={messages.retry}
               />
-            )
-          )}
-          {workersQuery.data && activeTab === 'workers' && (
-            <WorkerDirectory
-              workers={workersQuery.data}
-              canManageWorkers={canManageWorkers}
-              isOnline={isOnline}
-              projectId={projectId}
-              isSaving={createWorker.isPending}
-              updatingWorkerId={updateWorkerRates.isPending ? updateWorkerRates.variables?.workerId ?? null : null}
-              onCreate={async (values: FieldWorkerFormValues) => {
-                await createWorker.mutateAsync(values);
-              }}
-              onUpdateRates={async (workerId: string, values: WorkerWageRateValues) => {
-                await updateWorkerRates.mutateAsync({ workerId, values });
-              }}
-            />
-          )}
-          {workersQuery.data && activeTab === 'wages' && (
-            <WeeklyWagesPanel
-              organizationId={organizationId}
-              projectId={projectId}
-              userId={userId}
-              workers={workersQuery.data}
-              isOnline={isOnline}
-              canManagePiecework={canManageWorkers}
-            />
-          )}
+            )}
+            <TabsContent value="attendance">
+              {workersQuery.data && !attendanceQuery.isPending && !attendanceQuery.isError && (
+                workersQuery.data.length === 0 ? (
+                  <EmptyState title={messages.noWorkersTitle} description={messages.noWorkersDescription} />
+                ) : (
+                  <WorkerAttendanceForm
+                    workers={workersQuery.data}
+                    attendance={attendanceQuery.data ?? []}
+                    recordedCount={recordedCount}
+                    projectName={selectedProject?.name ?? ''}
+                    attendanceDate={attendanceDate}
+                    isSaving={saveAttendance.isPending}
+                    onSubmit={async (records: AttendanceRecordInput[]) => {
+                      await saveAttendance.mutateAsync(records);
+                    }}
+                  />
+                )
+              )}
+            </TabsContent>
+            <TabsContent value="workers">
+              {workersQuery.data && (
+                <WorkerDirectory
+                  workers={workersQuery.data}
+                  canManageWorkers={canManageWorkers}
+                  isOnline={isOnline}
+                  projectId={projectId}
+                  isSaving={createWorker.isPending}
+                  updatingWorkerId={updateWorkerRates.isPending ? updateWorkerRates.variables?.workerId ?? null : null}
+                  onCreate={async (values: FieldWorkerFormValues) => {
+                    await createWorker.mutateAsync(values);
+                  }}
+                  onUpdateRates={async (workerId: string, values: WorkerWageRateValues) => {
+                    await updateWorkerRates.mutateAsync({ workerId, values });
+                  }}
+                />
+              )}
+            </TabsContent>
+            <TabsContent value="wages">
+              {workersQuery.data && (
+                <WeeklyWagesPanel
+                  organizationId={organizationId}
+                  projectId={projectId}
+                  userId={userId}
+                  workers={workersQuery.data}
+                  isOnline={isOnline}
+                  canManagePiecework={canManageWorkers}
+                />
+              )}
+            </TabsContent>
+          </Tabs>
         </>
       )}
-    </main>
+    </PageShell>
   );
 }

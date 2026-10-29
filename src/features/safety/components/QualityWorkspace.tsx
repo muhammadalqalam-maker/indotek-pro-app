@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CheckCircle2, ClipboardCheck, Plus } from 'lucide-react';
-import { Skeleton } from '../../../components/ui';
+import { Button, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui';
 import { useToast } from '../../../components/ui/Toast';
 import { useApp } from '../../../context/AppContext';
 import { getMessages } from '../../../i18n';
@@ -125,15 +125,14 @@ export function QualityWorkspace() {
           </p>
         </div>
         {canCreate && activeForm === null && (
-          <button
+          <Button
             type="button"
             onClick={() => setActiveForm(activeTab === 'inspections' ? 'inspection' : 'punch_list')}
             disabled={projects.length === 0 || isSaving}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-primary-700 px-4 text-sm font-semibold text-white disabled:opacity-60"
           >
             <Plus className="size-4" aria-hidden="true" />
             {addLabel}
-          </button>
+          </Button>
         )}
       </header>
 
@@ -141,27 +140,24 @@ export function QualityWorkspace() {
         <p className="rounded-xl border border-border bg-surface p-4 text-sm text-muted-foreground">{messages.noProjects}</p>
       )}
 
-      <div role="tablist" aria-label={messages.qualityTab} className="flex gap-2 overflow-x-auto border-b border-border">
-        {tabs.map(({ id, label, count, icon: Icon }) => (
-          <button
-            key={id}
-            id={`quality-tab-${id}`}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === id}
-            aria-controls={`quality-panel-${id}`}
-            disabled={activeForm !== null}
-            onClick={() => setActiveTab(id)}
-            className={`inline-flex min-h-11 shrink-0 items-center gap-2 border-b-2 px-3 text-sm font-semibold ${
-              activeTab === id ? 'border-primary-500 text-primary-700 dark:text-primary-500' : 'border-transparent text-muted-foreground hover:text-text'
-            } disabled:cursor-not-allowed disabled:opacity-50`}
-          >
-            <Icon className="size-4" aria-hidden="true" />
-            {label}
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{count}</span>
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={(value) => {
+        if (value === 'inspections' || value === 'punch_list') setActiveTab(value);
+      }}>
+        <TabsList aria-label={messages.qualityTab} className="w-full justify-start">
+          {tabs.map(({ id, label, count, icon: Icon }) => (
+            <TabsTrigger
+              key={id}
+              id={`quality-tab-${id}`}
+              value={id}
+              disabled={activeForm !== null}
+              className="min-h-11"
+            >
+              <Icon className="size-4" aria-hidden="true" />
+              {label}
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{count}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
       {activeForm === 'inspection' && (
         <QcInspectionForm
@@ -208,9 +204,9 @@ export function QualityWorkspace() {
           </button>
         </div>
       ) : (
-        <div
+        <TabsContent
+          value={activeTab}
           id={`quality-panel-${activeTab}`}
-          role="tabpanel"
           aria-labelledby={`quality-tab-${activeTab}`}
           className="grid gap-4"
         >
@@ -235,8 +231,9 @@ export function QualityWorkspace() {
               onClose={closePunchList}
             />
           )}
-        </div>
+        </TabsContent>
       )}
+      </Tabs>
     </section>
   );
 }
