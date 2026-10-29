@@ -976,6 +976,9 @@ const indonesianMessages = {
   },
   rab: {
     tabAhsp: 'Analisa Harga Satuan (AHSP)',
+    tabBoqShort: 'BOQ',
+    tabAhspShort: 'AHSP',
+    tabPriceCatalogShort: 'Harga',
     boqTitle: 'Rencana Anggaran Biaya (BOQ)',
     boqDescription: 'Susun divisi dan pekerjaan, lalu hitung total biaya langsung, overhead, profit, dan PPN.',
     projectLabel: 'Proyek',
@@ -3155,6 +3158,9 @@ const englishMessages = {
   },
   rab: {
     tabAhsp: 'Unit Price Analysis (AHSP)',
+    tabBoqShort: 'BOQ',
+    tabAhspShort: 'AHSP',
+    tabPriceCatalogShort: 'Prices',
     boqTitle: 'Bill of Quantities (BOQ)',
     boqDescription: 'Build divisions and work items, then calculate direct cost, overhead, profit, and VAT.',
     projectLabel: 'Project',
