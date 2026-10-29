@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { shellMessages } from '../../i18n/id';
 import { useSidebar } from '../shadcn/sidebar';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../ui';
 
 export const MobileBottomNav: React.FC<{
   onOpenCreateProject: () => void;
@@ -27,11 +28,12 @@ export const MobileBottomNav: React.FC<{
 
   useEffect(() => {
     if (!fabMenuOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setFabMenuOpen(false);
+    const desktopViewport = window.matchMedia('(min-width: 640px)');
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setFabMenuOpen(false);
     };
-    window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
+    desktopViewport.addEventListener('change', closeOnDesktop);
+    return () => desktopViewport.removeEventListener('change', closeOnDesktop);
   }, [fabMenuOpen]);
 
   const handleNav = (tab: 'dashboard' | 'projects' | 'approvals') => {
@@ -39,77 +41,69 @@ export const MobileBottomNav: React.FC<{
   };
 
   return (
-    <>
-      {/* Floating Action Button (FAB) Menu Overlay */}
-      {fabMenuOpen && hasQuickActions && (
-        <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm sm:hidden"
-          onClick={() => setFabMenuOpen(false)}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') setFabMenuOpen(false);
-          }}
-        >
-          <div
-            className="absolute bottom-20 right-4 flex flex-col items-end gap-3 animate-in slide-in-from-bottom-5 duration-200"
-            role="dialog"
-            aria-modal="true"
-            aria-label={shellMessages.quickActions}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Can module="projects" action="create">
-              <button
-                onClick={() => {
-                  setFabMenuOpen(false);
-                  onOpenCreateProject();
-                }}
-                className="flex min-h-11 items-center gap-2.5 rounded-full bg-accent-500 px-4 py-2.5 text-xs font-bold text-primary-900 shadow-xl active:scale-95"
-              >
-                <span>+ Proyek Baru</span>
-                <FolderKanban className="w-4 h-4" />
-              </button>
-            </Can>
+    <Dialog open={fabMenuOpen} onOpenChange={setFabMenuOpen}>
+      <DialogContent
+        className="fixed inset-x-4 bottom-20 left-auto top-auto z-50 block max-h-[calc(100dvh-7rem)] w-auto max-w-[calc(100vw-2rem)] translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 bg-transparent p-0 pt-12 text-text shadow-none outline-none sm:hidden"
+      >
+        <DialogTitle className="sr-only">{shellMessages.quickActions}</DialogTitle>
+        <div className="flex flex-col items-end gap-3">
+          <Can module="projects" action="create">
+            <button
+              type="button"
+              onClick={() => {
+                setFabMenuOpen(false);
+                onOpenCreateProject();
+              }}
+              className="flex min-h-11 items-center gap-2.5 rounded-full bg-accent-500 px-4 py-2.5 text-xs font-bold text-primary-900 shadow-xl active:scale-95"
+            >
+              <span>+ Proyek Baru</span>
+              <FolderKanban className="w-4 h-4" />
+            </button>
+          </Can>
 
-            <Can module="field_reports" action="create">
-              <button
-                onClick={() => {
-                  setFabMenuOpen(false);
-                  setActiveTab('field_reports');
-                }}
-                  className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
-              >
-                <span>+ Laporan Harian Lapangan</span>
-                  <ClipboardList className="h-4 w-4 text-accent-500" />
-              </button>
-            </Can>
+          <Can module="field_reports" action="create">
+            <button
+              type="button"
+              onClick={() => {
+                setFabMenuOpen(false);
+                setActiveTab('field_reports');
+              }}
+              className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
+            >
+              <span>+ Laporan Harian Lapangan</span>
+              <ClipboardList className="h-4 w-4 text-accent-500" />
+            </button>
+          </Can>
 
-            <Can module="projects" action="create">
-              <button
-                onClick={() => {
-                  setFabMenuOpen(false);
-                  setActiveTab('documents');
-                }}
-                className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
-              >
-                <span>+ Gambar & Dokumen</span>
-                <Camera className="h-4 w-4 text-primary-500" />
-              </button>
-            </Can>
+          <Can module="projects" action="create">
+            <button
+              type="button"
+              onClick={() => {
+                setFabMenuOpen(false);
+                setActiveTab('documents');
+              }}
+              className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
+            >
+              <span>+ Gambar & Dokumen</span>
+              <Camera className="h-4 w-4 text-primary-500" />
+            </button>
+          </Can>
 
-            <Can module="warehouse" action="create">
-              <button
-                onClick={() => {
-                  setFabMenuOpen(false);
-                  setActiveTab('warehouse');
-                }}
-                className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
-              >
-                <span>+ Mutasi & Stok Gudang</span>
-                <PackagePlus className="h-4 w-4 text-success" />
-              </button>
-            </Can>
-          </div>
+          <Can module="warehouse" action="create">
+            <button
+              type="button"
+              onClick={() => {
+                setFabMenuOpen(false);
+                setActiveTab('warehouse');
+              }}
+              className="flex min-h-11 items-center gap-2.5 rounded-full border border-border bg-surface px-4 py-2.5 text-xs font-semibold text-text shadow-xl active:scale-95"
+            >
+              <span>+ Mutasi & Stok Gudang</span>
+              <PackagePlus className="h-4 w-4 text-success" />
+            </button>
+          </Can>
         </div>
-      )}
+      </DialogContent>
 
       {/* Main Bottom Bar */}
       <nav
@@ -146,15 +140,15 @@ export const MobileBottomNav: React.FC<{
 
         {hasQuickActions && (
           <div className="relative -top-3">
-            <button
-              type="button"
-              onClick={() => setFabMenuOpen((prev) => !prev)}
-              aria-label={shellMessages.quickActions}
-              aria-expanded={fabMenuOpen}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-500 text-primary-900 shadow-lg transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-            >
-              {fabMenuOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6 stroke-[3]" />}
-            </button>
+            <DialogTrigger asChild>
+              <button
+                type="button"
+                aria-label={shellMessages.quickActions}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-500 text-primary-900 shadow-lg transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              >
+                {fabMenuOpen ? <X className="h-6 w-6" /> : <Plus className="h-6 w-6 stroke-[3]" />}
+              </button>
+            </DialogTrigger>
           </div>
         )}
 
@@ -187,6 +181,6 @@ export const MobileBottomNav: React.FC<{
           <span>{shellMessages.menu}</span>
         </button>
       </nav>
-    </>
+    </Dialog>
   );
 };

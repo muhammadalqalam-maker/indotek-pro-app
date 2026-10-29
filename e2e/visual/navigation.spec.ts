@@ -464,6 +464,39 @@ test('mobile Menu opens the navigation sheet and preserves bottom navigation act
   await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');
 });
 
+test('mobile quick actions trap focus and restore it when closed', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const trigger = page.getByRole('navigation', { name: 'Navigasi utama' })
+    .getByRole('button', { name: 'Aksi cepat' });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Aksi cepat' });
+  const controls = dialog.getByRole('button');
+  await expect(dialog).toBeVisible();
+  await expect(controls.first()).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(controls.last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(controls.first()).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('browser back and forward restore route and scroll position', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {

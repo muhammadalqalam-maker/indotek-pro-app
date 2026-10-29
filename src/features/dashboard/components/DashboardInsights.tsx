@@ -72,7 +72,7 @@ export function DashboardInsights({
             <p className="text-sm text-muted-foreground">{messages.progressChartDescription}</p>
           </CardHeader>
           <CardContent className="min-w-0">
-            <div className="h-72 w-full min-w-0 overflow-hidden">
+            <div aria-hidden="true" className="h-72 w-full min-w-0 overflow-hidden">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={progressChartData} margin={{ top: 8, right: 8, left: -20, bottom: 4 }}>
                   <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
@@ -93,6 +93,25 @@ export function DashboardInsights({
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            <table className="sr-only whitespace-normal break-all">
+              <caption>{messages.progressChartTableCaption}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">{messages.projectLabel}</th>
+                  <th scope="col">{messages.plannedSeries}</th>
+                  <th scope="col">{messages.actualSeries}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {progressChartData.map((project) => (
+                  <tr key={project.name}>
+                    <th scope="row">{project.name}</th>
+                    <td>{formatPersen(project.planned)}</td>
+                    <td>{formatPersen(project.actual)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
 
@@ -131,7 +150,7 @@ export function DashboardInsights({
           <p className="text-sm text-muted-foreground">{messages.budgetChartDescription}</p>
         </CardHeader>
         <CardContent className="min-w-0">
-          <div className="h-72 w-full min-w-0 overflow-hidden">
+          <div aria-hidden="true" className="h-72 w-full min-w-0 overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={budgetChartData} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
                 <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
@@ -155,6 +174,25 @@ export function DashboardInsights({
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <table className="sr-only whitespace-normal break-all">
+            <caption>{messages.budgetChartTableCaption}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{messages.projectLabel}</th>
+                <th scope="col">{messages.contractSeries}</th>
+                <th scope="col">{messages.costSeries}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {projects.map((project) => (
+                <tr key={project.id}>
+                  <th scope="row">{project.code}</th>
+                  <td>{formatRupiah(calculateEffectiveProjectContractValue(project))}</td>
+                  <td>{formatRupiah(project.realized_cost)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </CardContent>
       </Card>
     </>
