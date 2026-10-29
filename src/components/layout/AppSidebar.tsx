@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BarChart3,
   Boxes,
   Building2,
   Calculator,
   CheckCircle,
+  ChevronDown,
   DollarSign,
   FolderArchive,
   FolderKanban,
@@ -44,6 +45,11 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '../shadcn/sidebar';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../shadcn/collapsible';
 
 type NavigationItem = {
   tab: NavigationTab;
@@ -127,6 +133,17 @@ export function AppSidebar() {
     ? getTabForPathname(normalizedPath)
     : null;
 
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const activeGroup = navigationGroups.find((group) => (
+      group.items.some(({ tab }) => tab === activeTab)
+    ));
+    if (activeGroup) {
+      setExpandedGroups((previous) => ({ ...previous, [activeGroup.label]: true }));
+    }
+  }, [activeTab]);
+
   return (
     <Sidebar
       className="safe-area-sidebar md:top-16 md:bottom-0 md:h-auto"
@@ -188,40 +205,57 @@ export function AppSidebar() {
         <nav aria-label={shellMessages.sidebarNavigation}>
           {navigationGroups.map((group) => (
             <SidebarGroup key={group.label}>
-              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {group.items.map(({ tab, label, icon: Icon }) => {
-                    const isActive = activeTab === tab;
-                    return (
-                      <Can key={tab} module={NAVIGATION_MODULES[tab]} action="view">
-                        <SidebarMenuItem>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
-                            size="lg"
-                            tooltip={isMobile ? undefined : label}
-                          >
-                            <Link
-                              aria-current={isActive ? 'page' : undefined}
-                              onClick={() => setOpenMobile(false)}
-                              to={getPathForTab(tab)}
-                            >
-                              <Icon aria-hidden="true" />
-                              <span className={state === 'collapsed' && !isMobile ? 'sr-only' : undefined}>
-                                {label}
-                              </span>
-                              {tab === 'projects' && (
-                                <SidebarMenuBadge>{projects.length}</SidebarMenuBadge>
-                              )}
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </Can>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
+              <Collapsible
+                open={isMobile || state === 'collapsed' ? true : expandedGroups[group.label] ?? true}
+                onOpenChange={(open) => {
+                  setExpandedGroups((previous) => ({ ...previous, [group.label]: open }));
+                }}
+              >
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger
+                    className="sidebar-group-trigger w-full justify-between hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none"
+                    disabled={state === 'collapsed' && !isMobile}
+                  >
+                    <span>{group.label}</span>
+                    <ChevronDown aria-hidden="true" className="sidebar-group-chevron size-4 shrink-0" />
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent className="sidebar-group-content">
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {group.items.map(({ tab, label, icon: Icon }) => {
+                        const isActive = activeTab === tab;
+                        return (
+                          <Can key={tab} module={NAVIGATION_MODULES[tab]} action="view">
+                            <SidebarMenuItem>
+                              <SidebarMenuButton
+                                asChild
+                                isActive={isActive}
+                                size="lg"
+                                tooltip={isMobile ? undefined : label}
+                              >
+                                <Link
+                                  aria-current={isActive ? 'page' : undefined}
+                                  onClick={() => setOpenMobile(false)}
+                                  to={getPathForTab(tab)}
+                                >
+                                  <Icon aria-hidden="true" />
+                                  <span className={state === 'collapsed' && !isMobile ? 'sr-only' : undefined}>
+                                    {label}
+                                  </span>
+                                  {tab === 'projects' && (
+                                    <SidebarMenuBadge>{projects.length}</SidebarMenuBadge>
+                                  )}
+                                </Link>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          </Can>
+                        );
+                      })}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
             </SidebarGroup>
           ))}
         </nav>

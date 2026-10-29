@@ -54,7 +54,7 @@
 
 - [x] **T-UI.D.1** Dialog, AlertDialog, Sheet (3 sisi), Tooltip, Select, Dropdown, Popover sesuai DESIGN §2.6. — 2026-10-27 — Animasi mengikuti durasi §2.6 dan reduced-motion; komponen AlertDialog, Popover, Select ditambahkan lewat shadcn CLI tanpa dependensi baru. Typecheck, lint, build, 198 unit test, 9 E2E, 3 tes motion, dan 15 snapshot visual lulus. Tes navigasi Back/Forward yang terpisah tetap tercatat di Backlog; tidak terkait perubahan motion D.1.
 - [x] **T-UI.D.2** Toast dianimasikan; keputusan Sonner vs Toast kustom dicatat. — 2026-10-29 — Mempertahankan Toast kustom (API telah dipakai luas, tanpa dependensi baru), masa tampil tetap 5 detik, transisi masuk/keluar 400ms; Command Palette tetap instan sesuai keputusan pengguna karena shortcut Ctrl/Cmd+K berfrekuensi tinggi. Typecheck/lint/build, 198 unit test, 12 E2E, dan 15 baseline tab lulus. Full visual suite 23/25; dashboard lulus terpisah, tes route refresh timeout dicatat di Backlog.
-- [ ] **T-UI.D.3** Grup menu (chevron + tinggi), Tabs, hover/fokus baris dan tombol, fallback skeleton antar route; progress bar navigasi bila terbukti ada di audit.
+- [x] **T-UI.D.3** Grup menu (chevron + tinggi), Tabs, hover/fokus baris dan tombol, fallback skeleton antar route; progress bar navigasi bila terbukti ada di audit. — 2026-10-29 — Grup sidebar memakai Collapsible 300ms/chevron 200ms dan tetap terbuka di rail ikon; Tabs, tombol, dan baris memakai transisi warna 150ms. Suspense route memakai Skeleton token dan indikator progress 2px hanya saat chunk tertunda, dengan reduced-motion statis. Typecheck, lint, build, 198 unit test, 12 E2E, seluruh 15 baseline visual, dan 3 tes interaksi baru lulus; full visual suite 26/28 karena dua kegagalan lama route refresh dan Back/Forward yang tetap dicatat di Backlog.
 - [ ] **T-UI.D.4** QA motion: reduced-motion, tanpa layout shift, uji di HP Android kelas menengah. Catat temuan jank terkait `AppContext` ke Backlog (jangan direfaktor di sini).
 
 ## FASE UI-E — Komponen & halaman
@@ -91,5 +91,5 @@
 ## Backlog / Temuan (Fase UI)
 
 - `AppContext.tsx` (±1.425 baris) me-render ulang seluruh app per perubahan state; pecah setelah redesign selesai (task terpisah).
-- Tes visual Back/Forward scroll di `e2e/visual/navigation.spec.ts` gagal pada full run (scroll kembali ke 250, bukan 400), walau pernah lulus saat dijalankan terpisah; bukan bagian dari perubahan D.1.
-- Tes visual route direct-refresh di `e2e/visual/navigation.spec.ts` timeout saat `page.reload()` di `/approvals`, walau route langsung dirender; terulang saat dijalankan terpisah pada validasi D.2 dan tidak berkaitan dengan motion.
+- Tes visual Back/Forward scroll di `e2e/visual/navigation.spec.ts` gagal pada full run (scroll kembali ke 250, bukan 400), walau pernah lulus saat dijalankan terpisah; dikonfirmasi kembali pada validasi D.3 dan bukan bagian dari perubahan motion.
+- Tes visual route direct-refresh di `e2e/visual/navigation.spec.ts` timeout menunggu `load` pada `page.reload()` di `/approvals`, walau route langsung dirender; berulang pada validasi D.2 dan D.3 serta tidak berkaitan dengan motion.

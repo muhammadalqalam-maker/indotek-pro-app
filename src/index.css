@@ -151,6 +151,82 @@ body {
   color: var(--text);
 }
 
+.sidebar-group-trigger {
+  cursor: pointer;
+  transition:
+    color 150ms cubic-bezier(.4, 0, .2, 1),
+    background-color 150ms cubic-bezier(.4, 0, .2, 1);
+}
+
+.sidebar-group-chevron {
+  transition: transform 200ms;
+}
+
+.sidebar-group-trigger[data-state="open"] .sidebar-group-chevron {
+  transform: rotate(180deg);
+}
+
+.sidebar-group-content[data-state="open"] {
+  animation: sidebar-group-expand 300ms ease-out;
+}
+
+.sidebar-group-content[data-state="closed"] {
+  animation: sidebar-group-collapse 300ms ease-out;
+}
+
+.route-navigation-progress {
+  position: fixed;
+  z-index: 20;
+  top: 4rem;
+  inset-inline: 0;
+  height: 2px;
+  overflow: hidden;
+  background-color: var(--surface-2);
+}
+
+.route-navigation-progress::after {
+  display: block;
+  width: 33.333%;
+  height: 100%;
+  background-color: var(--primary-500);
+  content: "";
+  animation: route-navigation-progress 1s linear infinite;
+}
+
+@keyframes sidebar-group-expand {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+
+@keyframes sidebar-group-collapse {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes route-navigation-progress {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-navigation-progress::after {
+    width: 100%;
+    animation: none;
+  }
+}
+
 .toast-motion {
   opacity: 1;
   transform: translateY(0);

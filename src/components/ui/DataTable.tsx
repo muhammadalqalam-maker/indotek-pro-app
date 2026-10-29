@@ -268,7 +268,7 @@ export function DataTable<Row>({
                 {rows.map((row) => {
                   const id = rowKey(row);
                   return (
-                    <tr key={id} className="hover:bg-surface-2/70">
+                    <tr key={id} className="transition-colors duration-150 hover:bg-surface-2/70 focus-within:bg-surface-2/70">
                       {onSelectionChange && (
                         <td className="px-3 py-3">
                           <Checkbox

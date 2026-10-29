@@ -9,7 +9,7 @@ import { NAVIGATION_MODULES } from './utils/permissions';
 import type { AppModule } from './utils/permissions';
 import { useCan } from './hooks/useCan';
 import { ShieldAlert } from 'lucide-react';
-import { ToastProvider, TooltipProvider } from './components/ui';
+import { Skeleton, ToastProvider, TooltipProvider } from './components/ui';
 import { AppErrorBoundary } from './components/shared/AppErrorBoundary';
 import { RouteStatusPage } from './components/shared/RouteStatusPage';
 import { UnhandledErrorNotifications } from './components/shared/UnhandledErrorNotifications';
@@ -97,15 +97,28 @@ function AuthenticatedRouteViews({ routes }: { routes: RouteObject[] }) {
 function ViewLoadingFallback() {
   return (
     <section className="space-y-4" role="status" aria-busy="true" aria-label={organizationMessages.organizationDataLoading}>
-      <div className="h-8 w-48 animate-pulse rounded bg-slate-200 dark:bg-slate-800" />
+      <Skeleton className="h-8 w-48" />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <div className="h-28 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
       </div>
-      <div className="h-64 animate-pulse rounded-xl bg-slate-200 dark:bg-slate-800" />
+      <Skeleton className="h-64 rounded-xl" />
     </section>
+  );
+}
+
+function RouteLoadingFallback() {
+  return (
+    <>
+      <div
+        aria-label={organizationMessages.organizationDataLoading}
+        className="route-navigation-progress"
+        role="progressbar"
+      />
+      <ViewLoadingFallback />
+    </>
   );
 }
 
@@ -252,7 +265,7 @@ function MainApp() {
     ...NAVIGATION_ROUTES.map(({ path, tab }) => ({
       path,
       element: (
-        <Suspense fallback={<ViewLoadingFallback />}>
+        <Suspense fallback={<RouteLoadingFallback />}>
           <RoutePermissionGuard module={NAVIGATION_MODULES[tab]}>
             {renderNavigationTab(tab)}
           </RoutePermissionGuard>
@@ -262,7 +275,7 @@ function MainApp() {
     {
       path: '/projects/:projectId',
       element: (
-        <Suspense fallback={<ViewLoadingFallback />}>
+        <Suspense fallback={<RouteLoadingFallback />}>
           <RoutePermissionGuard module="projects">
             <ProjectDetailRoute onEdit={handleEditProject} onBack={closeProjectDetail} />
           </RoutePermissionGuard>

@@ -163,6 +163,136 @@ test('desktop sidebar groups routes and persists keyboard collapse state', async
   await expect.poll(() => page.evaluate(() => document.cookie)).toContain('sidebar_state=true');
 });
 
+test('sidebar groups animate height and chevrons, remaining expanded in icon rail', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const navigation = page.getByRole('navigation', { name: 'Navigasi aplikasi' });
+  const sidebar = page.locator('[data-slot="sidebar"][data-collapsible]');
+  const trigger = navigation.getByRole('button', { name: 'Pengadaan & Logistik' });
+  const group = trigger.locator('xpath=ancestor::*[@data-slot="collapsible"]');
+  const content = group.locator('[data-slot="collapsible-content"]');
+  const chevron = trigger.locator('.sidebar-group-chevron');
+
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect(chevron).toHaveCSS('transition-duration', '0.2s');
+  await content.evaluate((element) => {
+    element.addEventListener('animationstart', () => {
+      element.setAttribute('data-animation-started', 'true');
+    }, { once: true });
+  });
+  await trigger.click();
+  await expect(content).toHaveAttribute('data-animation-started', 'true');
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  await expect(content).toHaveAttribute('data-state', 'closed');
+  await expect(content).toHaveCSS('animation-duration', '0.3s');
+
+  await trigger.click();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  await expect(content).toHaveAttribute('data-state', 'open');
+
+  await page.getByRole('button', { name: 'Ciutkan atau lebarkan navigasi' }).first().click();
+  await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');
+  await expect(content).toHaveAttribute('data-state', 'open');
+  await expect(trigger).toBeDisabled();
+
+  await page.getByRole('button', { name: 'Ciutkan atau lebarkan navigasi' }).first().click();
+  await expect(sidebar).toHaveAttribute('data-collapsible', '');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await trigger.click();
+  await expect(content).toHaveCSS('animation-duration', '1e-05s');
+});
+
+test('shared tabs, buttons, and table rows expose responsive hover and focus states', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/');
+  await page.evaluate(async (harnessPath) => {
+    const { mountNavigationMotionHarness } = await import(harnessPath);
+    mountNavigationMotionHarness();
+  }, '/e2e/fixtures/NavigationMotionHarness.tsx');
+
+  const button = page.getByRole('button', { name: 'Simpan', exact: true });
+  await expect(button).toHaveCSS('transition-duration', '0.15s');
+  await button.focus();
+  await expect(button).toBeFocused();
+
+  const tab = page.getByRole('tab', { name: 'Aktivitas' });
+  await expect(tab).toHaveCSS('transition-duration', '0.15s');
+  await tab.hover();
+  await expect(tab).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+
+  const row = page.getByRole('row').filter({ hasText: 'Baris uji' });
+  await expect(row).toHaveCSS('transition-duration', '0.15s');
+  await row.hover();
+  await expect(row).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await page.mouse.move(0, 0);
+  await page.getByRole('checkbox', { name: 'Pilih baris row-1' }).focus();
+  await expect(row).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+});
+
+test('lazy route fallback shows token skeleton and an indeterminate progress bar', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  let releaseModule: (() => void) | undefined;
+  let moduleRequested: (() => void) | undefined;
+  const moduleGate = new Promise<void>((resolve) => {
+    releaseModule = resolve;
+  });
+  const requestStarted = new Promise<void>((resolve) => {
+    moduleRequested = resolve;
+  });
+  await page.route('**/src/features/projects/ProjectListView.tsx*', async (route) => {
+    moduleRequested?.();
+    await moduleGate;
+    await route.continue();
+  });
+
+  await page.getByRole('navigation', { name: 'Navigasi aplikasi' })
+    .getByRole('link', { name: 'Manajemen Proyek' }).click();
+  await requestStarted;
+
+  const progress = page.getByRole('progressbar', { name: 'Memuat data organisasi' });
+  await expect(progress).toBeVisible();
+  await expect(page.locator('main section[aria-busy="true"]')).toBeVisible();
+  await expect(page.locator('main section[aria-busy="true"] [aria-hidden="true"]')).toHaveCount(6);
+  await expect(progress).toHaveCSS('height', '2px');
+  await expect(progress).toHaveCSS('animation-name', 'none');
+
+  releaseModule?.();
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+  await expect(progress).toHaveCount(0);
+});
+
 test('header shows route breadcrumbs and gains a shadow when content scrolls', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {

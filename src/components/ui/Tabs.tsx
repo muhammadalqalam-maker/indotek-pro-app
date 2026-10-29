@@ -23,7 +23,7 @@ export const TabsTrigger = forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
-    className={cn('inline-flex min-h-9 shrink-0 items-center justify-center rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary-500 data-[state=active]:bg-surface data-[state=active]:text-text data-[state=active]:shadow-xs disabled:pointer-events-none disabled:opacity-50', className)}
+    className={cn('inline-flex min-h-9 shrink-0 items-center justify-center rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors duration-150 hover:bg-surface hover:text-text focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface data-[state=active]:bg-surface data-[state=active]:text-text data-[state=active]:shadow-xs disabled:pointer-events-none disabled:opacity-50', className)}
     {...props}
   />
 ));

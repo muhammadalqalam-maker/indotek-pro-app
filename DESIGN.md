@@ -95,6 +95,7 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 | Grup menu (Collapsible) | tinggi; chevron berputar terpisah | tinggi 300ms; chevron 200ms | tinggi `ease-out`; chevron default transisi |
 | Toast | opacity + translateY dari/ke atas | 400ms masuk/keluar | `ease`; 0.01ms saat reduced-motion |
 | Command Palette | instan; tidak dianimasikan karena shortcut Ctrl/Cmd+K berfrekuensi tinggi | 0ms | — |
+| Progress navigasi route | indikator indeterminate bergerak dengan `translateX` saat route chunk menampilkan Suspense fallback | 1000ms berulang; statis saat reduced-motion | `linear` |
 | Hover/fokus (tombol, baris, tab) | transisi warna/bayangan bila kelas `transition` digunakan | default 150ms | `cubic-bezier(.4,0,.2,1)` |
 | Skeleton | pulse | 2s berulang | `cubic-bezier(.4,0,.6,1)` |
 
@@ -256,13 +257,13 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 |---|---|---|---|
 | Sidebar collapsible ke ikon | Ya | shadcn `Sidebar` | Selesai (UI-C.2) |
 | Sidebar di mobile | Sheet | shadcn `Sidebar` sebagai Sheet **+ bottom nav + FAB** | Selesai (UI-C.4); bottom nav untuk akses lapangan |
-| Grup menu bisa dilipat | Ya | Ya | Rencana (UI-C/D) |
+| Grup menu bisa dilipat | Ya | Ya, dengan chevron | Selesai (UI-D.3) |
 | Command palette ⌘K | Ya | Ada (kustom), instan | Disengaja (UI-D.2; shortcut berfrekuensi tinggi) |
 | Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
 | Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom, masa tampil 5000ms, transisi opacity + translateY 400ms | Disengaja: pertahankan API yang sudah dipakai luas tanpa dependensi baru; animasi lokal sesuai §2.6 |
 | Toggle tema | Ya | Ya (kunci `indotek_theme`) | Selesai (UI-C.3; kunci tetap dipertahankan) |
 | Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Breadcrumb route, pemilih organisasi/proyek, notifikasi, toggle tema, pencarian perintah, bayangan saat scroll >10px | Selesai (UI-C.3); perilaku referensi: [laporan](docs/ui/shadcn-admin-parity.md) |
-| Progress bar saat pindah route | Bar 2px saat TanStack Router pending | — | Audit: indikator status router, bukan sinkronisasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
+| Progress bar saat pindah route | Bar 2px saat TanStack Router pending | Indikator indeterminate 2px hanya saat chunk route memunculkan Suspense fallback; skeleton tetap tampil | Selesai (UI-D.3); bukan indikator sinkronisasi |
 | Tabel: state di URL, filter facet, toolbar aksi massal | Ya | Rencana | Rencana (UI-E) |
 | Config drawer (varian layout/sidebar) | Ya | Tidak | Disengaja (di luar scope) |
 | RTL | Ya | Tidak | Disengaja |
@@ -277,3 +278,4 @@ Komponen shadcn yang dimodifikasi dari versi CLI wajib dicatat di bawah tabel in
 - Shell aktif menggunakan `AppSidebar` dan `AppHeader`; `Sidebar.tsx` legacy dihapus, sedangkan header aktif dipindahkan dari `TopNavbar.tsx` setelah paritas dikonfirmasi. — 2026-10-27
 - Dialog, Sheet, dan Tooltip di balik barrel UI memakai animasi sesuai §2.6; AlertDialog, Popover, dan Select shadcn ditambahkan melalui CLI dengan timing motion yang sama. Tooltip memakai state Radix `delayed-open`/`instant-open`; native Select lama tetap memakai menu sistem hingga integrasi E.1. — 2026-10-27
 - Komponen shell hasil `shadcn add` (Sidebar, Sheet, Tooltip, Separator, Collapsible, ScrollArea, Avatar, Breadcrumb, DropdownMenu, Skeleton, serta Button/Input pendukung) memakai helper `cn` yang sudah ada di `components/ui/utils`; import helper dan komponen saudara memakai path relatif agar Vite tetap menyelesaikannya di Windows dengan path workspace ber-spasi. Variabel warna sidebar bawaan generator dihapus agar seluruhnya mengikuti token §2.7. Sidebar memakai breakpoint `sm` (640px) agar konsisten dengan bottom nav; konten mobile meneruskan atribut aksesibilitas dan class aman-area ke Sheet. — 2026-10-27
+- AppSidebar memakai Collapsible untuk grup navigasi (tinggi 300ms dan chevron 200ms); grup tetap terbuka pada mode rail ikon agar tautan tetap dapat diakses. `SidebarMenuButton` menambahkan transisi warna tanpa melepas transisi ukuran. Tabs, tombol, dan baris DataTable memakai transisi hover/fokus 150ms. Suspense route memakai skeleton token dan progress bar indeterminate berdasarkan temuan audit; bar hanya tampil saat pemuatan chunk, tidak saat sinkronisasi/offline. — 2026-10-29
