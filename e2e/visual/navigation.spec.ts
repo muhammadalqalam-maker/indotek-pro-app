@@ -256,6 +256,20 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
   await expect(testInput).toHaveAttribute('aria-describedby', 'test-code-message');
   await expect(page.locator('#test-code-message')).toHaveText('Petunjuk input');
   await expect(page.getByText('Rp', { exact: true })).toBeVisible();
+  const testCheckbox = page.getByRole('checkbox', { name: 'Akses uji' });
+  await expect(testCheckbox).toHaveAttribute('aria-checked', 'false');
+  await testCheckbox.click();
+  await expect(testCheckbox).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('input[name="test-checkbox"]')).toBeChecked();
+  await page.getByText('Akses uji', { exact: true }).click();
+  await expect(testCheckbox).toHaveAttribute('aria-checked', 'false');
+  await testCheckbox.click();
+  await expect(testCheckbox).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('input[name="test-checkbox"]')).toBeChecked();
+  const submittedCheckboxValue = await page.locator('#checkbox-form')
+    .evaluate((form) => new FormData(form as HTMLFormElement).get('test-checkbox'));
+  expect(submittedCheckboxValue).toBe('enabled');
+  await expect(page.getByRole('checkbox', { name: 'Pilihan sebagian' })).toHaveAttribute('aria-checked', 'mixed');
   const testSelect = page.getByRole('combobox', { name: 'Pilihan uji' });
   await expect(testSelect).toHaveAttribute('aria-describedby', 'test-select-message');
   await expect(page.locator('#test-select-message')).toHaveText('Pilih satu opsi');

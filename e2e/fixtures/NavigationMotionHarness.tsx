@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Checkbox,
   DataTable,
   Input,
   Select,
@@ -27,6 +28,7 @@ const columns: DataTableColumn<TestRow>[] = [
 function NavigationMotionHarness() {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
   const [selectedValue, setSelectedValue] = useState('alpha');
+  const [isCheckboxChecked, setIsCheckboxChecked] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[100] space-y-6 overflow-auto bg-bg p-6">
@@ -42,6 +44,16 @@ function NavigationMotionHarness() {
       </Card>
       <Badge variant="success">Status berhasil</Badge>
       <Input label="Kode uji" hint="Petunjuk input" prefix="Rp" name="test-code" />
+      <form id="checkbox-form">
+        <Checkbox
+          label="Akses uji"
+          name="test-checkbox"
+          value="enabled"
+          checked={isCheckboxChecked}
+          onChange={(event) => setIsCheckboxChecked(event.currentTarget.checked)}
+        />
+      </form>
+      <Checkbox label="Pilihan sebagian" indeterminate />
       <form id="select-form">
         <Select
           label="Pilihan uji"
