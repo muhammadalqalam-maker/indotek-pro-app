@@ -23,6 +23,7 @@ import {
   ConfirmDialog,
   EmptyState,
   PageHeader,
+  PageShell,
   Tabs,
   TabsContent,
   TabsList,
@@ -94,32 +95,34 @@ export const ProjectDetailView: React.FC<{
   };
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        title={project.name}
-        description={`${project.code} · ${messages.categoryLabels[project.category]}`}
-        eyebrow={<Badge variant={projectStatusVariants[project.status]}>{projectStatusLabels[project.status]}</Badge>}
-        actions={(
-          <>
-            <Button variant="outline" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              {messages.detailBack}
-            </Button>
-            <Can module="projects" action="edit">
-              <Button variant="outline" onClick={() => onEdit(project)}>
-                <Pencil className="h-4 w-4" aria-hidden="true" />
-                {messages.editProject}
+    <PageShell
+      header={(
+        <PageHeader
+          title={project.name}
+          description={`${project.code} · ${messages.categoryLabels[project.category]}`}
+          eyebrow={<Badge variant={projectStatusVariants[project.status]}>{projectStatusLabels[project.status]}</Badge>}
+          actions={(
+            <>
+              <Button variant="outline" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                {messages.detailBack}
               </Button>
-            </Can>
-            <Can module="projects" action="delete">
-              <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)}>
-                {messages.deleteAction}
-              </Button>
-            </Can>
-          </>
-        )}
-      />
-
+              <Can module="projects" action="edit">
+                <Button variant="outline" onClick={() => onEdit(project)}>
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                  {messages.editProject}
+                </Button>
+              </Can>
+              <Can module="projects" action="delete">
+                <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)}>
+                  {messages.deleteAction}
+                </Button>
+              </Can>
+            </>
+          )}
+        />
+      )}
+    >
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -128,7 +131,7 @@ export const ProjectDetailView: React.FC<{
           }
         }}
       >
-        <TabsList aria-label={messages.detailTabs.label} className="w-full justify-start">
+        <TabsList aria-label={messages.detailTabs.label} className="w-full max-w-full justify-start">
           {projectDetailTabs.map(({ value, label, icon: Icon }) => (
             <TabsTrigger key={value} value={value}>
               <Icon className="h-4 w-4" aria-hidden="true" />
@@ -192,6 +195,6 @@ export const ProjectDetailView: React.FC<{
         loading={isDeleting}
         onConfirm={() => void deleteProject()}
       />
-    </div>
+    </PageShell>
   );
 };

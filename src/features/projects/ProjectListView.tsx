@@ -14,6 +14,7 @@ import {
   ErrorState,
   Input,
   PageHeader,
+  PageShell,
   Select,
   Skeleton,
   useToast,
@@ -129,45 +130,50 @@ export function ProjectListView({
   const noMatchingProjects = !noProjectsYet && filteredProjects.length === 0;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={messages.title}
-        description={messages.description}
-        actions={(
-          <Can module="projects" action="create">
-            <Button onClick={onOpenCreateProject}>{messages.addProject}</Button>
-          </Can>
-        )}
-      />
-
-      <section className="grid gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-[minmax(0,1fr)_12rem_12rem]">
-        <Input
-          label={messages.search}
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
+    <PageShell
+      header={(
+        <PageHeader
+          title={messages.title}
+          description={messages.description}
+          actions={(
+            <Can module="projects" action="create">
+              <Button onClick={onOpenCreateProject}>{messages.addProject}</Button>
+            </Can>
+          )}
         />
-        <Select
-          label={messages.status}
-          value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as ProjectStatus | 'all')}
-        >
-          <option value="all">{messages.allStatuses}</option>
-          {projectStatuses.map((status) => (
-            <option key={status} value={status}>{projectStatusLabels[status]}</option>
-          ))}
-        </Select>
-        <Select
-          label={messages.category}
-          value={categoryFilter}
-          onChange={(event) => setCategoryFilter(event.target.value as Project['category'] | 'all')}
-        >
-          <option value="all">{messages.allCategories}</option>
-          {projectCategories.map((category) => (
-            <option key={category} value={category}>{categoryLabels[category]}</option>
-          ))}
-        </Select>
-      </section>
-
+      )}
+      filters={(
+        <Card>
+          <CardContent className="grid gap-4 pt-4 sm:grid-cols-[minmax(0,1fr)_12rem_12rem] sm:pt-5">
+            <Input
+              label={messages.search}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            <Select
+              label={messages.status}
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value as ProjectStatus | 'all')}
+            >
+              <option value="all">{messages.allStatuses}</option>
+              {projectStatuses.map((status) => (
+                <option key={status} value={status}>{projectStatusLabels[status]}</option>
+              ))}
+            </Select>
+            <Select
+              label={messages.category}
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value as Project['category'] | 'all')}
+            >
+              <option value="all">{messages.allCategories}</option>
+              {projectCategories.map((category) => (
+                <option key={category} value={category}>{categoryLabels[category]}</option>
+              ))}
+            </Select>
+          </CardContent>
+        </Card>
+      )}
+    >
       <p className="text-sm text-muted-foreground">{messages.projectCount(filteredProjects.length)}</p>
 
       {noProjectsYet || noMatchingProjects ? (
@@ -187,20 +193,20 @@ export function ProjectListView({
           icon={<Building2 className="h-5 w-5" aria-hidden="true" />}
         />
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredProjects.map((project) => (
-            <li key={project.id}>
-              <Card className="h-full">
+            <li key={project.id} className="min-w-0">
+              <Card className="h-full min-w-0">
                 <CardHeader className="flex-row items-start justify-between gap-3">
                   <div className="min-w-0 space-y-1">
-                    <p className="font-mono text-xs text-muted-foreground">{project.code}</p>
+                    <p className="break-all font-mono text-xs text-muted-foreground">{project.code}</p>
                     <button
                       type="button"
                       onClick={() => openProjectDetail(project.id)}
                       aria-label={messages.openDetails(project.name)}
-                      className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                      className="block max-w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                     >
-                      <CardTitle className="line-clamp-2 hover:text-primary-600">{project.name}</CardTitle>
+                      <CardTitle className="break-words line-clamp-2 hover:text-primary-600">{project.name}</CardTitle>
                     </button>
                   </div>
                   <Badge variant={projectStatusVariants[project.status]}>
@@ -212,7 +218,7 @@ export function ProjectListView({
                   <div className="flex items-start gap-2 text-sm text-muted-foreground">
                     <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
                     <div className="min-w-0">
-                      <p>{project.location_address}, {project.location_city}, {project.location_province}</p>
+                      <p className="break-words">{project.location_address}, {project.location_city}, {project.location_province}</p>
                       <a
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${project.location_address}, ${project.location_city}, ${project.location_province}`)}`}
                         target="_blank"
@@ -225,7 +231,7 @@ export function ProjectListView({
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarDays className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>{formatTanggal(project.start_date)} – {formatTanggal(project.end_date)}</span>
+                    <span className="min-w-0 break-words">{formatTanggal(project.start_date)} – {formatTanggal(project.end_date)}</span>
                   </div>
                   <dl className="grid grid-cols-2 gap-3 rounded-md bg-surface-2 p-3">
                     <div>
@@ -237,9 +243,9 @@ export function ProjectListView({
                       <dd className="mt-1 text-sm font-semibold tabular-nums text-text">{project.retention_percent}%</dd>
                     </div>
                   </dl>
-                  <div className="grid gap-1 text-xs text-muted-foreground">
-                    <p>{messages.projectManager}: {project.project_manager_name || memberNames.get(project.project_manager_id ?? '') || messages.unassigned}</p>
-                    <p>{messages.siteManager}: {project.site_manager_name || memberNames.get(project.site_manager_id ?? '') || messages.unassigned}</p>
+                  <div className="grid min-w-0 gap-1 text-xs text-muted-foreground">
+                    <p className="break-words">{messages.projectManager}: {project.project_manager_name || memberNames.get(project.project_manager_id ?? '') || messages.unassigned}</p>
+                    <p className="break-words">{messages.siteManager}: {project.site_manager_name || memberNames.get(project.site_manager_id ?? '') || messages.unassigned}</p>
                   </div>
                   <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-3">
                     <Can module="projects" action="edit">
@@ -283,6 +289,6 @@ export function ProjectListView({
       >
         {deleteError && <p className="text-sm text-danger" role="alert">{deleteError}</p>}
       </ConfirmDialog>
-    </div>
+    </PageShell>
   );
 }
