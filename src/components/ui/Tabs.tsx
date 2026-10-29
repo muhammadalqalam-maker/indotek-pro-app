@@ -1,42 +1,38 @@
-import * as TabsPrimitive from '@radix-ui/react-tabs';
-import type { ComponentPropsWithoutRef, ElementRef } from 'react';
-import { forwardRef } from 'react';
+import type { ComponentProps } from 'react';
+import {
+  Tabs as ShadcnTabs,
+  TabsContent as ShadcnTabsContent,
+  TabsList as ShadcnTabsList,
+  TabsTrigger as ShadcnTabsTrigger,
+} from '../shadcn/tabs';
 import { cn } from './utils';
 
-export const Tabs = TabsPrimitive.Root;
+export function Tabs({ className, ...props }: ComponentProps<typeof ShadcnTabs>) {
+  return <ShadcnTabs {...props} className={cn('gap-0', className)} />;
+}
 
-export const TabsList = forwardRef<
-  ElementRef<typeof TabsPrimitive.List>,
-  ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn('inline-flex min-h-11 items-center gap-1 overflow-x-auto rounded-[10px] bg-surface-2 p-1', className)}
-    {...props}
-  />
-));
-TabsList.displayName = 'TabsList';
+export function TabsList({ className, variant, ...props }: ComponentProps<typeof ShadcnTabsList>) {
+  return (
+    <ShadcnTabsList
+      {...props}
+      variant={variant ?? 'default'}
+      className={cn('inline-flex min-h-11 items-center gap-1 overflow-x-auto rounded-[10px] bg-surface-2 p-1', className)}
+    />
+  );
+}
 
-export const TabsTrigger = forwardRef<
-  ElementRef<typeof TabsPrimitive.Trigger>,
-  ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn('inline-flex min-h-9 shrink-0 items-center justify-center rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors duration-150 hover:bg-surface hover:text-text focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface data-[state=active]:bg-surface data-[state=active]:text-text data-[state=active]:shadow-xs disabled:pointer-events-none disabled:opacity-50', className)}
-    {...props}
-  />
-));
-TabsTrigger.displayName = 'TabsTrigger';
+export function TabsTrigger({ className, ...props }: ComponentProps<typeof ShadcnTabsTrigger>) {
+  return (
+    <ShadcnTabsTrigger
+      {...props}
+      className={cn(
+        'inline-flex h-auto min-h-9 shrink-0 items-center justify-center rounded-lg px-3 text-sm font-medium text-muted-foreground outline-none transition-colors duration-150 hover:bg-surface hover:text-text focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface data-[state=active]:bg-surface data-[state=active]:text-text data-[state=active]:shadow-xs disabled:pointer-events-none disabled:opacity-50',
+        className,
+      )}
+    />
+  );
+}
 
-export const TabsContent = forwardRef<
-  ElementRef<typeof TabsPrimitive.Content>,
-  ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn('mt-4 outline-none focus-visible:ring-2 focus-visible:ring-primary-500', className)}
-    {...props}
-  />
-));
-TabsContent.displayName = 'TabsContent';
+export function TabsContent({ className, ...props }: ComponentProps<typeof ShadcnTabsContent>) {
+  return <ShadcnTabsContent {...props} className={cn('mt-4 flex-none outline-none focus-visible:ring-2 focus-visible:ring-primary-500', className)} />;
+}
