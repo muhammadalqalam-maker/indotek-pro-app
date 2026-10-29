@@ -256,6 +256,20 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
   await expect(testInput).toHaveAttribute('aria-describedby', 'test-code-message');
   await expect(page.locator('#test-code-message')).toHaveText('Petunjuk input');
   await expect(page.getByText('Rp', { exact: true })).toBeVisible();
+  const testSelect = page.getByRole('combobox', { name: 'Pilihan uji' });
+  await expect(testSelect).toHaveAttribute('aria-describedby', 'test-select-message');
+  await expect(page.locator('#test-select-message')).toHaveText('Pilih satu opsi');
+  await expect(testSelect).toContainText('Alpha');
+  await testSelect.click();
+  await page.getByRole('option', { name: 'Pilih opsi' }).click();
+  await expect(page.getByTestId('selected-value')).toHaveText('');
+  await testSelect.click();
+  await page.getByRole('option', { name: 'Beta' }).click();
+  await expect(page.getByTestId('selected-value')).toHaveText('beta');
+  await expect(page.locator('select[name="test-select"]')).toHaveValue('beta');
+  const submittedSelectValue = await page.locator('#select-form')
+    .evaluate((form) => new FormData(form as HTMLFormElement).get('test-select'));
+  expect(submittedSelectValue).toBe('beta');
 
   const tab = page.getByRole('tab', { name: 'Aktivitas' });
   await expect(tab).toHaveCSS('transition-duration', '0.15s');

@@ -9,6 +9,7 @@ import {
   CardTitle,
   DataTable,
   Input,
+  Select,
   Tabs,
   TabsContent,
   TabsList,
@@ -25,6 +26,7 @@ const columns: DataTableColumn<TestRow>[] = [
 
 function NavigationMotionHarness() {
   const [selectedRowIds, setSelectedRowIds] = useState<string[]>([]);
+  const [selectedValue, setSelectedValue] = useState('alpha');
 
   return (
     <div className="fixed inset-0 z-[100] space-y-6 overflow-auto bg-bg p-6">
@@ -40,6 +42,20 @@ function NavigationMotionHarness() {
       </Card>
       <Badge variant="success">Status berhasil</Badge>
       <Input label="Kode uji" hint="Petunjuk input" prefix="Rp" name="test-code" />
+      <form id="select-form">
+        <Select
+          label="Pilihan uji"
+          hint="Pilih satu opsi"
+          name="test-select"
+          value={selectedValue}
+          onChange={(event) => setSelectedValue(event.currentTarget.value)}
+        >
+          <option value="">Pilih opsi</option>
+          <option value="alpha">Alpha</option>
+          <option value="beta">Beta</option>
+        </Select>
+        <output data-testid="selected-value">{selectedValue}</output>
+      </form>
       <Tabs defaultValue="summary">
         <TabsList aria-label="Bagian uji">
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>
