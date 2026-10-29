@@ -3,8 +3,23 @@ import { useApp } from '../../context/AppContext';
 import { formatRupiah, formatDateIndo, formatPercent } from '../../utils/format';
 import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import {
+  Badge,
+  Button,
+  Card,
+  CardSection,
+  Input,
+  KpiCard,
+  PageHeader,
+  PageShell,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '../../components/ui';
+import {
   CASH_ADVANCE_STATUSES,
   CASH_TRANSACTION_STATUSES,
+  CLIENT_INVOICE_STATUSES,
   type CashAdvanceDecision,
   type ClientInvoice,
   type KasbonReimbursement,
@@ -38,9 +53,58 @@ import {
   Wallet,
   CreditCard,
   XCircle,
+  Search,
 } from 'lucide-react';
 
 const messages = getMessages('id').finance;
+const financeTabIds = ['invoices', 'payables', 'cashbook', 'kasbon', 'profit_loss'] as const;
+type FinanceTabId = (typeof financeTabIds)[number];
+const isFinanceTabId = (value: string): value is FinanceTabId =>
+  financeTabIds.some((tab) => tab === value);
+const invoicePaymentAllowedStatuses: readonly ClientInvoice['status'][] = [
+  CLIENT_INVOICE_STATUSES.sent,
+  CLIENT_INVOICE_STATUSES.partiallyPaid,
+  CLIENT_INVOICE_STATUSES.overdue,
+];
+
+const invoiceStatusPresentation: Record<
+  ClientInvoice['status'],
+  { label: string; variant: 'success' | 'warning' | 'danger' | 'info' | 'neutral'; icon?: React.ReactNode }
+> = {
+  [CLIENT_INVOICE_STATUSES.paid]: {
+    label: messages.invoiceStatusPaid,
+    variant: 'success',
+    icon: <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />,
+  },
+  [CLIENT_INVOICE_STATUSES.overdue]: {
+    label: messages.invoiceStatusOverdue,
+    variant: 'danger',
+    icon: <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />,
+  },
+  [CLIENT_INVOICE_STATUSES.partiallyPaid]: {
+    label: messages.invoiceStatusPartial,
+    variant: 'warning',
+    icon: <Clock aria-hidden="true" className="h-3.5 w-3.5" />,
+  },
+  [CLIENT_INVOICE_STATUSES.draft]: {
+    label: messages.invoiceStatusDraft,
+    variant: 'neutral',
+  },
+  [CLIENT_INVOICE_STATUSES.cancelled]: {
+    label: messages.invoiceStatusCancelled,
+    variant: 'neutral',
+  },
+  [CLIENT_INVOICE_STATUSES.sent]: {
+    label: messages.invoiceStatusSent,
+    variant: 'info',
+    icon: <Clock aria-hidden="true" className="h-3.5 w-3.5" />,
+  },
+};
+
+function renderClientInvoiceStatus(status: ClientInvoice['status']) {
+  const { label, variant, icon } = invoiceStatusPresentation[status];
+  return <Badge className="min-h-7" variant={variant}>{icon}{label}</Badge>;
+}
 
 export const FinanceView: React.FC = () => {
   const {
@@ -73,7 +137,7 @@ export const FinanceView: React.FC = () => {
   const canRecordFinance = ['owner', 'admin', 'project_manager', 'finance'].includes(currentRole);
   const canProcessFinance = ['owner', 'admin', 'finance'].includes(currentRole);
 
-  const [activeTab, setActiveTab] = useState<'invoices' | 'payables' | 'cashbook' | 'kasbon' | 'profit_loss'>('invoices');
+  const [activeTab, setActiveTab] = useState<FinanceTabId>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [invoiceForPayment, setInvoiceForPayment] = useState<ClientInvoice | null>(null);
@@ -215,255 +279,238 @@ export const FinanceView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Keuangan & Arus Kas Proyek
-            </h1>
-            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-              Modul H
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Penagihan termin klien, PPN 11%, retensi, buku kas proyek, kasbon & laba rugi konstruksi
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {canRecordFinance && (
-            <button
-              onClick={() => setIsInvoiceModalOpen(true)}
-              className="flex min-h-11 items-center gap-2 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 shadow-sm transition hover:bg-amber-600"
-            >
-              <Plus aria-hidden="true" className="h-4 w-4" />
-              <span>Terbitkan Invoice Termin</span>
-            </button>
-          )}
-          {canRecordFinance && (
-            <button
-              onClick={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsCashTransactionModalOpen(true); }}
-              className="flex min-h-11 items-center gap-2 rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-slate-700"
-            >
-              <Plus aria-hidden="true" className="h-4 w-4" />
-              <span>Catat Kas Keluar/Masuk</span>
-            </button>
-          )}
-        </div>
+    <PageShell
+      header={(
+        <PageHeader
+          actions={canRecordFinance ? (
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button className="w-full justify-start sm:w-auto" onClick={() => setIsInvoiceModalOpen(true)}>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {messages.createInvoiceAction}
+              </Button>
+              <Button
+                className="w-full justify-start sm:w-auto"
+                onClick={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsCashTransactionModalOpen(true); }}
+                variant="outline"
+              >
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {messages.createCashTransactionAction}
+              </Button>
+            </div>
+          ) : undefined}
+          description={messages.pageDescription}
+          eyebrow={messages.moduleLabel}
+          title={messages.pageTitle}
+        />
+      )}
+      filters={activeTab === 'profit_loss' ? undefined : (
+        <Card className="max-w-xl">
+          <CardSection>
+            <Input
+              label={messages.searchLabel}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder={messages.searchPlaceholder}
+              prefix={<Search aria-hidden="true" className="h-4 w-4" />}
+              type="search"
+              value={searchTerm}
+            />
+          </CardSection>
+        </Card>
+      )}
+    >
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <KpiCard
+          description={messages.totalBilledDescription}
+          icon={<Receipt aria-hidden="true" className="h-4 w-4" />}
+          label={messages.totalBilledLabel}
+          value={<span className="whitespace-nowrap text-sm sm:text-lg">{formatRupiah(totalBilled)}</span>}
+        />
+        <KpiCard
+          description={messages.receivedCashDescription}
+          icon={<CheckCircle2 aria-hidden="true" className="h-4 w-4" />}
+          label={messages.receivedCashLabel}
+          value={<span className="whitespace-nowrap text-sm text-success sm:text-lg">{formatRupiah(totalReceived)}</span>}
+        />
+        <KpiCard
+          description={messages.outstandingReceivableDescription}
+          icon={<Clock aria-hidden="true" className="h-4 w-4" />}
+          label={messages.outstandingReceivableLabel}
+          value={<span className="whitespace-nowrap text-sm text-warning sm:text-lg">{formatRupiah(totalOutstanding)}</span>}
+        />
+        <KpiCard
+          description={messages.cashBalanceDescription}
+          icon={<Wallet aria-hidden="true" className="h-4 w-4" />}
+          label={messages.operationalCashBalanceLabel}
+          value={<span className="whitespace-nowrap text-sm text-info sm:text-lg">{formatRupiah(Math.max(0, cashBalance))}</span>}
+        />
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Tagihan Termin (Net)</p>
-          <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
-            {formatRupiah(totalBilled)}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Sudah termasuk PPN 11%</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Penerimaan Kas Klien</p>
-          <p className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            {formatRupiah(totalReceived)}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Sudah masuk rekening</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Piutang Klien (Aging)</p>
-          <p className="text-xl sm:text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
-            {formatRupiah(totalOutstanding)}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Menunggu jatuh tempo / verifikasi</p>
-        </div>
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-xs">
-          <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Saldo Kas Operasional Site</p>
-          <p className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
-            {formatRupiah(Math.max(0, cashBalance))}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Inflow - Outflow riil</p>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-6 overflow-x-auto whitespace-nowrap border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={() => setActiveTab('invoices')}
-          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
-            activeTab === 'invoices'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Receipt className="w-4 h-4" />
-          <span>Penagihan Termin Klien (Invoices)</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-            {filteredInvoices.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('cashbook')}
-          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
-            activeTab === 'cashbook'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Wallet className="w-4 h-4" />
-          <span>Buku Kas & Pengeluaran Proyek</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-            {filteredCashTransactions.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('payables')}
-          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
-            activeTab === 'payables'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <CreditCard aria-hidden="true" className="w-4 h-4" />
-          <span>{messages.payablesTab}</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-            {filteredPayables.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('kasbon')}
-          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
-            activeTab === 'kasbon'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>Kasbon & Reimbursement</span>
-          <span className="ml-1 text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
-            {filteredKasbonList.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('profit_loss')}
-          className={`flex shrink-0 items-center gap-2 border-b-2 pb-3 text-sm font-semibold transition ${
-            activeTab === 'profit_loss'
-              ? 'border-amber-500 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <TrendingUp className="w-4 h-4" />
-          <span>{messages.profitLossTab}</span>
-        </button>
-      </div>
+      <Tabs
+        className="min-w-0"
+        onValueChange={(value) => {
+          if (isFinanceTabId(value)) setActiveTab(value);
+        }}
+        value={activeTab}
+      >
+        <TabsList aria-label={messages.tabsLabel} className="max-w-full justify-start gap-1 overflow-x-auto whitespace-nowrap">
+          <TabsTrigger className="min-h-11 gap-2" value="invoices">
+            <Receipt aria-hidden="true" className="h-4 w-4" />
+            {messages.invoicesTab}
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{filteredInvoices.length}</span>
+          </TabsTrigger>
+          <TabsTrigger className="min-h-11 gap-2" value="cashbook">
+            <Wallet aria-hidden="true" className="h-4 w-4" />
+            {messages.cashbookTab}
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{filteredCashTransactions.length}</span>
+          </TabsTrigger>
+          <TabsTrigger className="min-h-11 gap-2" value="payables">
+            <CreditCard aria-hidden="true" className="h-4 w-4" />
+            {messages.payablesSectionTab}
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{filteredPayables.length}</span>
+          </TabsTrigger>
+          <TabsTrigger className="min-h-11 gap-2" value="kasbon">
+            <CreditCard aria-hidden="true" className="h-4 w-4" />
+            {messages.cashAdvancesTab}
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs tabular-nums">{filteredKasbonList.length}</span>
+          </TabsTrigger>
+          <TabsTrigger className="min-h-11 gap-2" value="profit_loss">
+            <TrendingUp aria-hidden="true" className="h-4 w-4" />
+            {messages.profitLossTab}
+          </TabsTrigger>
+        </TabsList>
 
       {/* Tab: Invoices */}
-      {activeTab === 'invoices' && (
+      <TabsContent className="mt-0" value="invoices">
         <div className="space-y-4">
           <AgingSummary title={messages.agingTitleReceivable} totals={receivableAging} />
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="py-3 px-4">No. Invoice & Tanggal</th>
-                  <th className="py-3 px-4">Proyek & Klien</th>
-                  <th className="py-3 px-4">Keterangan Termin</th>
-                  <th className="py-3 px-4 text-right">Nilai Bruto</th>
-                  <th className="py-3 px-4 text-right">Nilai Tagihan Bersih</th>
-                  <th className="py-3 px-4">Jatuh Tempo</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {isLoading ? (
-                  <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={8}>Memuat invoice termin…</td></tr>
-                ) : organizationDataError ? (
+          <Card className="overflow-hidden">
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full min-w-max text-left text-sm">
+                <thead className="border-b border-border bg-surface-2 text-xs font-semibold text-muted-foreground">
                   <tr>
-                    <td className="p-6 text-center" colSpan={8}>
-                      <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
-                      <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">Coba muat ulang</button>
-                    </td>
+                    <th className="px-4 py-3">{messages.invoiceNumberAndDate}</th>
+                    <th className="px-4 py-3">{messages.projectAndClient}</th>
+                    <th className="px-4 py-3">{messages.invoiceTerm}</th>
+                    <th className="px-4 py-3 text-right">{messages.grossAmount}</th>
+                    <th className="px-4 py-3 text-right">{messages.netReceivable}</th>
+                    <th className="px-4 py-3">{messages.dueDate}</th>
+                    <th className="px-4 py-3">{messages.status}</th>
+                    <th className="px-4 py-3 text-center">{messages.action}</th>
                   </tr>
-                ) : filteredInvoices.length === 0 ? (
-                  <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={8}>Belum ada invoice untuk filter ini. Terbitkan invoice dari termin proyek.</td></tr>
-                ) : filteredInvoices.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-xs text-slate-900 dark:text-white">{inv.invoice_number}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{formatDateIndo(inv.invoice_date)}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-semibold text-xs text-slate-900 dark:text-white">{inv.client_name}</span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5">{inv.project_name}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-700 dark:text-slate-300">
-                      {inv.term_label}
-                    </td>
-                    <td className="py-3.5 px-4 text-right text-xs text-slate-600 dark:text-slate-400">
-                      {formatRupiah(inv.gross_amount)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-bold text-xs text-slate-900 dark:text-white">
-                      {formatRupiah(inv.net_receivable)}
-                      {(inv.paid_amount ?? 0) > 0 && inv.status !== 'paid' && (
-                        <span className="block text-[11px] font-normal text-slate-500">Diterima {formatRupiah(inv.paid_amount ?? 0)}</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-slate-600 dark:text-slate-400">
-                      {formatDateIndo(inv.due_date)}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {inv.status === 'paid' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-                          <CheckCircle2 className="w-3 h-3" /> Lunas
-                        </span>
-                      ) : inv.status === 'overdue' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
-                          <AlertTriangle className="w-3 h-3" /> Jatuh Tempo
-                        </span>
-                      ) : inv.status === 'partially_paid' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-400">
-                          <Clock className="w-3 h-3" /> Dibayar Sebagian
-                        </span>
-                      ) : inv.status === 'draft' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          Draf
-                        </span>
-                      ) : inv.status === 'cancelled' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                          Dibatalkan
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-400">
-                          <Clock className="w-3 h-3" /> Terkirim
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {canRecordInvoicePayment && (inv.status === 'sent' || inv.status === 'partially_paid' || inv.status === 'overdue') && (
-                        <button
-                          onClick={() => setInvoiceForPayment(inv)}
-                          className="min-h-11 rounded-md px-2.5 text-xs font-semibold text-primary-700 hover:bg-surface-2 dark:text-primary-500"
-                        >
-                          Catat pembayaran
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {isLoading ? (
+                    Array.from({ length: 3 }, (_, index) => (
+                      <tr aria-hidden="true" key={`invoice-skeleton-${index}`}>
+                        {Array.from({ length: 8 }, (_, cell) => (
+                          <td className="px-4 py-5" key={cell}>
+                            <div className="h-4 rounded bg-surface-2" />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : organizationDataError ? (
+                    <tr>
+                      <td className="p-6 text-center" colSpan={8}>
+                        <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+                        <Button className="mt-3" onClick={() => void reloadAllData()} variant="outline">{messages.retry}</Button>
+                      </td>
+                    </tr>
+                  ) : filteredInvoices.length === 0 ? (
+                    <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={8}>{messages.invoiceEmpty}</td></tr>
+                  ) : filteredInvoices.map((inv) => (
+                    <tr className="transition-colors hover:bg-surface-2/60" key={inv.id}>
+                      <td className="px-4 py-3.5">
+                        <span className="font-semibold text-text">{inv.invoice_number}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{formatDateIndo(inv.invoice_date)}</span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="font-medium text-text">{inv.client_name}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{inv.project_name}</span>
+                      </td>
+                      <td className="px-4 py-3.5 text-muted-foreground">{inv.term_label}</td>
+                      <td className="px-4 py-3.5 text-right tabular-nums text-muted-foreground">{formatRupiah(inv.gross_amount)}</td>
+                      <td className="px-4 py-3.5 text-right font-semibold tabular-nums text-text">
+                        {formatRupiah(inv.net_receivable)}
+                        {(inv.paid_amount ?? 0) > 0 && inv.status !== CLIENT_INVOICE_STATUSES.paid && (
+                          <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
+                            {messages.invoiceReceived} {formatRupiah(inv.paid_amount ?? 0)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-muted-foreground">{formatDateIndo(inv.due_date)}</td>
+                      <td className="px-4 py-3.5">{renderClientInvoiceStatus(inv.status)}</td>
+                      <td className="px-4 py-3.5 text-center">
+                        {canRecordInvoicePayment && invoicePaymentAllowedStatuses.includes(inv.status) && (
+                          <Button className="min-h-11" onClick={() => setInvoiceForPayment(inv)} variant="ghost">
+                            {messages.recordPayment}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="space-y-3 p-3 md:hidden">
+              {isLoading ? (
+                Array.from({ length: 2 }, (_, index) => (
+                  <div aria-hidden="true" className="h-44 animate-pulse rounded-lg border border-border bg-surface-2" key={`invoice-card-skeleton-${index}`} />
+                ))
+              ) : organizationDataError ? (
+                <div className="p-4 text-center">
+                  <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
+                  <Button className="mt-3" onClick={() => void reloadAllData()} variant="outline">{messages.retry}</Button>
+                </div>
+              ) : filteredInvoices.length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">{messages.invoiceEmpty}</p>
+              ) : filteredInvoices.map((inv) => (
+                <article className="space-y-3 rounded-lg border border-border p-4" key={inv.id}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="break-all text-sm font-semibold text-text">{inv.invoice_number}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{formatDateIndo(inv.invoice_date)}</p>
+                    </div>
+                    {renderClientInvoiceStatus(inv.status)}
+                  </div>
+                  <div>
+                    <h3 className="break-words text-sm font-medium text-text">{inv.client_name}</h3>
+                    <p className="break-words text-xs text-muted-foreground">{inv.project_name}</p>
+                    <p className="mt-1 break-words text-xs text-muted-foreground">{inv.term_label}</p>
+                  </div>
+                  <dl className="grid grid-cols-2 gap-3 border-t border-border pt-3 text-xs">
+                    <div>
+                      <dt className="text-muted-foreground">{messages.grossAmount}</dt>
+                      <dd className="mt-0.5 font-medium tabular-nums text-text">{formatRupiah(inv.gross_amount)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">{messages.netReceivable}</dt>
+                      <dd className="mt-0.5 font-semibold tabular-nums text-text">{formatRupiah(inv.net_receivable)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">{messages.dueDate}</dt>
+                      <dd className="mt-0.5 font-medium text-text">{formatDateIndo(inv.due_date)}</dd>
+                    </div>
+                    {(inv.paid_amount ?? 0) > 0 && (
+                      <div>
+                        <dt className="text-muted-foreground">{messages.invoiceReceived}</dt>
+                        <dd className="mt-0.5 font-medium tabular-nums text-text">{formatRupiah(inv.paid_amount ?? 0)}</dd>
+                      </div>
+                    )}
+                  </dl>
+                  {canRecordInvoicePayment && invoicePaymentAllowedStatuses.includes(inv.status) && (
+                    <Button className="w-full" onClick={() => setInvoiceForPayment(inv)} variant="outline">
+                      {messages.recordPayment}
+                    </Button>
+                  )}
+                </article>
+              ))}
+            </div>
+          </Card>
         </div>
-      )}
+      </TabsContent>
 
-      {activeTab === 'payables' && (
+      <TabsContent className="mt-0" value="payables">
         <PayablesPanel
           canPay={canProcessFinance}
           error={organizationDataError}
@@ -474,27 +521,27 @@ export const FinanceView: React.FC = () => {
           agingPayables={projectPayables}
           payables={filteredPayables}
         />
-      )}
+      </TabsContent>
 
       {/* Tab: Cashbook */}
-      {activeTab === 'cashbook' && (
+      <TabsContent className="mt-0" value="cashbook">
         <div className="space-y-3">
           {financeFeedback && <p className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success" role="status">{financeFeedback}</p>}
           {financeActionError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{financeActionError}</p>}
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <Card className="overflow-hidden">
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-500 dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-400">
+                <thead className="border-b border-border bg-surface-2 text-xs font-semibold text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3">No. Bukti & Tanggal</th>
-                    <th className="px-4 py-3">Arus & Kategori</th>
-                    <th className="px-4 py-3">Deskripsi / Penerima</th>
-                    <th className="px-4 py-3 text-right">Jumlah (Rp)</th>
-                    <th className="px-4 py-3">Metode / Status</th>
-                    <th className="px-4 py-3 text-center">Aksi</th>
+                    <th className="px-4 py-3">{messages.transactionNumber} / {messages.date}</th>
+                    <th className="px-4 py-3">{messages.flow} / {messages.category}</th>
+                    <th className="px-4 py-3">{messages.description} / {messages.counterparty}</th>
+                    <th className="px-4 py-3 text-right">{messages.amount}</th>
+                    <th className="px-4 py-3">{messages.paymentMethod} / {messages.status}</th>
+                    <th className="px-4 py-3 text-center">{messages.action}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-border">
                   {isLoading ? (
                     Array.from({ length: 3 }, (_, index) => (
                       <tr key={`cash-skeleton-${index}`} aria-hidden="true">
@@ -504,40 +551,40 @@ export const FinanceView: React.FC = () => {
                   ) : organizationDataError ? (
                     <tr><td className="p-6 text-center" colSpan={6}>
                       <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
-                      <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+                      <Button className="mt-3" onClick={() => void reloadAllData()} variant="outline">{messages.retry}</Button>
                     </td></tr>
                   ) : filteredCashTransactions.length === 0 ? (
                     <tr><td className="p-6 text-center text-sm text-muted-foreground" colSpan={6}>{messages.cashTransactionsEmpty}</td></tr>
                   ) : filteredCashTransactions.map((transaction) => (
-                    <tr key={transaction.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                    <tr key={transaction.id} className="transition-colors hover:bg-surface-2/60">
                       <td className="px-4 py-3.5">
-                        <span className="font-bold text-xs text-slate-900 dark:text-white">{transaction.transaction_number}</span>
-                        <span className="mt-0.5 block text-[11px] text-slate-400">{formatDateIndo(transaction.transaction_date)}</span>
+                        <span className="font-semibold text-text">{transaction.transaction_number}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{formatDateIndo(transaction.transaction_date)}</span>
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex flex-wrap items-center gap-1.5">
                           {transaction.type === 'inflow' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-400">
-                              <ArrowDownLeft aria-hidden="true" className="h-3 w-3" /> Kas masuk
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success-bg px-2 py-0.5 text-xs font-semibold text-success">
+                              <ArrowDownLeft aria-hidden="true" className="h-3 w-3" /> {messages.inflow}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-400">
-                              <ArrowUpRight aria-hidden="true" className="h-3 w-3" /> Kas keluar
+                            <span className="inline-flex items-center gap-1 rounded-full bg-danger-bg px-2 py-0.5 text-xs font-semibold text-danger">
+                              <ArrowUpRight aria-hidden="true" className="h-3 w-3" /> {messages.outflow}
                             </span>
                           )}
-                          <span className="text-xs font-medium text-slate-500">{transaction.category}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{transaction.category}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{transaction.description}</span>
-                        <span className="mt-0.5 block text-[11px] text-slate-500">{transaction.recipient_or_payer}</span>
+                        <span className="text-sm font-medium text-text">{transaction.description}</span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground">{transaction.recipient_or_payer}</span>
                       </td>
-                      <td className={`px-4 py-3.5 text-right text-xs font-bold tabular-nums ${transaction.type === 'inflow' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}`}>
+                      <td className={`px-4 py-3.5 text-right text-sm font-semibold tabular-nums ${transaction.type === 'inflow' ? 'text-success' : 'text-text'}`}>
                         {transaction.type === 'inflow' ? '+' : '−'} {formatRupiah(transaction.amount)}
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="block text-xs text-slate-600 dark:text-slate-400">{transaction.payment_method}</span>
-                        <span className={`mt-1 inline-flex items-center gap-1 text-[11px] font-semibold ${transaction.status === CASH_TRANSACTION_STATUSES.verified ? 'text-success' : 'text-warning'}`}>
+                        <span className="block text-sm text-muted-foreground">{transaction.payment_method}</span>
+                        <span className={`mt-1 inline-flex items-center gap-1 text-xs font-semibold ${transaction.status === CASH_TRANSACTION_STATUSES.verified ? 'text-success' : 'text-warning'}`}>
                           {transaction.status === CASH_TRANSACTION_STATUSES.verified
                             ? <><CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {messages.verified}</>
                             : <><Clock aria-hidden="true" className="h-3 w-3" /> {messages.pending}</>}
@@ -545,9 +592,9 @@ export const FinanceView: React.FC = () => {
                       </td>
                       <td className="px-4 py-3.5 text-center">
                         {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
-                          <button className="min-h-11 rounded-md px-3 text-xs font-semibold text-primary-700 hover:bg-surface-2 disabled:opacity-60 dark:text-primary-500" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} type="button">
+                          <Button disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} size="sm" variant="ghost">
                             {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
-                          </button>
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -561,7 +608,7 @@ export const FinanceView: React.FC = () => {
               ) : organizationDataError ? (
                 <div className="p-4 text-center">
                   <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
-                  <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+                  <Button className="mt-3" onClick={() => void reloadAllData()} variant="outline">{messages.retry}</Button>
                 </div>
               ) : filteredCashTransactions.length === 0 ? (
                 <p className="p-4 text-center text-sm text-muted-foreground">{messages.cashTransactionsEmpty}</p>
@@ -582,34 +629,32 @@ export const FinanceView: React.FC = () => {
                     <span className="font-semibold">{transaction.status === CASH_TRANSACTION_STATUSES.verified ? messages.verified : messages.pending}</span>
                   </div>
                   {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
-                    <button className="min-h-11 w-full rounded-md border border-border text-sm font-semibold text-primary-700 hover:bg-surface-2 disabled:opacity-60 dark:text-primary-500" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} type="button">
+                    <Button className="w-full" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} variant="outline">
                       {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
-                    </button>
+                    </Button>
                   )}
                 </article>
               ))}
             </div>
-          </div>
+          </Card>
         </div>
-      )}
+      </TabsContent>
 
       {/* Tab: Kasbon */}
-      {activeTab === 'kasbon' && (
+      <TabsContent className="mt-0" value="kasbon">
         <div className="space-y-4">
           {financeFeedback && <p className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success" role="status">{financeFeedback}</p>}
           {financeActionError && <p className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger" role="alert">{financeActionError}</p>}
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-              Daftar Kasbon Operasional & Reimbursement Lapangan
-            </h3>
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <h2 className="text-base font-semibold text-text">{messages.cashAdvanceTitle}</h2>
             {canRecordFinance && (
-              <button
+              <Button
+                className="w-full justify-start sm:w-auto"
                 onClick={() => { setFinanceFeedback(''); setFinanceActionError(''); setIsKasbonModalOpen(true); }}
-                className="flex min-h-11 items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-bold text-slate-950 transition hover:bg-amber-600"
               >
-                <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-                <span>Pengajuan Kasbon / Reimbursement</span>
-              </button>
+                <Plus aria-hidden="true" className="h-4 w-4" />
+                {messages.addCashAdvance}
+              </Button>
             )}
           </div>
 
@@ -620,7 +665,7 @@ export const FinanceView: React.FC = () => {
           ) : organizationDataError ? (
             <div className="rounded-xl border border-border bg-surface p-6 text-center">
               <p className="text-sm text-danger" role="alert">{organizationDataError}</p>
-              <button className="mt-3 min-h-11 rounded-md border border-border px-4 text-sm text-text hover:bg-surface-2" onClick={() => void reloadAllData()} type="button">{messages.retry}</button>
+              <Button className="mt-3" onClick={() => void reloadAllData()} variant="outline">{messages.retry}</Button>
             </div>
           ) : filteredKasbonList.length === 0 ? (
             <div className="rounded-xl border border-border bg-surface p-6 text-center">
@@ -645,28 +690,28 @@ export const FinanceView: React.FC = () => {
               return (
               <div
                 key={k.id}
-                className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+                className="space-y-3 rounded-lg border border-border bg-surface p-4 shadow-xs dark:shadow-none"
               >
-                <div className="flex justify-between items-start">
+                <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <Badge className="min-h-6" variant="outline">
                       {k.ticket_number} • {k.type.toUpperCase()}
-                    </span>
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-1.5">{k.employee_name}</h4>
-                    <p className="text-xs text-slate-400">{k.role} • {k.project_name}</p>
+                    </Badge>
+                    <h3 className="mt-1.5 text-sm font-semibold text-text">{k.employee_name}</h3>
+                    <p className="text-xs text-muted-foreground">{k.role} • {k.project_name}</p>
                   </div>
-                  <span className="font-bold text-sm text-amber-600 dark:text-amber-400">
+                  <span className="shrink-0 text-right text-sm font-semibold tabular-nums text-text">
                     {formatRupiah(k.amount)}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                <p className="break-words rounded-md border border-border bg-surface-2 p-2.5 text-sm text-muted-foreground">
                   {k.purpose}
                 </p>
 
-                <div className="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span>Tanggal: {formatDateIndo(k.date)}</span>
-                  <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-2 text-xs text-muted-foreground">
+                  <span>{messages.date}: {formatDateIndo(k.date)}</span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-text">
                     {k.settlement_status === CASH_ADVANCE_STATUSES.settled
                       ? <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5 text-success" />
                       : k.settlement_status === CASH_ADVANCE_STATUSES.rejected
@@ -678,32 +723,32 @@ export const FinanceView: React.FC = () => {
                 {k.decision_comment && <p className="rounded-md bg-surface-2 p-2 text-xs text-muted-foreground">{k.decision_comment}</p>}
                 {(k.paid_amount ?? 0) > 0 && (
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <p className="text-muted-foreground">Dibayar: <span className="font-semibold text-text">{formatRupiah(k.paid_amount ?? 0)}</span></p>
+                    <p className="text-muted-foreground">{messages.paidPayable}: <span className="font-semibold text-text">{formatRupiah(k.paid_amount ?? 0)}</span></p>
                     {k.settlement_status === CASH_ADVANCE_STATUSES.settled && (
-                      <p className="text-muted-foreground">Realisasi: <span className="font-semibold text-text">{formatRupiah(k.settled_amount ?? 0)}</span></p>
+                      <p className="text-muted-foreground">{messages.settlementAmount}: <span className="font-semibold text-text">{formatRupiah(k.settled_amount ?? 0)}</span></p>
                     )}
                   </div>
                 )}
                 <div className="flex flex-wrap gap-2 border-t border-border pt-3">
                   {canProcessFinance && k.settlement_status === CASH_ADVANCE_STATUSES.pendingApproval && !isRequester && (
                     <>
-                      <button className="inline-flex min-h-11 items-center gap-1.5 rounded-md bg-primary-700 px-3 text-xs font-semibold text-white hover:bg-primary-600" onClick={() => openAction('approve')} type="button">
+                      <Button onClick={() => openAction('approve')}>
                         <Check aria-hidden="true" className="h-4 w-4" /> {messages.approve}
-                      </button>
-                      <button className="inline-flex min-h-11 items-center gap-1.5 rounded-md border border-danger/30 px-3 text-xs font-semibold text-danger hover:bg-danger-bg" onClick={() => openAction('reject')} type="button">
+                      </Button>
+                      <Button onClick={() => openAction('reject')} variant="destructive">
                         <XCircle aria-hidden="true" className="h-4 w-4" /> {messages.reject}
-                      </button>
+                      </Button>
                     </>
                   )}
                   {canProcessFinance && k.settlement_status === CASH_ADVANCE_STATUSES.approvedReadyPayout && (
-                    <button className="min-h-11 rounded-md bg-primary-700 px-3 text-xs font-semibold text-white hover:bg-primary-600" onClick={() => openAction('payout')} type="button">
+                    <Button onClick={() => openAction('payout')}>
                       {messages.recordPayout}
-                    </button>
+                    </Button>
                   )}
                   {(isRequester || canProcessFinance) && k.type === 'kasbon' && k.settlement_status === CASH_ADVANCE_STATUSES.activeUnsettled && (
-                    <button className="min-h-11 rounded-md border border-border px-3 text-xs font-semibold text-text hover:bg-surface-2" onClick={() => openAction('settle')} type="button">
+                    <Button onClick={() => openAction('settle')} variant="outline">
                       {messages.settle}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -712,10 +757,10 @@ export const FinanceView: React.FC = () => {
           </div>
           )}
         </div>
-      )}
+      </TabsContent>
 
       {/* Tab: Laba Rugi Proyek */}
-      {activeTab === 'profit_loss' && (
+      <TabsContent className="mt-0" value="profit_loss">
         <div className="space-y-6">
           <ProjectCashFlowForecast
             transactions={reportCashTransactions}
@@ -784,8 +829,9 @@ export const FinanceView: React.FC = () => {
             )}
           </section>
         </div>
-      )}
+      </TabsContent>
 
+      </Tabs>
       {/* Buat Invoice Modal */}
       {isInvoiceModalOpen && currentOrg && (
         <ClientInvoiceDialog
@@ -850,6 +896,6 @@ export const FinanceView: React.FC = () => {
           request={cashAdvanceAction.request}
         />
       )}
-    </div>
+    </PageShell>
   );
 };

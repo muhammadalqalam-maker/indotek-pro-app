@@ -148,7 +148,7 @@ export function ProjectCashFlowForecast({
           </div>
 
           <div className="overflow-x-auto rounded-md border border-border">
-            <table className="w-full min-w-[560px] text-left text-sm">
+            <table className="w-full min-w-max text-left text-sm">
               <caption className="sr-only">{messages.cashFlowTableCaption}</caption>
               <thead className="bg-surface-2 text-xs text-muted-foreground">
                 <tr>
