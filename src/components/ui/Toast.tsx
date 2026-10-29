@@ -6,11 +6,12 @@ import { cn } from './utils';
 export type ToastVariant = 'success' | 'error' | 'info';
 type ToastAction = { label: string; onClick: () => void };
 type ToastInput = { title: string; description?: string; variant?: ToastVariant; action?: ToastAction };
-type ToastItem = ToastInput & { id: number };
+type ToastItem = ToastInput & { id: number; state: 'open' | 'closed' };
 type ToastContextValue = { toast: (input: ToastInput) => void };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 const messages = commonMessages;
+const TOAST_EXIT_DURATION = 400;
 const variantClasses: Record<ToastVariant, string> = {
   success: 'border-success/30 bg-success-bg text-success',
   error: 'border-danger/30 bg-danger-bg text-danger',
@@ -21,23 +22,42 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
   const nextId = useRef(0);
   const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const exitTimers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
 
   const dismiss = useCallback((id: number) => {
+    if (exitTimers.current.has(id)) return;
     const timer = timers.current.get(id);
     if (timer) clearTimeout(timer);
     timers.current.delete(id);
-    setItems((previous) => previous.filter((item) => item.id !== id));
+
+    setItems((previous) => previous.map((item) => (
+      item.id === id ? { ...item, state: 'closed' } : item
+    )));
+    const exitDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 1
+      : TOAST_EXIT_DURATION;
+    exitTimers.current.set(id, setTimeout(() => {
+      setItems((previous) => previous.filter((item) => item.id !== id));
+      exitTimers.current.delete(id);
+    }, exitDuration));
   }, []);
 
   const toast = useCallback((input: ToastInput) => {
     const id = ++nextId.current;
-    setItems((previous) => [...previous, { ...input, variant: input.variant ?? 'info', id }].slice(-5));
+    setItems((previous) => [...previous, {
+      ...input,
+      variant: input.variant ?? 'info',
+      id,
+      state: 'open' as const,
+    }].slice(-5));
     timers.current.set(id, setTimeout(() => dismiss(id), 5000));
   }, [dismiss]);
 
   useEffect(() => () => {
     for (const timer of timers.current.values()) clearTimeout(timer);
+    for (const timer of exitTimers.current.values()) clearTimeout(timer);
     timers.current.clear();
+    exitTimers.current.clear();
   }, []);
 
   const value = useMemo(() => ({ toast }), [toast]);
@@ -49,7 +69,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {items.map((item) => {
           const Icon = item.variant === 'success' ? CheckCircle2 : item.variant === 'error' ? AlertCircle : Info;
           return (
-            <div key={item.id} role={item.variant === 'error' ? 'alert' : 'status'} className={cn('pointer-events-auto flex items-start gap-3 rounded-xl border p-3 shadow-md', variantClasses[item.variant ?? 'info'])}>
+            <div
+              key={item.id}
+              data-state={item.state}
+              role={item.variant === 'error' ? 'alert' : 'status'}
+              className={cn('toast-motion pointer-events-auto flex items-start gap-3 rounded-xl border p-3 shadow-md', variantClasses[item.variant ?? 'info'])}
+            >
               <Icon className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold">{item.title}</p>

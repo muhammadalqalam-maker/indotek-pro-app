@@ -151,6 +151,26 @@ body {
   color: var(--text);
 }
 
+.toast-motion {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+}
+
+.toast-motion[data-state="closed"] {
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+@starting-style {
+  .toast-motion {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+}
+
 input,
 textarea,
 select {

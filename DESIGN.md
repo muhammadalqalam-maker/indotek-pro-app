@@ -93,7 +93,8 @@ Input di mobile minimal 16px (mencegah zoom otomatis iOS).
 | Dropdown, Popover, Select, Tooltip | fade + zoom + slide 8px (`slide-*-2`) | 150ms / 150ms | `ease` default |
 | Sidebar collapse/expand | lebar 16rem↔3rem (gap varian inset/floating terpisah) | 200ms | `linear` |
 | Grup menu (Collapsible) | tinggi; chevron berputar terpisah | tinggi 300ms; chevron 200ms | tinggi `ease-out`; chevron default transisi |
-| Toast | animasi dikelola Sonner; source tidak menetapkan timing lokal | Tidak ditetapkan lokal (masa tampil 5000ms bukan durasi animasi) | Dikelola Sonner |
+| Toast | opacity + translateY dari/ke atas | 400ms masuk/keluar | `ease`; 0.01ms saat reduced-motion |
+| Command Palette | instan; tidak dianimasikan karena shortcut Ctrl/Cmd+K berfrekuensi tinggi | 0ms | — |
 | Hover/fokus (tombol, baris, tab) | transisi warna/bayangan bila kelas `transition` digunakan | default 150ms | `cubic-bezier(.4,0,.2,1)` |
 | Skeleton | pulse | 2s berulang | `cubic-bezier(.4,0,.6,1)` |
 
@@ -256,9 +257,9 @@ Status: **Rencana** (dikerjakan di fase tertera) · **Disengaja** (beda dari tem
 | Sidebar collapsible ke ikon | Ya | shadcn `Sidebar` | Selesai (UI-C.2) |
 | Sidebar di mobile | Sheet | shadcn `Sidebar` sebagai Sheet **+ bottom nav + FAB** | Selesai (UI-C.4); bottom nav untuk akses lapangan |
 | Grup menu bisa dilipat | Ya | Ya | Rencana (UI-C/D) |
-| Command palette ⌘K | Ya | Ada (kustom) + animasi | Rencana (UI-D) |
+| Command palette ⌘K | Ya | Ada (kustom), instan | Disengaja (UI-D.2; shortcut berfrekuensi tinggi) |
 | Animasi Dialog/Sheet/Dropdown/Popover/Select/Tooltip | Ya (`tw-animate-css`) | Belum efektif | Rencana (UI-A/D) |
-| Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom + animasi | Audit: timing source Sonner tidak ditetapkan lokal; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
+| Toast | Sonner, masa tampil 5000ms; source tidak menetapkan timing animasi lokal | Toast kustom, masa tampil 5000ms, transisi opacity + translateY 400ms | Disengaja: pertahankan API yang sudah dipakai luas tanpa dependensi baru; animasi lokal sesuai §2.6 |
 | Toggle tema | Ya | Ya (kunci `indotek_theme`) | Selesai (UI-C.3; kunci tetap dipertahankan) |
 | Header: bayangan saat scroll, breadcrumb | Bayangan + blur setelah scroll >10px; breadcrumb komponen navigasi halaman | Breadcrumb route, pemilih organisasi/proyek, notifikasi, toggle tema, pencarian perintah, bayangan saat scroll >10px | Selesai (UI-C.3); perilaku referensi: [laporan](docs/ui/shadcn-admin-parity.md) |
 | Progress bar saat pindah route | Bar 2px saat TanStack Router pending | — | Audit: indikator status router, bukan sinkronisasi; lihat [laporan](docs/ui/shadcn-admin-parity.md) |
