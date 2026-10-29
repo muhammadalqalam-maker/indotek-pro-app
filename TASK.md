@@ -73,7 +73,7 @@
 ## FASE UI-F — Pengerasan
 
 - [x] **T-UI.F.1** Codemod ±749 kelas warna hard-coded ke token; daftar pengecualian bila ada. — 2026-10-29 — Audit reproducible pada tracked `src/` menemukan 286 utilitas legacy (198 warna palet + 88 putih/hitam), bukan ±749; 266 dimigrasikan ke token. Dua puluh `bg-black/60` pada scrim modal/sheet tetap sebagai pengecualian. Badge peran dinetralkan dan amber brand memakai `accent-*`; 13 snapshot terdampak diperbarui. Typecheck, lint, build, 198 unit test, dan seluruh snapshot visual lulus; visual suite 38/39 karena timeout direct-refresh lama yang sudah tercatat di Backlog.
-- [ ] **T-UI.F.2** Aksesibilitas, Lighthouse PWA, ukuran bundle sebelum/sesudah (peringatan chunk >500 kB tidak boleh bertambah).
+- [x] **T-UI.F.2** Aksesibilitas, Lighthouse PWA, ukuran bundle sebelum/sesudah (peringatan chunk >500 kB tidak boleh bertambah). — 2026-10-29 — Lighthouse 11.7.1 pada route masuk production: accessibility/PWA/best-practices 100 (mobile & desktop); PWA offline fallback lulus 1/1. Perbandingan build sebelum/sesudah F.1 (977474d→8261a6b): 87 aset; JS 4.183.803→4.183.612 B, CSS 171.262→182.343 B, total +10.890 B; chunk >500 KiB tetap 1 (ExcelJS 929.405 B). Build/unit test/typecheck/lint lulus; visual baseline 38/39, satu kegagalan direct-route refresh yang telah dicatat di Backlog.
 - [ ] **T-UI.F.3** Hapus kode mati (Sidebar lama, `DataTable` lama bila tak dipakai, paket Radix tak terpakai); finalisasi DESIGN §13.
 - [ ] **T-UI.F.4** Uji PWA terpasang di HP asli (safe-area, bottom nav, Back); siapkan rilis menunggu persetujuan merge.
 
@@ -94,3 +94,4 @@
 - Tes visual Back/Forward scroll di `e2e/visual/navigation.spec.ts` pernah gagal dengan posisi scroll yang tidak konsisten pada validasi E.1, tetapi lulus pada full visual run E.2; tetap dipantau sebagai flake historis di luar task ini.
 - Tes visual route direct-refresh di `e2e/visual/navigation.spec.ts` sesekali timeout menunggu shell setelah `page.goto()`/`page.reload()` pada route terlindungi (termasuk `/approvals` dan `/finance`); full visual run E.2 kembali timeout saat reload, tetap di luar task ini.
 - Validasi E.7 menguji indikator offline dan fallback PWA tanpa membuat laporan/absensi UAT; uji simpan draf offline hingga sinkron ulang perlu akun/lingkungan uji terisolasi dan perangkat nyata.
+- Lighthouse 11.7.1 pada halaman masuk memberi skor performance mobile 74 (desktop 97), dengan potensi 208 KiB unused JS; audit ini tidak mengukur route dashboard terautentikasi. Tinjau bersama pemangkasan bundle pada F.3 tanpa menaikkan jumlah chunk >500 KiB.
