@@ -36,6 +36,7 @@ test('overlay components animate with the specified durations', async ({ page })
   const tooltip = page.getByRole('tooltip', { name: 'Tooltip motion test' });
   await expect(tooltip).toHaveCSS('animation-name', 'enter');
   await expect(tooltip).toHaveCSS('animation-duration', '0.15s');
+  await expect(tooltip.locator('svg')).toHaveCount(0);
 
   await page.getByRole('combobox').click();
   await expect(page.getByRole('listbox')).toHaveCSS('animation-name', 'enter');
