@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   Button,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   DataTable,
   Tabs,
   TabsContent,
@@ -26,6 +30,12 @@ function NavigationMotionHarness() {
       <Button variant="primary" size="md">Tombol utama</Button>
       <Button variant="accent">Tombol aksen</Button>
       <Button loading>Memproses</Button>
+      <Card>
+        <CardHeader>
+          <CardTitle as="h2">Judul card uji</CardTitle>
+          <CardDescription>Deskripsi card uji</CardDescription>
+        </CardHeader>
+      </Card>
       <Tabs defaultValue="summary">
         <TabsList aria-label="Bagian uji">
           <TabsTrigger value="summary">Ringkasan</TabsTrigger>

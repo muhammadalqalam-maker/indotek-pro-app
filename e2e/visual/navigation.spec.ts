@@ -249,7 +249,8 @@ test('shared tabs, buttons, and table rows expose responsive hover and focus sta
   await expect(page.getByRole('button', { name: 'Tombol aksen' })).toHaveCSS('background-color', 'rgb(245, 158, 11)');
   await expect(page.getByRole('button', { name: 'Memproses' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Memproses' })).toHaveAttribute('aria-busy', 'true');
-
+  await expect(page.getByRole('heading', { name: 'Judul card uji', level: 2 })).toHaveAttribute('data-slot', 'card-title');
+  await expect(page.getByText('Deskripsi card uji')).toHaveJSProperty('tagName', 'P');
   const tab = page.getByRole('tab', { name: 'Aktivitas' });
   await expect(tab).toHaveCSS('transition-duration', '0.15s');
   await tab.hover();
