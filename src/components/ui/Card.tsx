@@ -10,11 +10,11 @@ import {
 import { cn } from './utils';
 
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <ShadcnCard className={cn('gap-0 rounded-lg border-border bg-surface py-0 text-text shadow-xs dark:shadow-none', className)} {...props} />;
+  return <ShadcnCard className={cn('gap-0 rounded-xl border border-border bg-surface py-0 text-text shadow-sm dark:shadow-none', className)} {...props} />;
 }
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <ShadcnCardHeader className={cn('flex flex-col gap-1.5 p-4 sm:p-5', className)} {...props} />;
+  return <ShadcnCardHeader className={cn('flex flex-col gap-1.5 px-4 pb-3 pt-4 sm:px-5 sm:pb-4 sm:pt-5', className)} {...props} />;
 }
 
 type CardTitleProps = HTMLAttributes<HTMLHeadingElement> & {

@@ -35,7 +35,7 @@ export function KpiCard({
       : Minus;
 
   return (
-    <Card className={cn('relative overflow-hidden p-4 sm:p-5', className)}>
+    <Card className={cn('relative min-h-[150px] overflow-hidden p-4 sm:p-5', className)}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
         {icon && <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-500">{icon}</span>}

@@ -34,3 +34,5 @@
 ## Riwayat Redesign UI
 
 - [x] Fase UI-0–F selesai; detail tugas, Decision Log, dan Backlog tersimpan di [docs/archive/TASK-redesign-shadcn-admin.md](./docs/archive/TASK-redesign-shadcn-admin.md).
+- [x] T-UI.0.2 — polish scrollbar global, shell layout, top bar, dan ukuran kartu dashboard; root scroll dipusatkan pada `main` agar tidak ada scrollbar ganda, header konsisten, dan kartu KPI seragam.
+- [x] Audit overflow/responsivitas seluruh route — 2026-11-03 — 43/43 suite visual, 2/2 auth/onboarding; perbaikan scroll internal onboarding 1366×768. Laporan: [audit](./UI_OVERFLOW_AUDIT_REPORT.md), [final](./UI_OVERFLOW_FINAL_REPORT.md).

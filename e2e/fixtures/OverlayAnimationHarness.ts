@@ -42,7 +42,18 @@ function OverlayAnimationHarness() {
 
   return createElement(
     'div',
-    null,
+    {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        maxHeight: '100%',
+        maxWidth: '100%',
+        overflow: 'auto',
+        padding: '24px',
+        width: 'fit-content',
+      },
+    },
     createElement(
       AlertDialog,
       null,
@@ -102,6 +113,7 @@ function OverlayAnimationHarness() {
 
 export function mountOverlayAnimationHarness() {
   const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;inset:0;display:grid;place-items:center;overflow:auto;z-index:40;';
   document.body.append(container);
   createRoot(container).render(createElement(OverlayAnimationHarness));
 }
