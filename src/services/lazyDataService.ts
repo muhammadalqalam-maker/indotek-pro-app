@@ -60,8 +60,14 @@ export const createCashTransaction: typeof import('./dataService')['createCashTr
   import('./dataService').then((service) => service.createCashTransaction(...args));
 export const verifyCashTransaction: typeof import('./dataService')['verifyCashTransaction'] = (...args) =>
   import('./dataService').then((service) => service.verifyCashTransaction(...args));
+export const archiveCashTransaction: typeof import('./dataService')['archiveCashTransaction'] = (...args) =>
+  import('./dataService').then((service) => service.archiveCashTransaction(...args));
+export const reverseCashTransaction: typeof import('./dataService')['reverseCashTransaction'] = (...args) =>
+  import('./dataService').then((service) => service.reverseCashTransaction(...args));
 export const fetchKasbonList: typeof import('./dataService')['fetchKasbonList'] = (...args) =>
   import('./dataService').then((service) => service.fetchKasbonList(...args));
+export const archiveCashAdvanceRequest: typeof import('./dataService')['archiveCashAdvanceRequest'] = (...args) =>
+  import('./dataService').then((service) => service.archiveCashAdvanceRequest(...args));
 export const createKasbon: typeof import('./dataService')['createKasbon'] = (...args) =>
   import('./dataService').then((service) => service.createKasbon(...args));
 export const decideCashAdvance: typeof import('./dataService')['decideCashAdvance'] = (...args) =>

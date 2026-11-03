@@ -3396,6 +3396,7 @@ export type Database = {
           amount: number
           cash_advance_request_id: string | null
           category: string
+          correction_reason: string | null
           created_at: string
           created_by: string
           deleted_at: string | null
@@ -3408,6 +3409,9 @@ export type Database = {
           project_id: string
           recipient_or_payer: string
           reference: string
+          reversal_of_id: string | null
+          reversed_at: string | null
+          reversed_by: string | null
           status: string
           transaction_date: string
           transaction_number: string
@@ -3420,6 +3424,7 @@ export type Database = {
           amount: number
           cash_advance_request_id?: string | null
           category: string
+          correction_reason?: string | null
           created_at?: string
           created_by?: string
           deleted_at?: string | null
@@ -3432,6 +3437,9 @@ export type Database = {
           project_id: string
           recipient_or_payer: string
           reference?: string
+          reversal_of_id?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
           status?: string
           transaction_date?: string
           transaction_number: string
@@ -3444,6 +3452,7 @@ export type Database = {
           amount?: number
           cash_advance_request_id?: string | null
           category?: string
+          correction_reason?: string | null
           created_at?: string
           created_by?: string
           deleted_at?: string | null
@@ -3456,6 +3465,9 @@ export type Database = {
           project_id?: string
           recipient_or_payer?: string
           reference?: string
+          reversal_of_id?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
           status?: string
           transaction_date?: string
           transaction_number?: string
@@ -3508,8 +3520,22 @@ export type Database = {
             referencedColumns: ["organization_id", "id"]
           },
           {
+            foreignKeyName: "project_cash_transactions_reversal_fk"
+            columns: ["organization_id", "reversal_of_id"]
+            isOneToOne: false
+            referencedRelation: "project_cash_transactions"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "project_cash_transactions_verified_by_fkey"
             columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_cash_transactions_reversed_by_fkey"
+            columns: ["reversed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -4115,6 +4141,9 @@ export type Database = {
           approval_notes: string
           approved_at: string | null
           approved_by: string | null
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           created_by: string
           deleted_at: string | null
@@ -4139,6 +4168,9 @@ export type Database = {
           approval_notes?: string
           approved_at?: string | null
           approved_by?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           created_by?: string
           deleted_at?: string | null
@@ -4163,6 +4195,9 @@ export type Database = {
           approval_notes?: string
           approved_at?: string | null
           approved_by?: string | null
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           created_by?: string
           deleted_at?: string | null
@@ -4194,6 +4229,13 @@ export type Database = {
           {
             foreignKeyName: "purchase_orders_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_cancelled_by_fkey"
+            columns: ["cancelled_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -5846,6 +5888,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_org_module_permission: {
+        Args: {
+          p_action: string
+          p_default_roles: Database["public"]["Enums"]["user_role_type"][]
+          p_module: string
+          p_organization_id: string
+        }
+        Returns: boolean
+      }
       accept_organization_invitation: {
         Args: { p_email: string; p_invitation_id: string; p_user_id: string }
         Returns: {
@@ -5868,6 +5919,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      archive_project_document: {
+        Args: { p_document_id: string; p_organization_id: string }
+        Returns: undefined
+      }
       approve_daily_report: {
         Args: {
           p_approver_signature_path: string
@@ -5877,12 +5932,44 @@ export type Database = {
         }
         Returns: string
       }
+      archive_cash_advance_request: {
+        Args: { p_organization_id: string; p_request_id: string }
+        Returns: undefined
+      }
+      archive_daily_attendance: {
+        Args: {
+          p_attendance_id: string
+          p_organization_id: string
+          p_project_id: string
+        }
+        Returns: undefined
+      }
+      archive_project_cash_transaction: {
+        Args: { p_organization_id: string; p_transaction_id: string }
+        Returns: undefined
+      }
+      archive_purchase_order: {
+        Args: { p_order_id: string; p_organization_id: string }
+        Returns: undefined
+      }
+      archive_purchase_request: {
+        Args: { p_organization_id: string; p_request_id: string }
+        Returns: undefined
+      }
+      archive_vendor_quote: {
+        Args: { p_organization_id: string; p_quote_id: string }
+        Returns: undefined
+      }
       archive_wbs_task: {
         Args: {
           p_organization_id: string
           p_project_id: string
           p_task_id: string
         }
+        Returns: undefined
+      }
+      cancel_purchase_order: {
+        Args: { p_order_id: string; p_organization_id: string; p_reason: string }
         Returns: undefined
       }
       can_delete_unlinked_project_document_upload: {
@@ -6273,6 +6360,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      reverse_project_cash_transaction: {
+        Args: {
+          p_organization_id: string
+          p_reason: string
+          p_transaction_id: string
+        }
+        Returns: string
+      }
       record_stock_movement: {
         Args: {
           p_destination_inventory_item_id: string
@@ -6452,6 +6547,13 @@ export type Database = {
           p_values: Json
         }
         Returns: string
+      }
+      soft_delete_project: {
+        Args: {
+          p_organization_id: string
+          p_project_id: string
+        }
+        Returns: undefined
       }
       settle_cash_advance_request: {
         Args: {

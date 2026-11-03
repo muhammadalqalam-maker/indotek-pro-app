@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Check, Clock3 } from 'lucide-react';
+import { Archive, Check, Clock3 } from 'lucide-react';
+import { Button, ConfirmDialog } from '../../components/ui';
 import { getMessages } from '../../i18n';
 import type { DailyAttendance, FieldWorker } from '../../types/database';
 import {
@@ -27,7 +28,10 @@ type WorkerAttendanceFormProps = {
   projectName: string;
   attendanceDate: string;
   isSaving: boolean;
+  canArchiveAttendance: boolean;
+  isArchiving: boolean;
   onSubmit: (records: AttendanceRecordInput[]) => Promise<void>;
+  onArchive: (attendance: DailyAttendance) => Promise<void>;
 };
 
 export function WorkerAttendanceForm({
@@ -37,9 +41,13 @@ export function WorkerAttendanceForm({
   projectName,
   attendanceDate,
   isSaving,
+  canArchiveAttendance,
+  isArchiving,
   onSubmit,
+  onArchive,
 }: WorkerAttendanceFormProps) {
   const [formError, setFormError] = useState('');
+  const [archiveTarget, setArchiveTarget] = useState<DailyAttendance | null>(null);
   const errorSummaryRef = useRef<HTMLDivElement>(null);
   const { handleSubmit, register, reset, setValue, watch, formState: { isDirty } } = useForm<AttendanceFormState>({
     defaultValues: { records: [] },
@@ -66,6 +74,16 @@ export function WorkerAttendanceForm({
   }, [formError]);
 
   const records = watch('records');
+  const confirmArchive = async () => {
+    if (!archiveTarget) return;
+    setFormError('');
+    try {
+      await onArchive(archiveTarget);
+      setArchiveTarget(null);
+    } catch {
+      setFormError(messages.attendanceArchiveError);
+    }
+  };
   const submit = handleSubmit(async (values) => {
     setFormError('');
     const selectedRecords = values.records.filter((record) => record.status !== '');
@@ -113,6 +131,20 @@ export function WorkerAttendanceForm({
               <p className="mt-1 text-sm text-muted-foreground">
                 {messages.trades[worker.role_trade]} · {worker.nik}
               </p>
+              {canArchiveAttendance && attendance.find((record) => record.worker_id === worker.id) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3"
+                  disabled={isSaving || isArchiving || isDirty}
+                  onClick={() => setArchiveTarget(
+                    attendance.find((record) => record.worker_id === worker.id) ?? null,
+                  )}
+                >
+                  <Archive className="size-4" aria-hidden="true" />
+                  {messages.archiveAttendance}
+                </Button>
+              )}
             </div>
 
             <label className="grid gap-1.5 text-sm font-medium text-text">
@@ -184,6 +216,18 @@ export function WorkerAttendanceForm({
           {isSaving ? messages.savingAttendance : messages.saveAttendance}
         </button>
       </div>
+      <ConfirmDialog
+        open={archiveTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isArchiving) setArchiveTarget(null);
+        }}
+        title={messages.attendanceArchiveTitle}
+        description={messages.attendanceArchiveDescription}
+        confirmLabel={messages.archiveAttendance}
+        destructive
+        loading={isArchiving}
+        onConfirm={() => void confirmArchive()}
+      />
     </form>
   );
 }

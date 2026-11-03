@@ -16,6 +16,7 @@
     "test:quality": "tsx --test src/features/safety/schemas/quality.schema.test.ts src/features/safety/schemas/safety.schema.test.ts",
     "test:documents": "tsx --test src/features/documents/schemas/documents.schema.test.ts",
     "test:reports": "tsx --test src/features/reports/reportModel.test.ts",
+    "test:project-error": "tsx --test src/features/projects/utils/projectError.test.ts",
     "test:hr": "tsx --test src/features/hr/schemas/hr.schema.test.ts src/features/hr/schemas/wage.schema.test.ts src/features/hr/utils/weeklyWageSummary.test.ts src/lib/hrOfflineQueue.test.ts",
     "db:types": "npx supabase gen types typescript --linked --schema public > src/types/database.types.ts"
   },

@@ -155,7 +155,19 @@ export async function upsertDailyAttendance(
       status: record.status,
       work_hours: record.work_hours,
       overtime_hours: record.overtime_hours,
-      deleted_at: null,
     })), { onConflict: 'organization_id,project_id,worker_id,attendance_date' });
+  if (error) throw error;
+}
+
+export async function archiveDailyAttendance(
+  organizationId: string,
+  projectId: string,
+  attendanceId: string,
+): Promise<void> {
+  const { error } = await getClient().rpc('archive_daily_attendance', {
+    p_organization_id: organizationId,
+    p_project_id: projectId,
+    p_attendance_id: attendanceId,
+  });
   if (error) throw error;
 }

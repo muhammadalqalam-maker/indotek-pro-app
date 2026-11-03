@@ -187,6 +187,22 @@ export async function createPurchaseRequest(input: CreatePurchaseRequestInput): 
   return data;
 }
 
+export async function archivePurchaseRequest(organizationId: string, requestId: string): Promise<void> {
+  const { error } = await getClient().rpc('archive_purchase_request', {
+    p_organization_id: organizationId,
+    p_request_id: requestId,
+  });
+  if (error) throw error;
+}
+
+export async function archiveVendorQuote(organizationId: string, quoteId: string): Promise<void> {
+  const { error } = await getClient().rpc('archive_vendor_quote', {
+    p_organization_id: organizationId,
+    p_quote_id: quoteId,
+  });
+  if (error) throw error;
+}
+
 export async function fetchMaterialRequests(
   organizationId: string,
   projectId: string,
@@ -283,6 +299,27 @@ export async function createPurchaseOrderFromQuote(
   return data;
 }
 
+export async function archivePurchaseOrder(organizationId: string, orderId: string): Promise<void> {
+  const { error } = await getClient().rpc('archive_purchase_order', {
+    p_organization_id: organizationId,
+    p_order_id: orderId,
+  });
+  if (error) throw error;
+}
+
+export async function cancelPurchaseOrder(
+  organizationId: string,
+  orderId: string,
+  reason: string,
+): Promise<void> {
+  const { error } = await getClient().rpc('cancel_purchase_order', {
+    p_organization_id: organizationId,
+    p_order_id: orderId,
+    p_reason: reason,
+  });
+  if (error) throw error;
+}
+
 type PurchaseOrderRecord = Tables<'purchase_orders'>;
 
 export async function fetchProcurementPurchaseOrders(
@@ -357,6 +394,7 @@ export async function fetchProcurementPurchaseOrders(
       po_number: order.po_number,
       pr_number: requests.get(order.purchase_request_id),
       vendor_id: order.vendor_id,
+      vendor_quote_id: order.vendor_quote_id,
       vendor_name: vendor.name,
       vendor_contact: `${vendor.contact_person} (${vendor.phone})`,
       order_date: order.order_date,
@@ -370,6 +408,8 @@ export async function fetchProcurementPurchaseOrders(
       approved_by_name: order.approved_by ? approvers.get(order.approved_by) : undefined,
       approved_at: order.approved_at ?? undefined,
       approval_notes: order.approval_notes,
+      cancelled_at: order.cancelled_at ?? undefined,
+      cancellation_reason: order.cancellation_reason ?? undefined,
       items: items.get(order.id) ?? [],
       created_at: order.created_at,
     };

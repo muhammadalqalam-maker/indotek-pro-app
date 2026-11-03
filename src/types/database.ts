@@ -309,6 +309,7 @@ export interface PurchaseOrder {
   po_number: string;
   pr_number?: string;
   vendor_id: string;
+  vendor_quote_id?: string;
   vendor_name: string;
   vendor_contact: string;
   order_date: string;
@@ -318,10 +319,12 @@ export interface PurchaseOrder {
   ppn_percent: number;
   ppn_amount: number;
   grand_total: number;
-  status: 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'ordered' | 'received' | 'closed';
+  status: 'draft' | 'pending_approval' | 'approved' | 'rejected' | 'ordered' | 'received' | 'closed' | 'cancelled';
   approved_by_name?: string;
   approved_at?: string;
   approval_notes?: string;
+  cancelled_at?: string;
+  cancellation_reason?: string;
   items: PurchaseOrderItem[];
   created_at: string;
 }
@@ -593,6 +596,7 @@ export const CASH_TRANSACTION_CATEGORIES = {
 export const CASH_TRANSACTION_STATUSES = {
   pending: 'pending',
   verified: 'verified',
+  reversed: 'reversed',
 } as const;
 
 export const CASH_ADVANCE_TYPES = {
@@ -627,8 +631,13 @@ export interface ProjectCashTransaction {
   reference?: string;
   invoice_id?: string | null;
   cash_advance_request_id?: string | null;
+  payable_id?: string | null;
   verified_by?: string | null;
   verified_at?: string | null;
+  reversal_of_id?: string | null;
+  reversed_by?: string | null;
+  reversed_at?: string | null;
+  correction_reason?: string | null;
   receipt_url?: string;
 }
 

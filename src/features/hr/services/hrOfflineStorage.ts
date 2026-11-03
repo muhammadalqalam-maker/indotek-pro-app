@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 import type { DailyAttendance, FieldWorker } from '../../../types/database';
+import type { AttendanceRecordInput } from '../schemas/hr.schema';
 
 export type OfflineAttendanceQueueItem = {
   key: string;
@@ -168,6 +169,64 @@ export async function clearHrCacheForUser(userId: string): Promise<void> {
 export async function enqueueAttendance(item: OfflineAttendanceQueueItem): Promise<void> {
   const db = await getHrOfflineDb();
   await db.put('attendanceQueue', item);
+}
+
+export async function enqueueAttendanceBatch(
+  organizationId: string,
+  userId: string,
+  projectId: string,
+  attendanceDate: string,
+  records: AttendanceRecordInput[],
+  workers: FieldWorker[],
+): Promise<DailyAttendance[]> {
+  const [existingQueue, cachedAttendance] = await Promise.all([
+    getAttendanceQueue(organizationId, userId),
+    getCachedHrAttendance(organizationId, userId, projectId, attendanceDate),
+  ]);
+  const pendingByKey = new Map(existingQueue.map((item) => [item.key, item]));
+  const savedByWorker = new Map(cachedAttendance.map((item) => [item.worker_id, item]));
+  const workersById = new Map(workers.map((worker) => [worker.id, worker]));
+  const queuedAttendance: DailyAttendance[] = [];
+
+  for (const record of records) {
+    const key = `${organizationId}:${projectId}:${attendanceDate}:${record.worker_id}`;
+    const queuedItem = {
+      key,
+      organizationId,
+      projectId,
+      userId,
+      attendanceDate,
+      record: {
+        id: pendingByKey.get(key)?.record.id
+          ?? savedByWorker.get(record.worker_id)?.id
+          ?? crypto.randomUUID(),
+        ...record,
+      },
+      queuedAt: pendingByKey.get(key)?.queuedAt ?? new Date().toISOString(),
+      attempts: 0,
+      lastError: null,
+    };
+    await enqueueAttendance(queuedItem);
+
+    const worker = workersById.get(record.worker_id);
+    if (worker) {
+      queuedAttendance.push({
+        id: queuedItem.record.id,
+        organization_id: organizationId,
+        project_id: projectId,
+        date: attendanceDate,
+        worker_id: worker.id,
+        worker_name: worker.full_name,
+        role_trade: worker.role_trade,
+        status: record.status,
+        work_hours: record.work_hours,
+        overtime_hours: record.overtime_hours,
+        daily_earnings: 0,
+      });
+    }
+  }
+
+  return queuedAttendance;
 }
 
 export async function getAttendanceQueue(

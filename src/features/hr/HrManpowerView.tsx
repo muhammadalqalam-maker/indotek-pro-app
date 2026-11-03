@@ -40,6 +40,7 @@ function getLocalDate(): string {
 export function HrManpowerView() {
   const {
     authSession,
+    can,
     currentMemberRole,
     currentOrg,
     isSupabaseLive,
@@ -59,6 +60,7 @@ export function HrManpowerView() {
   const canAccessWorkforce = currentMemberRole !== null
     && HR_WORKFORCE_ACCESS_ROLES.includes(currentMemberRole);
   const {
+    archiveAttendance,
     actionError,
     actionMessage,
     attendanceQuery,
@@ -66,6 +68,7 @@ export function HrManpowerView() {
     retrySync,
     saveAttendance,
     workersQuery,
+    canArchiveAttendance: attendanceArchiveAvailable,
     updateWorkerRates,
   } = useHrManpower(
     organizationId,
@@ -222,8 +225,13 @@ export function HrManpowerView() {
                     projectName={selectedProject?.name ?? ''}
                     attendanceDate={attendanceDate}
                     isSaving={saveAttendance.isPending}
+                    canArchiveAttendance={can('users', 'delete') && attendanceArchiveAvailable}
+                    isArchiving={archiveAttendance.isPending}
                     onSubmit={async (records: AttendanceRecordInput[]) => {
                       await saveAttendance.mutateAsync(records);
+                    }}
+                    onArchive={async (attendance) => {
+                      await archiveAttendance.mutateAsync(attendance);
                     }}
                   />
                 )

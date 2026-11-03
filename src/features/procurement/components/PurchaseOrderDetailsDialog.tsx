@@ -19,6 +19,7 @@ export function PurchaseOrderDetailsDialog({
   onClose,
 }: PurchaseOrderDetailsDialogProps) {
   const messages = getMessages().procurementWorkflow.purchaseOrderPdf;
+  const workflowMessages = getMessages().procurementWorkflow;
   const commonMessages = getMessages().common;
   const { toast } = useToast();
   const [isPreparingPdf, setIsPreparingPdf] = useState(false);
@@ -50,6 +51,8 @@ export function PurchaseOrderDetailsDialog({
         approvedBy: messages.approvedBy,
         approvalDate: messages.approvalDate,
         approvalNotes: messages.approvalNotes,
+        cancelledDate: messages.cancelledDate,
+        cancellationReason: messages.cancellationReason,
         npwp: messages.npwp,
         nib: messages.nib,
         page: messages.page,
@@ -127,6 +130,15 @@ export function PurchaseOrderDetailsDialog({
             <p className="mt-1 text-text">{order.delivery_address}</p>
           </div>
         </div>
+        {order.status === 'cancelled' && order.cancellation_reason && (
+          <div className="rounded-xl border border-danger/30 bg-danger-bg p-4 text-sm text-danger">
+            <p className="font-semibold">{workflowMessages.cancellationReason}</p>
+            <p className="mt-1 whitespace-pre-wrap">{order.cancellation_reason}</p>
+            {order.cancelled_at && (
+              <p className="mt-2 text-xs">{formatDateIndo(order.cancelled_at)}</p>
+            )}
+          </div>
+        )}
 
         <div className="overflow-x-auto rounded-xl border border-border">
           <table className="w-full min-w-[640px] text-left text-sm">

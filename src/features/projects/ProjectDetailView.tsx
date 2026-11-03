@@ -32,6 +32,7 @@ import {
 } from '../../components/ui';
 import { getMessages } from '../../i18n';
 import { projectStatusLabels, projectStatusVariants } from './projectStatus';
+import { getProjectErrorMessage } from './utils/projectError';
 import { ProjectDocumentsTab } from './components/ProjectDocumentsTab';
 import { ProjectAddendumsTab } from './components/ProjectAddendumsTab';
 import { ProjectPlaceholderTab } from './components/ProjectPlaceholderTab';
@@ -87,7 +88,7 @@ export const ProjectDetailView: React.FC<{
       setConfirmDeleteOpen(false);
       onBack();
     } catch (error) {
-      const detail = error instanceof Error ? error.message : messages.deleteFailed;
+      const detail = getProjectErrorMessage(error, messages.deleteFailed);
       toast({ title: messages.deleteFailed, description: detail, variant: 'error' });
     } finally {
       setIsDeleting(false);

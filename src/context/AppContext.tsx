@@ -83,7 +83,10 @@ import {
   fetchCashTransactions,
   createCashTransaction,
   verifyCashTransaction,
+  archiveCashTransaction,
+  reverseCashTransaction,
   fetchKasbonList,
+  archiveCashAdvanceRequest,
   createKasbon,
   decideCashAdvance,
   payCashAdvance,
@@ -255,7 +258,10 @@ interface AppContextType {
   handlePayProjectPayable: (payable: ProjectPayable, values: ProjectPayablePaymentValues) => Promise<ProjectPayable>;
   handleCreateCashTransaction: (data: CreateProjectCashTransactionInput) => Promise<ProjectCashTransaction>;
   handleVerifyCashTransaction: (id: string) => Promise<ProjectCashTransaction>;
+  handleArchiveCashTransaction: (id: string) => Promise<void>;
+  handleReverseCashTransaction: (id: string, reason: string) => Promise<string>;
   handleCreateKasbon: (data: CreateCashAdvanceRequestInput) => Promise<KasbonReimbursement>;
+  handleArchiveCashAdvanceRequest: (id: string) => Promise<void>;
   handleDecideCashAdvance: (id: string, decision: CashAdvanceDecision, comment: string) => Promise<KasbonReimbursement>;
   handlePayCashAdvance: (id: string, paymentMethod: CashPaymentMethod, reference: string) => Promise<KasbonReimbursement>;
   handleSettleCashAdvance: (id: string, settledAmount: number, notes: string) => Promise<KasbonReimbursement>;
@@ -1098,10 +1104,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return updated;
   };
 
+  const handleArchiveCashTransaction = async (id: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk mengarsipkan transaksi.');
+    await archiveCashTransaction(id, currentOrg.id);
+    await reloadAllData();
+  };
+
+  const handleReverseCashTransaction = async (id: string, reason: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk mengoreksi transaksi.');
+    const correctionId = await reverseCashTransaction(id, currentOrg.id, reason);
+    await reloadAllData();
+    return correctionId;
+  };
+
   const handleCreateKasbon = async (data: CreateCashAdvanceRequestInput) => {
     const created = await createKasbon(data);
     setKasbonList((prev) => [created, ...prev]);
     return created;
+  };
+
+  const handleArchiveCashAdvanceRequest = async (id: string) => {
+    if (!currentOrg) throw new Error('Pilih organisasi aktif untuk mengarsipkan pengajuan kasbon.');
+    await archiveCashAdvanceRequest(id, currentOrg.id);
+    await reloadAllData();
   };
 
   const handleDecideCashAdvance = async (id: string, decision: CashAdvanceDecision, comment: string) => {
@@ -1388,7 +1413,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         handlePayProjectPayable,
         handleCreateCashTransaction,
         handleVerifyCashTransaction,
+        handleArchiveCashTransaction,
+        handleReverseCashTransaction,
         handleCreateKasbon,
+        handleArchiveCashAdvanceRequest,
         handleDecideCashAdvance,
         handlePayCashAdvance,
         handleSettleCashAdvance,

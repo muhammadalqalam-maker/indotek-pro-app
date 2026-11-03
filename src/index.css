@@ -259,6 +259,7 @@ select {
 }
 
 .safe-area-main {
+  overflow-anchor: none;
   padding-bottom: calc(5rem + env(safe-area-inset-bottom));
 }
 

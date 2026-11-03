@@ -180,11 +180,10 @@ export async function updateProjectDocument(
 }
 
 export async function archiveProjectDocument(organizationId: string, documentId: string): Promise<void> {
-  const { error } = await getClient()
-    .from('project_documents')
-    .update({ deleted_at: new Date().toISOString() })
-    .eq('organization_id', organizationId)
-    .eq('id', documentId);
+  const { error } = await getClient().rpc('archive_project_document', {
+    p_organization_id: organizationId,
+    p_document_id: documentId,
+  });
   if (error) throw error;
 }
 

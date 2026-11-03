@@ -26,6 +26,7 @@ import { formatRupiah, formatTanggal } from '../../utils/format';
 import { calculateEffectiveProjectContractValue } from '../../utils/projectCalculations';
 import { projectCategories, projectStatuses } from './schemas/projectSchema';
 import { projectStatusLabels, projectStatusVariants } from './projectStatus';
+import { getProjectErrorMessage } from './utils/projectError';
 
 const messages = getMessages('id').projects;
 const categoryLabels: Record<(typeof projectCategories)[number], string> = messages.categoryLabels;
@@ -86,7 +87,7 @@ export function ProjectListView({
       toast({ title: messages.deleted, variant: 'success' });
       setProjectToDelete(null);
     } catch (error) {
-      const detail = error instanceof Error ? error.message : messages.deleteFailed;
+      const detail = getProjectErrorMessage(error, messages.deleteFailed);
       setDeleteError(detail);
       toast({ title: messages.deleteFailed, description: detail, variant: 'error' });
     } finally {

@@ -111,7 +111,7 @@ export const AppHeader: React.FC<{
           <div className="block min-w-0 flex-1 truncate text-sm font-semibold sm:hidden">
             {routeLabel}
           </div>
-          <div className="hidden sm:block">
+          <div className="hidden lg:block">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-base tracking-tight text-text">
                 Indotek<span className="text-accent-600">Pro</span>
@@ -204,7 +204,7 @@ export const AppHeader: React.FC<{
           )}
         </div>
 
-        <Breadcrumb className="hidden min-w-0 flex-1 px-2 md:block">
+        <Breadcrumb className="hidden min-w-0 flex-1 px-2 lg:block">
           <BreadcrumbList className="flex-nowrap overflow-hidden text-xs">
             {projectDetailId ? (
               <>
