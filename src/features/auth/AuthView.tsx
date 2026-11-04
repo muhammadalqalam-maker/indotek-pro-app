@@ -91,15 +91,16 @@ export function AuthView() {
   return (
     <main className="min-h-screen overflow-y-auto bg-bg lg:grid lg:grid-cols-2">
       <aside className="relative hidden min-h-screen flex-col overflow-hidden bg-primary-900 px-10 py-10 lg:flex xl:px-16">
-        <div className="flex items-center gap-3">
+        <img
+          className="absolute inset-0 size-full object-cover object-top"
+          src="/login-background.jpg"
+          alt=""
+          aria-hidden="true"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-primary-900/20" />
+        <div className="relative z-10 flex w-fit items-center gap-3 rounded-lg bg-primary-900/80 px-3 py-2">
           <img className="size-10 rounded-lg" src="/pwa-192x192.png" alt="" />
           <span className="text-sm font-semibold tracking-wide text-primary-50">{messages.appName}</span>
-        </div>
-        <div className="flex flex-1 items-center justify-center py-16">
-          <div className="relative">
-            <div aria-hidden="true" className="absolute -inset-8 rounded-3xl border border-primary-50/20" />
-            <img className="relative size-56 rounded-2xl shadow-lg" src="/pwa-512x512.png" alt="" />
-          </div>
         </div>
       </aside>
 

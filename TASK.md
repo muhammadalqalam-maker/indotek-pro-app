@@ -79,7 +79,7 @@
 
 ## FASE UI-G — Autentikasi
 
-- [x] **T-UI.G.1** Perbarui tampilan halaman masuk menyerupai referensi shadcn-admin dengan layout dua panel responsif, tanpa mengubah alur Supabase Auth. — 2026-11-04 — Layout desktop dua panel dan mobile ringkas; alur login, daftar, validasi, serta pemulihan kata sandi tetap. Snapshot 375/768/1280 light/dark diperbarui; responsif 360px dan reduced-motion diperiksa. Auth E2E 5/5, visual 1/1, typecheck/lint/build, dan unit 198/198 lulus.
+- [x] **T-UI.G.1** Perbarui tampilan halaman masuk menyerupai referensi shadcn-admin dengan layout dua panel responsif, tanpa mengubah alur Supabase Auth. — 2026-11-04 — Panel kiri memakai foto konstruksi pilihan pengguna dengan crop dan overlay netral; logo tetap terbaca. Alur login, daftar, validasi, serta pemulihan kata sandi tetap. Snapshot 375/768/1280 light/dark diperbarui; responsif 360px dan reduced-motion diperiksa. Auth E2E 5/5, visual 1/1, typecheck/lint/build, dan unit 198/198 lulus.
 
 ## Decision Log — Fase UI
 
