@@ -1,4 +1,4 @@
-import { Select } from '../../../components/ui';
+import { FilterChips, Select, type FilterChipOption } from '../../../components/ui';
 import { getMessages } from '../../../i18n';
 import type { Project } from '../../../types/database';
 import { DOCUMENT_CATEGORIES } from '../schemas/documents.schema';
@@ -23,33 +23,22 @@ export function DocumentFilters({
   selectedCategory,
   onCategoryChange,
 }: DocumentFiltersProps) {
+  const categoryOptions: FilterChipOption<DocumentCategory | 'all'>[] = [
+    { value: 'all', label: messages.allCategories },
+    ...DOCUMENT_CATEGORIES.map((category) => ({
+      value: category,
+      label: messages.categories[category],
+    })),
+  ];
+
   return (
     <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_16rem]">
-      <div className="flex gap-2 overflow-x-auto pb-1" aria-label={messages.categoryLabel}>
-        <button
-          type="button"
-          aria-pressed={selectedCategory === 'all'}
-          onClick={() => onCategoryChange('all')}
-          className={`min-h-11 shrink-0 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-            selectedCategory === 'all' ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-text'
-          }`}
-        >
-          {messages.allCategories}
-        </button>
-        {DOCUMENT_CATEGORIES.map((category) => (
-          <button
-            key={category}
-            type="button"
-            aria-pressed={selectedCategory === category}
-            onClick={() => onCategoryChange(category)}
-            className={`min-h-11 shrink-0 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
-              selectedCategory === category ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface text-text'
-            }`}
-          >
-            {messages.categories[category]}
-          </button>
-        ))}
-      </div>
+      <FilterChips
+        label={messages.categoryLabel}
+        value={selectedCategory}
+        options={categoryOptions}
+        onValueChange={onCategoryChange}
+      />
       {!projectScoped && (
         <Select
           label={messages.project}

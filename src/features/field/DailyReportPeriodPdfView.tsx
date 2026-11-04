@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Download, FileText, RefreshCw } from 'lucide-react';
+import { FilterChips } from '../../components/ui';
 import { useApp } from '../../context/AppContext';
 import { useCan } from '../../hooks/useCan';
 import { getMessages } from '../../i18n';
@@ -118,19 +119,15 @@ export function DailyReportPeriodPdfView({ project }: DailyReportPeriodPdfViewPr
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium text-text">{periodMessages.periodType}</legend>
-            <div className="flex min-h-11 rounded-md border border-border bg-background p-1">
-              {(['weekly', 'monthly'] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={period === value}
-                  onClick={() => setPeriod(value)}
-                  className={`min-h-9 flex-1 rounded px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${period === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-text'}`}
-                >
-                  {value === 'weekly' ? periodMessages.weekly : periodMessages.monthly}
-                </button>
-              ))}
-            </div>
+            <FilterChips
+              label={periodMessages.periodType}
+              value={period}
+              options={[
+                { value: 'weekly', label: periodMessages.weekly },
+                { value: 'monthly', label: periodMessages.monthly },
+              ]}
+              onValueChange={setPeriod}
+            />
           </fieldset>
           <label className="space-y-2 text-sm font-medium text-text">
             <span>{period === 'weekly' ? periodMessages.anchorDate : periodMessages.month}</span>

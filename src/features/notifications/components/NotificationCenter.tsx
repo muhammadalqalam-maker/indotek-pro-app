@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, Bell, CheckCheck, Circle, Info } from 'lucide-react';
-import { Badge, Button } from '../../../components/ui';
+import { Badge, Button, FilterChips } from '../../../components/ui';
 import { useToast } from '../../../components/ui/Toast';
 import { useApp } from '../../../context/AppContext';
 import { getMessages } from '../../../i18n';
@@ -216,28 +216,15 @@ export function NotificationCenter() {
               <Badge variant={realtimeVariant} className="shrink-0 whitespace-nowrap">{realtimeLabel}</Badge>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex gap-1" role="group" aria-label={messages.title}>
-                <Button
-                  type="button"
-                  variant={filter === 'all' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="min-h-11"
-                  aria-pressed={filter === 'all'}
-                  onClick={() => setFilter('all')}
-                >
-                  {messages.all}
-                </Button>
-                <Button
-                  type="button"
-                  variant={filter === 'unread' ? 'secondary' : 'ghost'}
-                  size="sm"
-                  className="min-h-11"
-                  aria-pressed={filter === 'unread'}
-                  onClick={() => setFilter('unread')}
-                >
-                  {messages.unread}
-                </Button>
-              </div>
+              <FilterChips
+                label={messages.title}
+                value={filter}
+                options={[
+                  { value: 'all', label: messages.all },
+                  { value: 'unread', label: messages.unread },
+                ]}
+                onValueChange={setFilter}
+              />
               <Button
                 type="button"
                 variant="ghost"

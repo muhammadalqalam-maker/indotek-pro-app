@@ -144,6 +144,7 @@ Implementasi bridge di `src/index.css` memetakan token ini lewat `@theme inline`
 Semua berbasis Radix + Tailwind, varian lewat `cva`. Komponen baru berasal dari shadcn CLI ke `components/shadcn/`; kode fitur mengimpor lewat barrel `components/ui/index.ts` (AGENTS §7A).
 
 - **Button:** `primary`, `secondary`, `outline`, `ghost`, `destructive`, `accent`; ukuran `sm 32 / md 40 / lg 48`; state loading (spinner, disable). Mobile target ≥ 44px.
+- **FilterChips:** filter pilihan-tunggal dalam grup segmented dengan latar `surface-2`; opsi aktif memakai `surface` dan `shadow-xs`, opsi lain muted. Gunakan komponen bersama agar filter dokumen, approval, notifikasi, dan periode konsisten.
 - **Input/Textarea/Select/Combobox/DatePicker/NumberInput/CurrencyInput (Rp):** label di atas, helper text, error inline berwarna danger + ikon, prefix/suffix.
 - **Checkbox, Radio, Switch, Tabs, Accordion, Tooltip, Popover, Dropdown Menu.**
 - **Sidebar, Breadcrumb, Collapsible, Command, Sheet (kiri/kanan/bawah)** dari shadcn.

@@ -4,6 +4,7 @@ import { BrowserRouter, useSearchParams } from 'react-router-dom';
 import {
   Button,
   DataTable,
+  FilterChips,
   LoadingState,
   OfflineState,
   PageHeader,
@@ -18,6 +19,78 @@ type WorkItem = {
   status: 'berjalan' | 'tertunda' | 'selesai';
   project: string;
 };
+
+function FilterChipsHarness() {
+  const [category, setCategory] = useState('all');
+  const [status, setStatus] = useState('pending');
+  const [notification, setNotification] = useState('all');
+  const [period, setPeriod] = useState('weekly');
+
+  return (
+    <main className="min-h-screen bg-background p-4 text-foreground sm:p-6">
+      <PageShell header={<PageHeader title="Filter chips" />}>
+        <div className="grid gap-6">
+          <fieldset className="grid min-w-0 gap-2">
+            <legend className="text-sm font-medium text-text">Dokumen</legend>
+            <FilterChips
+              label="Kategori dokumen"
+              value={category}
+              options={[
+                { value: 'all', label: 'Semua kategori' },
+                { value: 'contract', label: 'Kontrak & SPK' },
+                { value: 'drawing', label: 'Gambar kerja (DED)' },
+                { value: 'shop', label: 'Shop drawing' },
+                { value: 'as-built', label: 'As-built drawing' },
+                { value: 'rfi', label: 'Klarifikasi (RFI)' },
+                { value: 'minutes', label: 'Berita acara (BAST)' },
+                { value: 'safety', label: 'Laporan K3 & lingkungan' },
+              ]}
+              onValueChange={setCategory}
+            />
+          </fieldset>
+          <fieldset className="grid min-w-0 gap-2">
+            <legend className="text-sm font-medium text-text">Approval</legend>
+            <FilterChips
+              label="Status approval"
+              value={status}
+              options={[
+                { value: 'pending', label: 'Menunggu', trailing: 12 },
+                { value: 'approved', label: 'Disetujui' },
+                { value: 'rejected', label: 'Ditolak' },
+                { value: 'all', label: 'Semua' },
+              ]}
+              onValueChange={setStatus}
+            />
+          </fieldset>
+          <fieldset className="grid min-w-0 gap-2">
+            <legend className="text-sm font-medium text-text">Notifikasi</legend>
+            <FilterChips
+              label="Filter notifikasi"
+              value={notification}
+              options={[
+                { value: 'all', label: 'Semua' },
+                { value: 'unread', label: 'Belum dibaca' },
+              ]}
+              onValueChange={setNotification}
+            />
+          </fieldset>
+          <fieldset className="grid min-w-0 gap-2">
+            <legend className="text-sm font-medium text-text">Periode laporan</legend>
+            <FilterChips
+              label="Jenis periode"
+              value={period}
+              options={[
+                { value: 'weekly', label: 'Mingguan' },
+                { value: 'monthly', label: 'Bulanan' },
+              ]}
+              onValueChange={setPeriod}
+            />
+          </fieldset>
+        </div>
+      </PageShell>
+    </main>
+  );
+}
 
 const workItems: WorkItem[] = Array.from({ length: 24 }, (_, index) => ({
   id: `task-${index + 1}`,
@@ -50,6 +123,7 @@ function TablePatternsHarness() {
     });
   }, [urlState.filterValues.status, urlState.searchValue, urlState.sort]);
 
+  if (view === 'filters') return <FilterChipsHarness />;
   if (view === 'loading') return <LoadingState label="Memuat daftar pekerjaan" />;
   if (view === 'offline') return <OfflineState />;
   if (view === 'forbidden') return <RouteStatusPage status="forbidden" />;

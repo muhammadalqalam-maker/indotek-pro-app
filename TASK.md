@@ -45,3 +45,7 @@
 
 - [x] **T-UI.H.1** Rapikan alignment ikon pada rail sidebar desktop saat diciutkan. — 2026-11-04 — Ikon organisasi, menu navigasi, dan toggle ditengah-ratakan; 30 baseline visual rail 768px diperbarui. Typecheck/lint, build, unit, dan 16 tes visual navigasi lulus.
 - [x] **T-UI.H.2** Hilangkan ruang kosong berlebih di sisi kanan konten desktop. — 2026-11-04 — Tes desktop pada lebar layout setara screenshot mereproduksi gap 164px; batas container disesuaikan ke token konten 1440px. Tes visual navigasi, typecheck, lint, dan build lulus.
+
+## FASE UI-I — Filter chips
+
+- [x] **T-UI.I.1** Seragamkan filter chips di Dokumen, Approval, notifikasi, dan periode laporan. — 2026-11-04 — Komponen bersama `FilterChips` mengikuti pola segmented shadcn-admin; interaksi, gaya aktif, dan scroll horizontal lulus di 375/768/1280px serta light/dark. Typecheck, lint, build, 200 unit, dan 5 tes visual lulus.

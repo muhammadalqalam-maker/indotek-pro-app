@@ -19,6 +19,7 @@ export * from './Dialog';
 export * from './EmptyState';
 export * from './ErrorState';
 export * from './FileUploader';
+export * from './FilterChips';
 export * from './Input';
 export * from './KpiCard';
 export * from './LoadingState';

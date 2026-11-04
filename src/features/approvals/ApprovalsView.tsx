@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   EmptyState,
+  FilterChips,
   PageHeader,
   PageShell,
   Skeleton,
@@ -65,6 +66,29 @@ export function ApprovalsView() {
   const visibleRequests = requests.filter((request) => (
     filter === 'all' || request.status === filter
   ));
+  const filterOptions = [
+    {
+      value: APPROVAL_STATUSES.pending,
+      label: messages.pending,
+      leading: <Clock3 className="h-4 w-4" aria-hidden="true" />,
+      trailing: pendingCount,
+    },
+    {
+      value: APPROVAL_STATUSES.approved,
+      label: messages.approved,
+      leading: <CheckCircle2 className="h-4 w-4" aria-hidden="true" />,
+    },
+    {
+      value: APPROVAL_STATUSES.rejected,
+      label: messages.rejected,
+      leading: <XCircle className="h-4 w-4" aria-hidden="true" />,
+    },
+    {
+      value: 'all',
+      label: messages.all,
+      leading: <ListChecks className="h-4 w-4" aria-hidden="true" />,
+    },
+  ] as const;
 
   const refreshAfterDecision = async () => {
     if (!organizationId) return;
@@ -171,29 +195,13 @@ export function ApprovalsView() {
           ) : (
             <section className="grid gap-4">
               <Card>
-                <CardContent className="flex flex-wrap gap-2 p-3 sm:p-4" role="group" aria-label={messages.requestsTab}>
-                  {([
-                    [APPROVAL_STATUSES.pending, messages.pending, Clock3],
-                    [APPROVAL_STATUSES.approved, messages.approved, CheckCircle2],
-                    [APPROVAL_STATUSES.rejected, messages.rejected, XCircle],
-                    ['all', messages.all, ListChecks],
-                  ] as const).map(([status, label, Icon]) => (
-                    <button
-                      key={status}
-                      type="button"
-                      aria-pressed={filter === status}
-                      onClick={() => setFilter(status)}
-                      className={`inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-medium ${
-                        filter === status
-                          ? 'border-primary-500 bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-500'
-                          : 'border-border bg-surface text-muted-foreground hover:text-text'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" aria-hidden="true" />
-                      {label}
-                      {status === APPROVAL_STATUSES.pending && <span>{pendingCount}</span>}
-                    </button>
-                  ))}
+                <CardContent className="p-3 sm:p-4">
+                  <FilterChips
+                    label={messages.requestsTab}
+                    value={filter}
+                    options={filterOptions}
+                    onValueChange={setFilter}
+                  />
                 </CardContent>
               </Card>
 
