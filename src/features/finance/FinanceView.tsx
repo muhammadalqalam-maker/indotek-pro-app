@@ -7,6 +7,7 @@ import {
   Button,
   Card,
   CardSection,
+  ConfirmDialog,
   Input,
   KpiCard,
   PageHeader,
@@ -15,6 +16,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
 } from '../../components/ui';
 import {
   CASH_ADVANCE_STATUSES,
@@ -40,6 +42,7 @@ import { ProjectCashFlowForecast } from './components/ProjectCashFlowForecast';
 import type { CashAdvanceActionFormValues } from './schemas/cashbook.schema';
 import type { ProjectPayablePaymentValues } from './schemas/payable.schema';
 import { calculateAgingTotals } from './utils/payableAging';
+import { isCashTransactionIncludedInActuals } from './utils/cashTransactionAccounting';
 import {
   TrendingUp,
   Receipt,
@@ -54,6 +57,8 @@ import {
   CreditCard,
   XCircle,
   Search,
+  Archive,
+  Undo2,
 } from 'lucide-react';
 
 const messages = getMessages('id').finance;
@@ -108,6 +113,7 @@ function renderClientInvoiceStatus(status: ClientInvoice['status']) {
 
 export const FinanceView: React.FC = () => {
   const {
+    can,
     currentOrg,
     clientInvoices,
     projectPayables,
@@ -123,7 +129,10 @@ export const FinanceView: React.FC = () => {
     handlePayProjectPayable,
     handleCreateCashTransaction,
     handleVerifyCashTransaction,
+    handleArchiveCashTransaction,
+    handleReverseCashTransaction,
     handleCreateKasbon,
+    handleArchiveCashAdvanceRequest,
     handleDecideCashAdvance,
     handlePayCashAdvance,
     handleSettleCashAdvance,
@@ -136,6 +145,7 @@ export const FinanceView: React.FC = () => {
   const canRecordInvoicePayment = currentRole === 'owner' || currentRole === 'admin' || currentRole === 'finance';
   const canRecordFinance = ['owner', 'admin', 'project_manager', 'finance'].includes(currentRole);
   const canProcessFinance = ['owner', 'admin', 'finance'].includes(currentRole);
+  const canManageCashRecords = can('finance', 'approve');
 
   const [activeTab, setActiveTab] = useState<FinanceTabId>('invoices');
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,6 +162,12 @@ export const FinanceView: React.FC = () => {
   const [financeFeedback, setFinanceFeedback] = useState('');
   const [financeActionError, setFinanceActionError] = useState('');
   const [verifyingTransactionId, setVerifyingTransactionId] = useState<string | null>(null);
+  const [cashTransactionToArchive, setCashTransactionToArchive] = useState<ProjectCashTransaction | null>(null);
+  const [cashTransactionToReverse, setCashTransactionToReverse] = useState<ProjectCashTransaction | null>(null);
+  const [cashAdvanceToArchive, setCashAdvanceToArchive] = useState<KasbonReimbursement | null>(null);
+  const [correctionReason, setCorrectionReason] = useState('');
+  const [correctionReasonError, setCorrectionReasonError] = useState('');
+  const [isCashActionPending, setIsCashActionPending] = useState(false);
 
   // Filtered lists
   const filteredInvoices = clientInvoices.filter((inv) => {
@@ -210,11 +226,11 @@ export const FinanceView: React.FC = () => {
     status: invoice.status,
   })), new Date().toISOString().slice(0, 10));
 
-  const verifiedTransactions = cashTransactions.filter((transaction) => transaction.status === CASH_TRANSACTION_STATUSES.verified);
-  const totalInflow = verifiedTransactions
+  const accountedTransactions = cashTransactions.filter(isCashTransactionIncludedInActuals);
+  const totalInflow = accountedTransactions
     .filter((t) => t.type === 'inflow')
     .reduce((acc, t) => acc + t.amount, 0);
-  const totalOutflow = verifiedTransactions
+  const totalOutflow = accountedTransactions
     .filter((t) => t.type === 'outflow')
     .reduce((acc, t) => acc + t.amount, 0);
   const cashBalance = totalInflow - totalOutflow;
@@ -275,6 +291,58 @@ export const FinanceView: React.FC = () => {
       setFinanceActionError(error instanceof Error ? error.message : messages.verifyError);
     } finally {
       setVerifyingTransactionId(null);
+    }
+  };
+
+  const archiveTransaction = async () => {
+    if (!cashTransactionToArchive) return;
+    setIsCashActionPending(true);
+    setFinanceActionError('');
+    try {
+      await handleArchiveCashTransaction(cashTransactionToArchive.id);
+      setFinanceFeedback(messages.transactionArchived);
+      setCashTransactionToArchive(null);
+    } catch (error) {
+      setFinanceActionError(error instanceof Error ? error.message : messages.archiveTransactionError);
+    } finally {
+      setIsCashActionPending(false);
+    }
+  };
+
+  const reverseTransaction = async () => {
+    if (!cashTransactionToReverse) return;
+    const reason = correctionReason.trim();
+    if (reason.length < 5 || reason.length > 350) {
+      setCorrectionReasonError(messages.correctionReasonInvalid);
+      return;
+    }
+    setIsCashActionPending(true);
+    setFinanceActionError('');
+    try {
+      await handleReverseCashTransaction(cashTransactionToReverse.id, reason);
+      setFinanceFeedback(messages.transactionCorrectionSuccess);
+      setCashTransactionToReverse(null);
+      setCorrectionReason('');
+      setCorrectionReasonError('');
+    } catch (error) {
+      setFinanceActionError(error instanceof Error ? error.message : messages.transactionCorrectionError);
+    } finally {
+      setIsCashActionPending(false);
+    }
+  };
+
+  const archiveCashAdvance = async () => {
+    if (!cashAdvanceToArchive) return;
+    setIsCashActionPending(true);
+    setFinanceActionError('');
+    try {
+      await handleArchiveCashAdvanceRequest(cashAdvanceToArchive.id);
+      setFinanceFeedback(messages.cashAdvanceArchived);
+      setCashAdvanceToArchive(null);
+    } catch (error) {
+      setFinanceActionError(error instanceof Error ? error.message : messages.cashAdvanceArchiveError);
+    } finally {
+      setIsCashActionPending(false);
     }
   };
 
@@ -584,18 +652,64 @@ export const FinanceView: React.FC = () => {
                       </td>
                       <td className="px-4 py-3.5">
                         <span className="block text-sm text-muted-foreground">{transaction.payment_method}</span>
-                        <span className={`mt-1 inline-flex items-center gap-1 text-xs font-semibold ${transaction.status === CASH_TRANSACTION_STATUSES.verified ? 'text-success' : 'text-warning'}`}>
-                          {transaction.status === CASH_TRANSACTION_STATUSES.verified
-                            ? <><CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {messages.verified}</>
-                            : <><Clock aria-hidden="true" className="h-3 w-3" /> {messages.pending}</>}
+                        <span
+                          className={`mt-1 inline-flex items-center gap-1 text-xs font-semibold ${
+                            transaction.status === CASH_TRANSACTION_STATUSES.verified
+                              ? 'text-success'
+                              : transaction.status === CASH_TRANSACTION_STATUSES.reversed
+                                ? 'text-muted-foreground'
+                                : 'text-warning'
+                          }`}
+                          title={transaction.correction_reason ?? undefined}
+                        >
+                          {transaction.status === CASH_TRANSACTION_STATUSES.reversed
+                            ? <><Undo2 aria-hidden="true" className="h-3 w-3" /> {messages.reversed}</>
+                            : transaction.reversal_of_id
+                              ? <><CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {messages.correction}</>
+                              : transaction.status === CASH_TRANSACTION_STATUSES.verified
+                                ? <><CheckCircle2 aria-hidden="true" className="h-3 w-3" /> {messages.verified}</>
+                                : <><Clock aria-hidden="true" className="h-3 w-3" /> {messages.pending}</>}
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
-                          <Button disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} size="sm" variant="ghost">
-                            {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
-                          </Button>
-                        )}
+                        <div className="flex flex-wrap justify-center gap-1">
+                          {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
+                            <Button disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} size="sm" variant="ghost">
+                              {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
+                            </Button>
+                          )}
+                          {canManageCashRecords && (
+                            <>
+                              {(
+                                (transaction.status === CASH_TRANSACTION_STATUSES.pending
+                                  && !transaction.invoice_id
+                                  && !transaction.cash_advance_request_id
+                                  && !transaction.payable_id)
+                                || transaction.status === CASH_TRANSACTION_STATUSES.reversed
+                                || Boolean(transaction.reversal_of_id)
+                              ) && (
+                                <Button size="sm" variant="outline" onClick={() => setCashTransactionToArchive(transaction)}>
+                                  <Archive aria-hidden="true" className="h-3.5 w-3.5" />
+                                  {messages.archiveTransaction}
+                                </Button>
+                              )}
+                              {transaction.status === CASH_TRANSACTION_STATUSES.verified
+                                && !transaction.reversal_of_id
+                                && !transaction.invoice_id
+                                && !transaction.cash_advance_request_id
+                                && !transaction.payable_id && (
+                                  <Button size="sm" variant="outline" onClick={() => {
+                                    setCorrectionReason('');
+                                    setCorrectionReasonError('');
+                                    setCashTransactionToReverse(transaction);
+                                  }}>
+                                    <Undo2 aria-hidden="true" className="h-3.5 w-3.5" />
+                                    {messages.reverseTransaction}
+                                  </Button>
+                                )}
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -626,12 +740,51 @@ export const FinanceView: React.FC = () => {
                   <p className="text-sm text-text">{transaction.description}</p>
                   <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
                     <span>{transaction.recipient_or_payer} · {transaction.payment_method}</span>
-                    <span className="font-semibold">{transaction.status === CASH_TRANSACTION_STATUSES.verified ? messages.verified : messages.pending}</span>
+                    <span className="font-semibold">
+                      {transaction.status === CASH_TRANSACTION_STATUSES.reversed
+                        ? messages.reversed
+                        : transaction.reversal_of_id
+                          ? messages.correction
+                          : transaction.status === CASH_TRANSACTION_STATUSES.verified
+                            ? messages.verified
+                            : messages.pending}
+                    </span>
                   </div>
                   {transaction.status === CASH_TRANSACTION_STATUSES.pending && canProcessFinance && (
                     <Button className="w-full" disabled={verifyingTransactionId === transaction.id} onClick={() => void verifyTransaction(transaction.id)} variant="outline">
                       {verifyingTransactionId === transaction.id ? messages.verifyingTransaction : messages.verifyTransaction}
                     </Button>
+                  )}
+                  {canManageCashRecords && (
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {(
+                        (transaction.status === CASH_TRANSACTION_STATUSES.pending
+                          && !transaction.invoice_id
+                          && !transaction.cash_advance_request_id
+                          && !transaction.payable_id)
+                        || transaction.status === CASH_TRANSACTION_STATUSES.reversed
+                        || Boolean(transaction.reversal_of_id)
+                      ) && (
+                        <Button className="w-full" variant="outline" onClick={() => setCashTransactionToArchive(transaction)}>
+                          <Archive aria-hidden="true" className="h-4 w-4" />
+                          {messages.archiveTransaction}
+                        </Button>
+                      )}
+                      {transaction.status === CASH_TRANSACTION_STATUSES.verified
+                        && !transaction.reversal_of_id
+                        && !transaction.invoice_id
+                        && !transaction.cash_advance_request_id
+                        && !transaction.payable_id && (
+                          <Button className="w-full" variant="outline" onClick={() => {
+                            setCorrectionReason('');
+                            setCorrectionReasonError('');
+                            setCashTransactionToReverse(transaction);
+                          }}>
+                            <Undo2 aria-hidden="true" className="h-4 w-4" />
+                            {messages.reverseTransaction}
+                          </Button>
+                        )}
+                    </div>
                   )}
                 </article>
               ))}
@@ -750,6 +903,14 @@ export const FinanceView: React.FC = () => {
                       {messages.settle}
                     </Button>
                   )}
+                  {canManageCashRecords
+                    && (k.settlement_status === CASH_ADVANCE_STATUSES.pendingApproval
+                      || k.settlement_status === CASH_ADVANCE_STATUSES.rejected) && (
+                        <Button onClick={() => setCashAdvanceToArchive(k)} variant="outline">
+                          <Archive aria-hidden="true" className="h-4 w-4" />
+                          {messages.archiveCashAdvance}
+                        </Button>
+                      )}
                 </div>
               </div>
               );
@@ -896,6 +1057,54 @@ export const FinanceView: React.FC = () => {
           request={cashAdvanceAction.request}
         />
       )}
+      <ConfirmDialog
+        open={cashTransactionToArchive !== null}
+        onOpenChange={(open) => {
+          if (!open && !isCashActionPending) setCashTransactionToArchive(null);
+        }}
+        title={messages.archiveTransactionTitle}
+        description={messages.archiveTransactionDescription}
+        confirmLabel={messages.archiveTransaction}
+        destructive
+        loading={isCashActionPending}
+        onConfirm={() => void archiveTransaction()}
+      />
+      <ConfirmDialog
+        open={cashTransactionToReverse !== null}
+        onOpenChange={(open) => {
+          if (!open && !isCashActionPending) setCashTransactionToReverse(null);
+        }}
+        title={messages.reverseTransactionTitle}
+        description={messages.reverseTransactionDescription}
+        confirmLabel={messages.reverseTransaction}
+        destructive
+        loading={isCashActionPending}
+        onConfirm={() => void reverseTransaction()}
+      >
+        <Textarea
+          label={messages.correctionReason}
+          hint={correctionReasonError ? undefined : messages.correctionReasonHint}
+          error={correctionReasonError || undefined}
+          maxLength={350}
+          value={correctionReason}
+          onChange={(event) => {
+            setCorrectionReason(event.currentTarget.value);
+            setCorrectionReasonError('');
+          }}
+        />
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={cashAdvanceToArchive !== null}
+        onOpenChange={(open) => {
+          if (!open && !isCashActionPending) setCashAdvanceToArchive(null);
+        }}
+        title={messages.archiveCashAdvanceTitle}
+        description={messages.archiveCashAdvanceDescription}
+        confirmLabel={messages.archiveCashAdvance}
+        destructive
+        loading={isCashActionPending}
+        onConfirm={() => void archiveCashAdvance()}
+      />
     </PageShell>
   );
 };

@@ -8,6 +8,7 @@ import {
   Button,
   Card,
   CardContent,
+  ConfirmDialog,
   EmptyState,
   Input,
   PageHeader,
@@ -17,6 +18,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
 } from '../../components/ui';
 import { VendorWorkspace } from './components/VendorWorkspace';
 import { ProcurementWorkflowWorkspace } from './components/ProcurementWorkflowWorkspace';
@@ -25,6 +27,7 @@ import { MaterialRequestWorkspace } from './components/MaterialRequestWorkspace'
 import { fetchWarehouseData } from '../warehouse/services/warehouse.service';
 import type { WarehouseInventoryItem } from '../warehouse/types';
 import { PurchaseOrderDetailsDialog } from './components/PurchaseOrderDetailsDialog';
+import { archivePurchaseOrder, cancelPurchaseOrder } from './services/procurement.service';
 import {
   ShoppingCart,
   Search,
@@ -35,6 +38,8 @@ import {
   Building,
   X,
   Eye,
+  Archive,
+  Ban,
 } from 'lucide-react';
 
 export const ProcurementView: React.FC = () => {
@@ -68,6 +73,13 @@ export const ProcurementView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPOForDetail, setSelectedPOForDetail] = useState<PurchaseOrder | null>(null);
+  const [orderToArchive, setOrderToArchive] = useState<PurchaseOrder | null>(null);
+  const [orderToCancel, setOrderToCancel] = useState<PurchaseOrder | null>(null);
+  const [cancellationReason, setCancellationReason] = useState('');
+  const [cancellationReasonError, setCancellationReasonError] = useState('');
+  const [isLifecycleActionPending, setIsLifecycleActionPending] = useState(false);
+  const [procurementActionError, setProcurementActionError] = useState('');
+  const [procurementActionMessage, setProcurementActionMessage] = useState('');
   // Filtered POs
   const filteredPOs = purchaseOrders.filter((po) => {
     const matchSearch =
@@ -89,8 +101,49 @@ export const ProcurementView: React.FC = () => {
         return <Badge variant="info"><Truck className="size-3" />Barang Diterima</Badge>;
       case 'rejected':
         return <Badge variant="danger"><X className="size-3" />Ditolak</Badge>;
+      case 'cancelled':
+        return <Badge variant="neutral"><Ban className="size-3" />{workflowMessages.cancelled}</Badge>;
       default:
         return <Badge variant="neutral">{status}</Badge>;
+    }
+  };
+
+  const archiveOrder = async () => {
+    if (!orderToArchive || !currentOrg) return;
+    setIsLifecycleActionPending(true);
+    setProcurementActionError('');
+    try {
+      await archivePurchaseOrder(currentOrg.id, orderToArchive.id);
+      setOrderToArchive(null);
+      setProcurementActionMessage(workflowMessages.orderArchived);
+      await reloadAllData();
+    } catch (error) {
+      setProcurementActionError(error instanceof Error ? error.message : workflowMessages.archiveFailed);
+    } finally {
+      setIsLifecycleActionPending(false);
+    }
+  };
+
+  const cancelOrder = async () => {
+    if (!orderToCancel || !currentOrg) return;
+    const reason = cancellationReason.trim();
+    if (reason.length < 5 || reason.length > 2000) {
+      setCancellationReasonError(workflowMessages.cancellationReasonInvalid);
+      return;
+    }
+    setIsLifecycleActionPending(true);
+    setProcurementActionError('');
+    try {
+      await cancelPurchaseOrder(currentOrg.id, orderToCancel.id, reason);
+      setOrderToCancel(null);
+      setCancellationReason('');
+      setCancellationReasonError('');
+      setProcurementActionMessage(workflowMessages.orderCancelled);
+      await reloadAllData();
+    } catch (error) {
+      setProcurementActionError(error instanceof Error ? error.message : workflowMessages.cancelOrderFailed);
+    } finally {
+      setIsLifecycleActionPending(false);
     }
   };
 
@@ -201,9 +254,12 @@ export const ProcurementView: React.FC = () => {
                 <option value="approved">Disetujui</option>
                 <option value="received">Barang Diterima</option>
                 <option value="rejected">Ditolak</option>
+                <option value="cancelled">{workflowMessages.cancelled}</option>
               </Select>
             </CardContent>
           </Card>
+          {procurementActionMessage && <p role="status" className="rounded-lg border border-success/30 bg-success-bg p-3 text-sm text-success">{procurementActionMessage}</p>}
+          {procurementActionError && <p role="alert" className="rounded-lg border border-danger/30 bg-danger-bg p-3 text-sm text-danger">{procurementActionError}</p>}
 
           {/* PO Table */}
           {filteredPOs.length === 0 ? (
@@ -247,11 +303,39 @@ export const ProcurementView: React.FC = () => {
                       <p className="text-xs text-muted-foreground">Nilai total</p>
                       <p className="break-words font-semibold tabular-nums text-text">{formatRupiah(po.grand_total)}</p>
                     </div>
-                    <Button type="button" variant="outline" onClick={() => setSelectedPOForDetail(po)}>
-                      <Eye className="size-4" aria-hidden="true" />
-                      {messages.detailTitle}
-                    </Button>
+                    <div className="flex flex-wrap justify-end gap-2">
+                      <Button type="button" variant="outline" onClick={() => setSelectedPOForDetail(po)}>
+                        <Eye className="size-4" aria-hidden="true" />
+                        {messages.detailTitle}
+                      </Button>
+                      {po.status === 'approved' && can('procurement', 'approve') && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          onClick={() => {
+                            setCancellationReason('');
+                            setCancellationReasonError('');
+                            setOrderToCancel(po);
+                          }}
+                        >
+                          <Ban className="size-4" aria-hidden="true" />
+                          {workflowMessages.cancelOrder}
+                        </Button>
+                      )}
+                      {(po.status === 'draft' || po.status === 'rejected' || po.status === 'cancelled')
+                        && can('procurement', 'delete') && (
+                          <Button type="button" variant="outline" onClick={() => setOrderToArchive(po)}>
+                            <Archive className="size-4" aria-hidden="true" />
+                            {workflowMessages.archiveOrder}
+                          </Button>
+                        )}
+                    </div>
                   </div>
+                  {po.status === 'cancelled' && po.cancellation_reason && (
+                    <p className="rounded-md bg-surface-2 p-2 text-sm text-muted-foreground">
+                      {workflowMessages.cancellationReason}: {po.cancellation_reason}
+                    </p>
+                  )}
                 </article>
               ))}
             </div>
@@ -313,6 +397,37 @@ export const ProcurementView: React.FC = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+                          {po.status === 'approved' && can('procurement', 'approve') && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="destructive"
+                              aria-label={workflowMessages.cancelOrder}
+                              title={workflowMessages.cancelOrder}
+                              className="min-h-11 min-w-11 p-0"
+                              onClick={() => {
+                                setCancellationReason('');
+                                setCancellationReasonError('');
+                                setOrderToCancel(po);
+                              }}
+                            >
+                              <Ban className="size-4" aria-hidden="true" />
+                            </Button>
+                          )}
+                          {(po.status === 'draft' || po.status === 'rejected' || po.status === 'cancelled')
+                            && can('procurement', 'delete') && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                aria-label={workflowMessages.archiveOrder}
+                                title={workflowMessages.archiveOrder}
+                                className="min-h-11 min-w-11 p-0"
+                                onClick={() => setOrderToArchive(po)}
+                              >
+                                <Archive className="size-4" aria-hidden="true" />
+                              </Button>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -333,7 +448,9 @@ export const ProcurementView: React.FC = () => {
             projects={projects}
             vendors={vendors}
             currentRole={currentRole}
+            can={can}
             projectId={selectedProjectId}
+            purchaseOrders={purchaseOrders}
             onOrdersChanged={reloadAllData}
           />
         ) : null}
@@ -383,6 +500,42 @@ export const ProcurementView: React.FC = () => {
           onClose={() => setSelectedPOForDetail(null)}
         />
       )}
+      <ConfirmDialog
+        open={orderToArchive !== null}
+        onOpenChange={(open) => {
+          if (!open && !isLifecycleActionPending) setOrderToArchive(null);
+        }}
+        title={workflowMessages.archiveOrderTitle}
+        description={workflowMessages.archiveOrderDescription}
+        confirmLabel={workflowMessages.archiveOrder}
+        destructive
+        loading={isLifecycleActionPending}
+        onConfirm={() => void archiveOrder()}
+      />
+      <ConfirmDialog
+        open={orderToCancel !== null}
+        onOpenChange={(open) => {
+          if (!open && !isLifecycleActionPending) setOrderToCancel(null);
+        }}
+        title={workflowMessages.cancelOrderTitle}
+        description={workflowMessages.cancelOrderDescription}
+        confirmLabel={workflowMessages.cancelOrder}
+        destructive
+        loading={isLifecycleActionPending}
+        onConfirm={() => void cancelOrder()}
+      >
+        <Textarea
+          label={workflowMessages.cancellationReason}
+          hint={cancellationReasonError ? undefined : workflowMessages.cancellationReasonHint}
+          error={cancellationReasonError || undefined}
+          maxLength={2000}
+          value={cancellationReason}
+          onChange={(event) => {
+            setCancellationReason(event.currentTarget.value);
+            setCancellationReasonError('');
+          }}
+        />
+      </ConfirmDialog>
 
     </PageShell>
   );

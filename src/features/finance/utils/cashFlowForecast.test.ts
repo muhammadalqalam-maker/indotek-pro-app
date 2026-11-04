@@ -143,3 +143,29 @@ test('ignores future-dated actual transactions and returns zero forecast for emp
   assert.equal(forecast.months[2].actualInflow, 0);
   assert.equal(forecast.scheduledNet, 0);
 });
+
+test('keeps reversed originals and correction entries together in actual cash flow', () => {
+  const forecast = buildCashFlowForecast(
+    [
+      makeTransaction({
+        id: 'reversed-outflow',
+        type: 'outflow',
+        status: 'reversed',
+        amount: 100,
+      }),
+      makeTransaction({
+        id: 'correction-inflow',
+        type: 'inflow',
+        status: 'verified',
+        amount: 100,
+      }),
+    ],
+    [],
+    [],
+    asOfDate,
+  );
+
+  assert.equal(forecast.months[2].actualInflow, 100);
+  assert.equal(forecast.months[2].actualOutflow, 100);
+  assert.equal(forecast.months[2].actualNet, 0);
+});

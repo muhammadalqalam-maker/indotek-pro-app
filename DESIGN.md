@@ -49,7 +49,7 @@ Palet kontekstual di atas tidak mendominasi shell dan kontrol umum; pemetaan vis
 ### 2.3 Warna Semantik
 | Status | Fg | Bg tint (light) |
 |---|---|---|
-| Success | `#15803D` | `#E8F6EC` |
+| Success | `#157A3A` | `#E8F6EC` |
 | Warning | `#B45309` | `#FEF3C7` |
 | Danger | `#B91C1C` | `#FDECEC` |
 | Info | `#1D4ED8` | `#E6EEFF` |

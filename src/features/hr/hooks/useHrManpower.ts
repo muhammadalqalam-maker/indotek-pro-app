@@ -4,7 +4,7 @@ import { useOfflineSync } from '../../../hooks/useOfflineSync';
 import {
   cacheHrAttendance,
   cacheHrWorkers,
-  enqueueAttendance,
+  enqueueAttendanceBatch,
   getAttendanceQueue,
   getCachedHrAttendance,
   getCachedHrWorkers,
@@ -18,6 +18,7 @@ import {
 import { workerWageRateSchema, type WorkerWageRateValues } from '../schemas/wage.schema';
 import {
   createFieldWorker,
+  archiveDailyAttendance,
   fetchDailyAttendance,
   fetchFieldWorkers,
   upsertDailyAttendance,
@@ -179,49 +180,14 @@ export function useHrManpower(
         }
       }
 
-      const [existingQueue, cachedAttendance] = await Promise.all([
-        getAttendanceQueue(organizationId, userId),
-        getCachedHrAttendance(organizationId, userId, projectId, attendanceDate),
-      ]);
-      const pendingByKey = new Map(existingQueue.map((item) => [item.key, item]));
-      const savedByWorker = new Map(cachedAttendance.map((item) => [item.worker_id, item]));
-      const queuedAttendance: DailyAttendance[] = [];
-      for (const record of records) {
-        const key = `${organizationId}:${projectId}:${attendanceDate}:${record.worker_id}`;
-        const queuedItem = {
-          key,
-          organizationId,
-          projectId,
-          userId,
-          attendanceDate,
-          record: {
-            id: pendingByKey.get(key)?.record.id
-              ?? savedByWorker.get(record.worker_id)?.id
-              ?? crypto.randomUUID(),
-            ...record,
-          },
-          queuedAt: pendingByKey.get(key)?.queuedAt ?? new Date().toISOString(),
-          attempts: 0,
-          lastError: null,
-        };
-        await enqueueAttendance(queuedItem);
-        const worker = workersQuery.data?.find(({ id }) => id === record.worker_id);
-        if (worker) {
-          queuedAttendance.push({
-            id: queuedItem.record.id,
-            organization_id: organizationId,
-            project_id: projectId,
-            date: attendanceDate,
-            worker_id: worker.id,
-            worker_name: worker.full_name,
-            role_trade: worker.role_trade,
-            status: record.status,
-            work_hours: record.work_hours,
-            overtime_hours: record.overtime_hours,
-            daily_earnings: 0,
-          });
-        }
-      }
+      const queuedAttendance = await enqueueAttendanceBatch(
+        organizationId,
+        userId,
+        projectId,
+        attendanceDate,
+        records,
+        workersQuery.data ?? [],
+      );
       await refreshCounts(organizationId, userId);
       return { queued: true, count: records.length, attendance: queuedAttendance };
     },
@@ -250,10 +216,43 @@ export function useHrManpower(
     },
   });
 
+  const archiveAttendance = useMutation({
+    mutationFn: async (attendance: DailyAttendance) => {
+      if (!isOnline) throw new Error(messages.attendanceArchiveOnlineRequired);
+      const queue = await getAttendanceQueue(organizationId, userId);
+      if (queue.some((item) => (
+        item.projectId === attendance.project_id
+        && item.attendanceDate === attendance.date
+        && item.record.worker_id === attendance.worker_id
+      ))) {
+        throw new Error(messages.attendanceArchiveSyncRequired);
+      }
+      await archiveDailyAttendance(organizationId, projectId, attendance.id);
+      return attendance;
+    },
+    onSuccess: async (attendance) => {
+      const queryKey = ['hr-attendance', organizationId, projectId, attendanceDate, userId];
+      const remaining = (queryClient.getQueryData<DailyAttendance[]>(queryKey) ?? [])
+        .filter((record) => record.id !== attendance.id);
+      queryClient.setQueryData(queryKey, remaining);
+      await cacheHrAttendance(organizationId, userId, projectId, attendanceDate, remaining);
+      setActionMessage(messages.attendanceArchived);
+      setActionError('');
+      await queryClient.invalidateQueries({ queryKey: ['hr-attendance', organizationId] });
+      await queryClient.invalidateQueries({ queryKey: ['hr-weekly-wages', organizationId] });
+    },
+    onError: (error) => {
+      setActionMessage('');
+      setActionError(error instanceof Error ? error.message : messages.attendanceArchiveError);
+    },
+  });
+
   return {
+    archiveAttendance,
     actionError,
     actionMessage,
     attendanceQuery,
+    canArchiveAttendance: isOnline && attendanceCount === 0,
     createWorker,
     retrySync,
     saveAttendance,

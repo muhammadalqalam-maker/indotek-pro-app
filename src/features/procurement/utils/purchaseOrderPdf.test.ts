@@ -25,6 +25,8 @@ const labels: PurchaseOrderPdfLabels = {
   approvedBy: 'Approved by',
   approvalDate: 'Approval date',
   approvalNotes: 'Approval notes',
+  cancelledDate: 'Cancellation date',
+  cancellationReason: 'Cancellation reason',
   npwp: 'NPWP',
   nib: 'NIB',
   page: 'Page',
@@ -36,6 +38,7 @@ const labels: PurchaseOrderPdfLabels = {
     ordered: 'Ordered',
     received: 'Received',
     closed: 'Closed',
+    cancelled: 'Cancelled',
   },
 };
 

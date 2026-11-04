@@ -3,8 +3,10 @@ import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   cacheHrWorkers,
+  cacheHrAttendance,
   clearHrCacheForUser,
   enqueueAttendance,
+  enqueueAttendanceBatch,
   getAttendanceQueue,
   getCachedHrWorkers,
   removeAttendanceFromQueue,
@@ -58,6 +60,82 @@ describe('HR offline storage', () => {
     assert.equal(results.length, 1);
     assert.equal(results[0].record.status, 'lembur');
     await removeAttendanceFromQueue(item.key);
+  });
+
+  it('queues an offline attendance batch using pending IDs and cached attendance IDs', async () => {
+    const workers: FieldWorker[] = [
+      {
+        id: 'hr-offline-test-worker-a',
+        organization_id: organizationId,
+        project_id: projectId,
+        nik: 'A-001',
+        full_name: 'Pekerja A',
+        role_trade: 'Operator',
+        daily_wage_rate: 0,
+        overtime_hourly_rate: 0,
+        status: 'active',
+      },
+      {
+        id: 'hr-offline-test-worker-b',
+        organization_id: organizationId,
+        project_id: projectId,
+        nik: 'B-001',
+        full_name: 'Pekerja B',
+        role_trade: 'Tukang Besi',
+        daily_wage_rate: 0,
+        overtime_hourly_rate: 0,
+        status: 'active',
+      },
+    ];
+    const pendingKey = `${organizationId}:${projectId}:2026-10-22:${workers[0].id}`;
+    const cachedAttendanceId = 'hr-offline-cached-attendance';
+    await cacheHrAttendance(organizationId, userId, projectId, '2026-10-22', [{
+      id: cachedAttendanceId,
+      organization_id: organizationId,
+      project_id: projectId,
+      date: '2026-10-22',
+      worker_id: workers[1].id,
+      worker_name: workers[1].full_name,
+      role_trade: workers[1].role_trade,
+      status: 'hadir',
+      work_hours: 8,
+      overtime_hours: 0,
+      daily_earnings: 0,
+    }]);
+    await enqueueAttendance(makeQueueItem(pendingKey, {
+      record: {
+        id: 'hr-offline-pending-attendance',
+        worker_id: workers[0].id,
+        status: 'hadir',
+        work_hours: 8,
+        overtime_hours: 0,
+      },
+      queuedAt: '2026-10-22T01:00:00.000Z',
+    }));
+
+    const saved = await enqueueAttendanceBatch(
+      organizationId,
+      userId,
+      projectId,
+      '2026-10-22',
+      [
+        { worker_id: workers[0].id, status: 'lembur', work_hours: 8, overtime_hours: 2 },
+        { worker_id: workers[1].id, status: 'hadir', work_hours: 7, overtime_hours: 0 },
+      ],
+      workers,
+    );
+    const queue = await getAttendanceQueue(organizationId, userId);
+
+    assert.equal(queue.length, 2);
+    assert.equal(queue[0].record.id, 'hr-offline-pending-attendance');
+    assert.equal(queue[0].queuedAt, '2026-10-22T01:00:00.000Z');
+    assert.equal(queue[0].record.status, 'lembur');
+    assert.equal(queue[0].record.overtime_hours, 2);
+    assert.equal(queue[1].record.id, cachedAttendanceId);
+    assert.deepEqual(saved.map((record) => record.worker_id), workers.map((worker) => worker.id));
+    assert.deepEqual(saved.map((record) => record.status), ['lembur', 'hadir']);
+
+    await Promise.all(queue.map((item) => removeAttendanceFromQueue(item.key)));
   });
 
   it('scopes queued attendance by organization and user', async () => {

@@ -17,6 +17,7 @@ export default defineConfig({
     locale: 'id-ID',
     timezoneId: 'Asia/Jakarta',
     reducedMotion: 'reduce',
+    serviceWorkers: 'block',
     trace: 'retain-on-failure',
   },
   webServer: {

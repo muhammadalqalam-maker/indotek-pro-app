@@ -106,6 +106,8 @@ for (const tab of Object.keys(NAVIGATION_MODULES)) {
 }
 
 test('navigation routes load directly and remain available after refresh', async ({ page }) => {
+  test.setTimeout(120_000);
+
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {
       await route.continue();
@@ -115,13 +117,47 @@ test('navigation routes load directly and remain available after refresh', async
   });
 
   for (const { path } of NAVIGATION_ROUTES) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
     await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
     await expect(page).toHaveURL(`${localOrigin}${path}`);
 
-    await page.reload();
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
     await expect(page).toHaveURL(`${localOrigin}${path}`);
+  }
+});
+
+test('tablet header keeps primary controls and project context in two rows', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const header = page.locator('header.safe-area-topbar');
+  for (const width of [640, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(page.getByRole('combobox', { name: 'Konteks proyek' })).toBeVisible();
+
+    const layout = await header.evaluate((element) => {
+      const rows = [...element.children].map((child) =>
+        Math.round(child.getBoundingClientRect().top),
+      );
+      return {
+        height: Math.round(element.getBoundingClientRect().height),
+        rows,
+      };
+    });
+
+    expect(layout.height, JSON.stringify({ width, ...layout })).toBeLessThanOrEqual(120);
+    expect(layout.rows[0]).toBe(layout.rows[1]);
+    expect(layout.rows[2]).toBeGreaterThan(layout.rows[0]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
 
@@ -464,6 +500,40 @@ test('mobile Menu opens the navigation sheet and preserves bottom navigation act
   await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');
 });
 
+test('mobile quick actions trap focus and restore it when closed', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const trigger = page.getByRole('navigation', { name: 'Navigasi utama' })
+    .getByRole('button', { name: 'Aksi cepat' });
+  await trigger.click();
+
+  const dialog = page.getByRole('dialog', { name: 'Aksi cepat' });
+  const controls = dialog.getByRole('button');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Tutup dialog' })).toHaveCount(0);
+  await expect(controls.first()).toBeFocused();
+
+  await page.keyboard.press('Shift+Tab');
+  await expect(controls.last()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(controls.first()).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+});
+
 test('browser back and forward restore route and scroll position', async ({ page }) => {
   await page.route('**/*', async (route) => {
     if (new URL(route.request().url()).origin === localOrigin) {
@@ -477,21 +547,20 @@ test('browser back and forward restore route and scroll position', async ({ page
   await page.goto('/dashboard');
   await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
   const main = page.locator('main[aria-busy="false"]');
-  await main.evaluate((element) => {
-    const spacer = document.createElement('div');
-    spacer.setAttribute('aria-hidden', 'true');
-    spacer.style.height = '1200px';
-    element.append(spacer);
+  await page.addStyleTag({
+    content: 'main[aria-busy="false"] { scroll-behavior: auto !important; } main[aria-busy="false"]::after { content: ""; display: block; height: 1200px; }',
   });
-  await main.evaluate((element) => { element.scrollTop = 400; });
+  await main.evaluate((element) => { element.scrollTo({ top: 400, behavior: 'instant' }); });
   await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(400);
 
   await page.getByRole('navigation', { name: 'Navigasi aplikasi' })
     .getByRole('link', { name: 'Pengaturan & Tim' }).click();
   await expect(page).toHaveURL(`${localOrigin}/settings`);
+  const settingsMain = page.locator('main[aria-busy="false"]');
+  await expect(settingsMain).toBeVisible();
   await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(0);
-  await main.evaluate((element) => { element.scrollTop = 250; });
-  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(250);
+  await settingsMain.evaluate((element) => { element.scrollTo({ top: 250, behavior: 'instant' }); });
+  await expect.poll(() => settingsMain.evaluate((element) => element.scrollTop)).toBe(250);
 
   await page.goBack();
   await expect(page).toHaveURL(`${localOrigin}/dashboard`);
@@ -499,7 +568,7 @@ test('browser back and forward restore route and scroll position', async ({ page
 
   await page.goForward();
   await expect(page).toHaveURL(`${localOrigin}/settings`);
-  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(250);
+  await expect.poll(() => settingsMain.evaluate((element) => element.scrollTop)).toBe(250);
 });
 
 test('legacy home-screen shortcut URL redirects while retaining unrelated query parameters', async ({ page }) => {

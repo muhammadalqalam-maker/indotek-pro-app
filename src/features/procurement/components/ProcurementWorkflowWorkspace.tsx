@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Archive, Plus, RefreshCw } from 'lucide-react';
 import { getMessages } from '../../../i18n';
 import { getSupabase } from '../../../lib/supabase';
-import { Button, PageHeader, Skeleton } from '../../../components/ui';
-import type { Project, Vendor } from '../../../types/database';
-import type { UserRole } from '../../../utils/permissions';
+import { Button, ConfirmDialog, PageHeader, Skeleton } from '../../../components/ui';
+import type { Project, PurchaseOrder, Vendor } from '../../../types/database';
+import type { AppAction, AppModule, UserRole } from '../../../utils/permissions';
 import { formatRupiah, formatTanggal } from '../../../utils/format';
 import { PurchaseOrderDialog } from './PurchaseOrderDialog';
 import { PurchaseRequestDialog } from './PurchaseRequestDialog';
 import { VendorQuoteDialog } from './VendorQuoteDialog';
-import { fetchProcurementPurchaseRequests, fetchVendorQuotes } from '../services/procurement.service';
+import {
+  archivePurchaseRequest,
+  archiveVendorQuote,
+  fetchProcurementPurchaseRequests,
+  fetchVendorQuotes,
+} from '../services/procurement.service';
 import type { ProcurementPurchaseRequest, VendorQuote } from '../types';
 
 const messages = getMessages().procurementWorkflow;
@@ -36,14 +41,18 @@ export function ProcurementWorkflowWorkspace({
   projects,
   vendors,
   currentRole,
+  can,
   projectId,
+  purchaseOrders,
   onOrdersChanged,
 }: {
   organizationId: string;
   projects: Project[];
   vendors: Vendor[];
   currentRole: UserRole | null;
+  can: (module: AppModule, action: AppAction) => boolean;
   projectId: string;
+  purchaseOrders: PurchaseOrder[];
   onOrdersChanged: () => Promise<void>;
 }) {
   const [requests, setRequests] = useState<ProcurementPurchaseRequest[]>([]);
@@ -53,9 +62,21 @@ export function ProcurementWorkflowWorkspace({
   const [requestDialog, setRequestDialog] = useState(false);
   const [quoteRequest, setQuoteRequest] = useState<ProcurementPurchaseRequest | null>(null);
   const [orderRequest, setOrderRequest] = useState<ProcurementPurchaseRequest | null>(null);
+  const [requestToArchive, setRequestToArchive] = useState<ProcurementPurchaseRequest | null>(null);
+  const [quoteToArchive, setQuoteToArchive] = useState<VendorQuote | null>(null);
+  const [isArchivePending, setIsArchivePending] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
   const liveAvailable = Boolean(getSupabase());
   const canRequest = currentRole !== null && requestRoles.includes(currentRole);
   const canProcure = currentRole !== null && quoteRoles.includes(currentRole);
+  const canArchive = can('procurement', 'delete');
+  const protectedQuoteIds = new Set(
+    purchaseOrders
+      .filter((order) => order.status !== 'cancelled')
+      .map((order) => order.vendor_quote_id)
+      .filter((quoteId): quoteId is string => Boolean(quoteId)),
+  );
 
   const refresh = useCallback(async () => {
     if (!liveAvailable) {
@@ -100,6 +121,38 @@ export function ProcurementWorkflowWorkspace({
     await onOrdersChanged();
   };
 
+  const confirmArchiveRequest = async () => {
+    if (!requestToArchive) return;
+    setIsArchivePending(true);
+    setActionError('');
+    try {
+      await archivePurchaseRequest(organizationId, requestToArchive.id);
+      setRequestToArchive(null);
+      setActionMessage(messages.requestArchived);
+      await refreshAfterMutation();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : messages.archiveFailed);
+    } finally {
+      setIsArchivePending(false);
+    }
+  };
+
+  const confirmArchiveQuote = async () => {
+    if (!quoteToArchive) return;
+    setIsArchivePending(true);
+    setActionError('');
+    try {
+      await archiveVendorQuote(organizationId, quoteToArchive.id);
+      setQuoteToArchive(null);
+      setActionMessage(messages.quoteArchived);
+      await refreshAfterMutation();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : messages.archiveFailed);
+    } finally {
+      setIsArchivePending(false);
+    }
+  };
+
   return (
     <section className="grid gap-4">
       <PageHeader
@@ -116,6 +169,9 @@ export function ProcurementWorkflowWorkspace({
           </Button>
         ) : undefined}
       />
+
+      {actionMessage && <p role="status" className="rounded-lg border border-success/30 bg-success-bg p-3 text-sm text-success">{actionMessage}</p>}
+      {actionError && <p role="alert" className="rounded-lg border border-danger/30 bg-danger-bg p-3 text-sm text-danger">{actionError}</p>}
 
       {loading ? (
         <div className="grid gap-3" aria-label={messages.loading}>
@@ -152,7 +208,20 @@ export function ProcurementWorkflowWorkspace({
                     <p className="mt-1 text-sm text-muted-foreground">{request.project_name} · {request.requester_name} · {request.department}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{messages.required}: {formatTanggal(request.required_date)}</p>
                   </div>
-                  <p className="font-semibold tabular-nums text-text">{formatRupiah(request.total_estimated_amount)}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-3 sm:justify-end">
+                    <p className="font-semibold tabular-nums text-text">{formatRupiah(request.total_estimated_amount)}</p>
+                    {canArchive
+                      && (request.status === 'draft' || request.status === 'approved' || request.status === 'rejected') && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setRequestToArchive(request)}
+                        >
+                          <Archive className="size-4" aria-hidden="true" />
+                          {messages.archiveRequest}
+                        </Button>
+                      )}
+                  </div>
                 </header>
 
                 <ul className="grid gap-2 rounded-lg bg-surface-2 p-3 sm:grid-cols-2">
@@ -191,6 +260,7 @@ export function ProcurementWorkflowWorkspace({
                               <th className="py-2 pr-3 text-right">Subtotal</th>
                               <th className="py-2 pr-3 text-right">PPN</th>
                               <th className="py-2 text-right">Total</th>
+                              {canArchive && <th className="py-2 pl-3 text-right">{messages.action}</th>}
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border">
@@ -201,6 +271,21 @@ export function ProcurementWorkflowWorkspace({
                                 <td className="py-2 pr-3 text-right tabular-nums text-muted-foreground">{formatRupiah(quote.subtotal)}</td>
                                 <td className="py-2 pr-3 text-right tabular-nums text-muted-foreground">{formatRupiah(quote.ppn_amount)}</td>
                                 <td className="py-2 text-right font-semibold tabular-nums text-text">{formatRupiah(quote.grand_total)}</td>
+                                {canArchive && (
+                                  <td className="py-2 pl-3 text-right">
+                                    {!protectedQuoteIds.has(quote.id) && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setQuoteToArchive(quote)}
+                                      >
+                                        <Archive className="size-3.5" aria-hidden="true" />
+                                        {messages.archiveQuote}
+                                      </Button>
+                                    )}
+                                  </td>
+                                )}
                               </tr>
                             ))}
                           </tbody>
@@ -242,6 +327,30 @@ export function ProcurementWorkflowWorkspace({
           onCreated={refreshAfterMutation}
         />
       )}
+      <ConfirmDialog
+        open={requestToArchive !== null}
+        onOpenChange={(open) => {
+          if (!open && !isArchivePending) setRequestToArchive(null);
+        }}
+        title={messages.archiveRequestTitle}
+        description={messages.archiveRequestDescription}
+        confirmLabel={messages.archiveRequest}
+        destructive
+        loading={isArchivePending}
+        onConfirm={() => void confirmArchiveRequest()}
+      />
+      <ConfirmDialog
+        open={quoteToArchive !== null}
+        onOpenChange={(open) => {
+          if (!open && !isArchivePending) setQuoteToArchive(null);
+        }}
+        title={messages.archiveQuoteTitle}
+        description={messages.archiveQuoteDescription}
+        confirmLabel={messages.archiveQuote}
+        destructive
+        loading={isArchivePending}
+        onConfirm={() => void confirmArchiveQuote()}
+      />
     </section>
   );
 }

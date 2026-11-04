@@ -125,25 +125,44 @@ function RouteLoadingFallback() {
 function RouteScrollRestoration() {
   const location = useLocation();
   const navigationType = useNavigationType();
+  const { isLoading, permissionsLoading } = useApp();
   const positions = useRef(new Map<string, number>());
 
   useEffect(() => {
-    const main = document.querySelector<HTMLElement>('main[aria-busy]');
-    if (!main) return;
-
-    const savePosition = () => positions.current.set(location.key, main.scrollTop);
-    main.addEventListener('scroll', savePosition, { passive: true });
-    return () => main.removeEventListener('scroll', savePosition);
-  }, [location.key]);
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const main = document.querySelector<HTMLElement>('main[aria-busy]');
     if (!main) return;
 
-    main.scrollTop = navigationType === 'POP'
+    const savePosition = () => {
+      if (main.getAttribute('aria-busy') === 'false') {
+        positions.current.set(location.key, main.scrollTop);
+      }
+    };
+    main.addEventListener('scroll', savePosition, { passive: true });
+    return () => {
+      savePosition();
+      main.removeEventListener('scroll', savePosition);
+    };
+  }, [location.key]);
+
+  useLayoutEffect(() => {
+    if (isLoading || permissionsLoading) return;
+
+    const main = document.querySelector<HTMLElement>('main[aria-busy]');
+    if (!main) return;
+
+    const scrollTop = navigationType === 'POP'
       ? positions.current.get(location.key) ?? 0
       : 0;
-  }, [location.key, navigationType]);
+    main.scrollTop = scrollTop;
+  }, [location.key, navigationType, isLoading, permissionsLoading]);
 
   return null;
 }

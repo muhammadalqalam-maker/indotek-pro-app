@@ -24,6 +24,8 @@ export type PurchaseOrderPdfLabels = {
   approvedBy: string;
   approvalDate: string;
   approvalNotes: string;
+  cancelledDate: string;
+  cancellationReason: string;
   npwp: string;
   nib: string;
   page: string;
@@ -166,7 +168,7 @@ export function createPurchaseOrderPdf(options: PurchaseOrderPdfOptions): jsPDF 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8.5);
 
-  const details = [
+  const details: Array<[string, string]> = [
     [labels.project, order.project_name],
     [labels.requestReference, order.pr_number || '-'],
     [labels.vendor, `${order.vendor_name} - ${order.vendor_contact}`],
@@ -174,7 +176,13 @@ export function createPurchaseOrderPdf(options: PurchaseOrderPdfOptions): jsPDF 
     [labels.deliveryDeadline, formatDateIndo(order.delivery_deadline)],
     [labels.deliveryAddress, order.delivery_address],
     [labels.status, labels.statuses[order.status]],
-  ] as const;
+  ];
+  if (order.cancelled_at) {
+    details.push([labels.cancelledDate, formatDateIndo(order.cancelled_at)]);
+  }
+  if (order.cancellation_reason) {
+    details.push([labels.cancellationReason, order.cancellation_reason]);
+  }
 
   for (let index = 0; index < details.length; index += 2) {
     const rowY = y + 3;

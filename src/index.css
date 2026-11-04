@@ -31,7 +31,7 @@
   --text-muted: #5B6676;
   --text-subtle: #8A94A6;
 
-  --success: #15803D;
+  --success: #157A3A;
   --success-bg: #E8F6EC;
   --warning: #B45309;
   --warning-bg: #FEF3C7;
@@ -259,6 +259,7 @@ select {
 }
 
 .safe-area-main {
+  overflow-anchor: none;
   padding-bottom: calc(5rem + env(safe-area-inset-bottom));
 }
 

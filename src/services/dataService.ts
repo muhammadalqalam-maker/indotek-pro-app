@@ -431,12 +431,10 @@ export async function updateProject(
 export async function deleteProject(id: string, organizationId: string): Promise<void> {
   const supabase = getSupabase();
   if (supabase) {
-    const { error } = await supabase
-      .from('projects')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
-      .eq('organization_id', organizationId)
-      .is('deleted_at', null);
+    const { error } = await supabase.rpc('soft_delete_project', {
+      p_project_id: id,
+      p_organization_id: organizationId,
+    });
     if (error) throw error;
     return;
   }
@@ -1207,7 +1205,7 @@ export async function fetchCashTransactions(orgId: string, projectId?: string): 
       if (!['inflow', 'outflow'].includes(row.type)
         || !['Termin Klien', 'Material', 'Upah Pekerja', 'Subkon', 'Sewa Alat', 'Operasional Site', 'Kasbon / Petty Cash', 'Lainnya'].includes(row.category)
         || !['Transfer Bank', 'Kas Tunai', 'Giro / Cek', 'Lainnya'].includes(row.payment_method)
-        || !['pending', 'verified'].includes(row.status)) {
+        || !['pending', 'verified', 'reversed'].includes(row.status)) {
         throw new Error('Data transaksi buku kas dari server tidak dikenal.');
       }
       return {
@@ -1227,8 +1225,13 @@ export async function fetchCashTransactions(orgId: string, projectId?: string): 
         reference: row.reference,
         invoice_id: row.invoice_id,
         cash_advance_request_id: row.cash_advance_request_id,
+        payable_id: row.payable_id,
         verified_by: row.verified_by,
         verified_at: row.verified_at,
+        reversal_of_id: row.reversal_of_id,
+        reversed_by: row.reversed_by,
+        reversed_at: row.reversed_at,
+        correction_reason: row.correction_reason,
       };
     });
   }
@@ -1292,6 +1295,32 @@ export async function verifyCashTransaction(transactionId: string, organizationI
   return target;
 }
 
+export async function archiveCashTransaction(transactionId: string, organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Pengarsipan transaksi kas memerlukan koneksi Supabase.');
+  const { error } = await supabase.rpc('archive_project_cash_transaction', {
+    p_organization_id: organizationId,
+    p_transaction_id: transactionId,
+  });
+  if (error) throw error;
+}
+
+export async function reverseCashTransaction(
+  transactionId: string,
+  organizationId: string,
+  reason: string,
+): Promise<string> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Koreksi transaksi kas memerlukan koneksi Supabase.');
+  const { data, error } = await supabase.rpc('reverse_project_cash_transaction', {
+    p_organization_id: organizationId,
+    p_transaction_id: transactionId,
+    p_reason: reason,
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function fetchKasbonList(orgId: string, projectId?: string): Promise<KasbonReimbursement[]> {
   const supabase = getSupabase();
   if (supabase) {
@@ -1343,6 +1372,16 @@ export async function fetchKasbonList(orgId: string, projectId?: string): Promis
   initLocalStorage();
   const list = getLocal<KasbonReimbursement[]>(KEY_KASBON, INITIAL_KASBON);
   return list.filter((k) => k.organization_id === orgId && (!projectId || projectId === 'all' || k.project_id === projectId));
+}
+
+export async function archiveCashAdvanceRequest(requestId: string, organizationId: string): Promise<void> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Pengarsipan pengajuan kasbon memerlukan koneksi Supabase.');
+  const { error } = await supabase.rpc('archive_cash_advance_request', {
+    p_organization_id: organizationId,
+    p_request_id: requestId,
+  });
+  if (error) throw error;
 }
 
 export async function createKasbon(data: CreateCashAdvanceRequestInput): Promise<KasbonReimbursement> {

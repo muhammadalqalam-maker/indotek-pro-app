@@ -7,6 +7,7 @@ import {
   type ProjectCashTransaction,
   type ProjectPayable,
 } from '../../../types/database';
+import { isCashTransactionIncludedInActuals } from './cashTransactionAccounting';
 
 type CashFlowMonth = {
   month: string;
@@ -89,7 +90,7 @@ export function buildCashFlowForecast(
   const today = asOfDate.toISOString().slice(0, 10);
 
   for (const transaction of transactions) {
-    if (transaction.status !== CASH_TRANSACTION_STATUSES.verified || transaction.transaction_date > today) continue;
+    if (!isCashTransactionIncludedInActuals(transaction) || transaction.transaction_date > today) continue;
     const index = monthIndexes.get(getMonthKey(transaction.transaction_date) ?? '');
     if (index === undefined) continue;
     if (!Number.isFinite(transaction.amount) || transaction.amount < 0) continue;
