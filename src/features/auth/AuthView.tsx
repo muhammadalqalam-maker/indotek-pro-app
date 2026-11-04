@@ -89,116 +89,144 @@ export function AuthView() {
   }[authMode];
 
   return (
-    <main className="grid min-h-screen place-items-center bg-muted/40 px-4 py-12">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">{messages.appName}</p>
-          <h1 className="text-2xl font-semibold leading-snug text-text">{title}</h1>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-
-        {authMode === 'update_password' && !authSession ? (
-          <div className="space-y-3">
-            <p role="status" className="text-sm text-warning-foreground">{messages.recoveryLinkInvalid}</p>
-            <Button className="w-full" type="button" onClick={() => setAuthMode('forgot_password')}>
-              {messages.requestNewLink}
-            </Button>
-            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
-              {messages.backToSignIn}
-            </Button>
+    <main className="min-h-screen overflow-y-auto bg-bg lg:grid lg:grid-cols-2">
+      <aside className="relative hidden min-h-screen flex-col overflow-hidden bg-primary-900 px-10 py-10 lg:flex xl:px-16">
+        <div className="flex items-center gap-3">
+          <img className="size-10 rounded-lg" src="/pwa-192x192.png" alt="" />
+          <span className="text-sm font-semibold tracking-wide text-primary-50">{messages.appName}</span>
+        </div>
+        <div className="flex flex-1 items-center justify-center py-16">
+          <div className="relative">
+            <div aria-hidden="true" className="absolute -inset-8 rounded-3xl border border-primary-50/20" />
+            <img className="relative size-56 rounded-2xl shadow-lg" src="/pwa-512x512.png" alt="" />
           </div>
-        ) : (
-          <form className="space-y-4" noValidate onSubmit={handleSubmit(onSubmit)}>
-            {authMode !== 'update_password' && (
-              <Input
-                {...register('email')}
-                id="auth-email"
-                label={messages.email}
-                type="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                inputMode="email"
-                error={errors.email?.message}
-                aria-required="true"
-                disabled={authBusy}
-              />
-            )}
+        </div>
+      </aside>
 
-            {(authMode === 'sign_in' || authMode === 'sign_up') && (
-              <Input
-                {...register('password')}
-                id="auth-password"
-                label={messages.password}
-                type="password"
-                autoComplete={authMode === 'sign_in' ? 'current-password' : 'new-password'}
-                error={errors.password?.message}
-                aria-required="true"
-                disabled={authBusy}
-              />
-            )}
-
-            {authMode === 'update_password' && (
+      <section className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-8 sm:px-6 lg:px-12">
+        <div className="flex w-full max-w-md items-center gap-3 lg:hidden">
+          <img className="size-10 rounded-lg" src="/pwa-192x192.png" alt="" />
+          <span className="text-sm font-semibold tracking-wide text-text">{messages.appName}</span>
+        </div>
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="space-y-3">
+            <h1 className="text-2xl font-semibold leading-snug text-text">{title}</h1>
+            <CardDescription>{description}</CardDescription>
+          </CardHeader>
+          <CardContent className={authMode === 'update_password' ? 'space-y-5' : 'space-y-5 pb-0 sm:pb-0'}>
+            {authMode === 'update_password' && !authSession ? (
+              <div className="space-y-3">
+                <p role="status" className="text-sm text-warning-foreground">{messages.recoveryLinkInvalid}</p>
+                <Button className="w-full" type="button" onClick={() => setAuthMode('forgot_password')}>
+                  {messages.requestNewLink}
+                </Button>
+                <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
+                  {messages.backToSignIn}
+                </Button>
+              </div>
+            ) : (
               <>
-                <Input
-                  {...register('password')}
-                  id="auth-password"
-                  label={messages.password}
-                  type="password"
-                  autoComplete="new-password"
-                  error={errors.password?.message}
-                  aria-required="true"
-                  disabled={authBusy}
-                />
-                <Input
-                  {...register('confirmPassword')}
-                  id="auth-confirm-password"
-                  label={messages.confirmPassword}
-                  type="password"
-                  autoComplete="new-password"
-                  error={errors.confirmPassword?.message}
-                  aria-required="true"
-                  disabled={authBusy}
-                />
+                <form className="space-y-4" noValidate onSubmit={handleSubmit(onSubmit)}>
+                  {authMode !== 'update_password' && (
+                    <Input
+                      {...register('email')}
+                      id="auth-email"
+                      label={messages.email}
+                      type="email"
+                      autoComplete="email"
+                      autoCapitalize="none"
+                      inputMode="email"
+                      error={errors.email?.message}
+                      aria-required="true"
+                      disabled={authBusy}
+                    />
+                  )}
+
+                  {(authMode === 'sign_in' || authMode === 'sign_up') && (
+                    <Input
+                      {...register('password')}
+                      id="auth-password"
+                      label={messages.password}
+                      type="password"
+                      autoComplete={authMode === 'sign_in' ? 'current-password' : 'new-password'}
+                      error={errors.password?.message}
+                      aria-required="true"
+                      disabled={authBusy}
+                    />
+                  )}
+
+                  {authMode === 'update_password' && (
+                    <>
+                      <Input
+                        {...register('password')}
+                        id="auth-password"
+                        label={messages.password}
+                        type="password"
+                        autoComplete="new-password"
+                        error={errors.password?.message}
+                        aria-required="true"
+                        disabled={authBusy}
+                      />
+                      <Input
+                        {...register('confirmPassword')}
+                        id="auth-confirm-password"
+                        label={messages.confirmPassword}
+                        type="password"
+                        autoComplete="new-password"
+                        error={errors.confirmPassword?.message}
+                        aria-required="true"
+                        disabled={authBusy}
+                      />
+                    </>
+                  )}
+
+                  {authError && <p role="alert" className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger">{authError}</p>}
+                  {authNotice && <p role="status" className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success">{authNotice}</p>}
+
+                  <Button className="w-full" type="submit" loading={authBusy} disabled={authBusy}>
+                    {authBusy ? messages.submitting : {
+                      sign_in: messages.signIn,
+                      sign_up: messages.signUp,
+                      forgot_password: messages.sendResetLink,
+                      update_password: messages.savePassword,
+                    }[authMode]}
+                  </Button>
+                </form>
+
+                {authMode === 'sign_in' && (
+                  <div className="flex justify-end">
+                    <Button className="min-h-11 px-2 text-sm text-muted-foreground hover:text-text" variant="ghost" type="button" onClick={() => setAuthMode('forgot_password')}>
+                      {messages.forgotPassword}
+                    </Button>
+                  </div>
+                )}
               </>
             )}
+          </CardContent>
 
-            {authError && <p role="alert" className="rounded-md border border-danger/30 bg-danger-bg p-3 text-sm text-danger">{authError}</p>}
-            {authNotice && <p role="status" className="rounded-md border border-success/30 bg-success-bg p-3 text-sm text-success">{authNotice}</p>}
-
-            <Button className="w-full" type="submit" loading={authBusy} disabled={authBusy}>
-              {authBusy ? messages.submitting : {
-                sign_in: messages.signIn,
-                sign_up: messages.signUp,
-                forgot_password: messages.sendResetLink,
-                update_password: messages.savePassword,
-              }[authMode]}
-            </Button>
-          </form>
-        )}
-
-        {authMode === 'sign_in' && (
-          <div className="space-y-1">
-            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('forgot_password')}>
-              {messages.forgotPassword}
-            </Button>
-            <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_up')}>
-              {messages.noAccount}
-            </Button>
-          </div>
-        )}
-        {authMode === 'sign_up' && (
-          <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
-            {messages.hasAccount}
-          </Button>
-        )}
-        {authMode === 'forgot_password' && (
-          <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
-            {messages.backToSignIn}
-          </Button>
-        )}
-        </CardContent>
-      </Card>
+          {authMode === 'sign_in' && (
+            <div className="border-t border-border px-4 py-3 sm:px-5 sm:py-4">
+              <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_up')}>
+                {messages.noAccount}
+              </Button>
+            </div>
+          )}
+          {authMode === 'sign_up' && (
+            <div className="border-t border-border px-4 py-3 sm:px-5 sm:py-4">
+              <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
+                {messages.hasAccount}
+              </Button>
+            </div>
+          )}
+          {authMode === 'forgot_password' && (
+            <div className="border-t border-border px-4 py-3 sm:px-5 sm:py-4">
+              <Button className="w-full" variant="ghost" type="button" onClick={() => setAuthMode('sign_in')}>
+                {messages.backToSignIn}
+              </Button>
+            </div>
+          )}
+        </Card>
+      </section>
     </main>
   );
 }

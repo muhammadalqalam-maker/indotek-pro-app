@@ -77,6 +77,10 @@
 - [x] **T-UI.F.3** Hapus kode mati (Sidebar lama, `DataTable` lama bila tak dipakai, paket Radix tak terpakai); finalisasi DESIGN §13. — 2026-10-29 — Audit tidak menemukan `Sidebar.tsx`/`TopNavbar.tsx` legacy; `DataTable` dipertahankan karena dipakai harness E2E dan didokumentasikan sebagai pola bersama. Menghapus tujuh dependency langsung Radix yang tak diimpor source; primitive tetap memakai `radix-ui`. Status paritas §13 difinalisasi. Typecheck, lint, build, 198 unit test lulus; visual 38/39 dengan timeout direct-route refresh yang sudah tercatat.
 - [x] **T-UI.F.4** Uji PWA terpasang di HP asli (safe-area, bottom nav, Back); siapkan rilis menunggu persetujuan merge. — 2026-10-30 — Uji PWA terpasang lulus pada iPhone 11/iOS 18 melalui Safari: safe-area, bottom navigation, dan Back (dikonfirmasi pengguna). Branch redesign di-fast-forward ke `main` pada `46cbd77` dengan persetujuan pengguna; Vercel production READY di [indotek-pro.vercel.app](https://indotek-pro.vercel.app), smoke test HTML dan manifest standalone lulus. Seluruh migrasi lokal tercatat sama dengan remote; tidak menjalankan migrasi. Tidak membuat PR atau merge commit.
 
+## FASE UI-G — Autentikasi
+
+- [x] **T-UI.G.1** Perbarui tampilan halaman masuk menyerupai referensi shadcn-admin dengan layout dua panel responsif, tanpa mengubah alur Supabase Auth. — 2026-11-04 — Layout desktop dua panel dan mobile ringkas; alur login, daftar, validasi, serta pemulihan kata sandi tetap. Snapshot 375/768/1280 light/dark diperbarui; responsif 360px dan reduced-motion diperiksa. Auth E2E 5/5, visual 1/1, typecheck/lint/build, dan unit 198/198 lulus.
+
 ## Decision Log — Fase UI
 
 | ID | Keputusan | Status |
