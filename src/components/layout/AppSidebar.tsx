@@ -151,7 +151,7 @@ export function AppSidebar() {
       id="app-sidebar"
     >
       <SidebarHeader>
-        <div className="flex min-w-0 items-center justify-between gap-2 px-2 py-1">
+        <div className="flex min-w-0 items-center justify-between gap-2 px-2 py-1 group-data-[collapsible=icon]:justify-center">
           <div className="flex min-w-0 items-center gap-2">
             <Building2 aria-hidden="true" className="size-5 shrink-0" />
             <span className={`truncate text-sm font-semibold ${state === 'collapsed' && !isMobile ? 'sr-only' : ''}`}>
@@ -230,6 +230,7 @@ export function AppSidebar() {
                             <SidebarMenuItem>
                               <SidebarMenuButton
                                 asChild
+                                className="group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:justify-center"
                                 isActive={isActive}
                                 size="lg"
                                 tooltip={isMobile ? undefined : label}
@@ -268,7 +269,7 @@ export function AppSidebar() {
           <SidebarFooter>
             <SidebarTrigger
               aria-label="Ciutkan atau lebarkan navigasi"
-              className="size-10 self-end"
+              className="size-10 self-end group-data-[collapsible=icon]:self-center"
               title="Ciutkan atau lebarkan navigasi"
             />
           </SidebarFooter>

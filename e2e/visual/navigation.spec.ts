@@ -251,6 +251,32 @@ test('sidebar groups animate height and chevrons, remaining expanded in icon rai
   await expect(content).toHaveAttribute('data-state', 'open');
   await expect(trigger).toBeDisabled();
 
+  const sidebarContainer = page.locator('[data-slot="sidebar-container"]');
+  const railCenter = await sidebarContainer.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return bounds.left + bounds.width / 2;
+  });
+  const iconCenters = await navigation.locator('[data-sidebar="menu-button"] svg').evaluateAll((icons) => (
+    icons.map((icon) => {
+      const bounds = icon.getBoundingClientRect();
+      return bounds.left + bounds.width / 2;
+    })
+  ));
+  const organizationIconCenter = await sidebarContainer.locator('[data-sidebar="header"] svg').evaluate((icon) => {
+    const bounds = icon.getBoundingClientRect();
+    return bounds.left + bounds.width / 2;
+  });
+  const toggleCenter = await sidebarContainer.locator('[data-sidebar="footer"] button').evaluate((button) => {
+    const bounds = button.getBoundingClientRect();
+    return bounds.left + bounds.width / 2;
+  });
+  const alignedCenters = [...iconCenters, organizationIconCenter, toggleCenter];
+
+  expect(iconCenters.length).toBeGreaterThan(0);
+  for (const center of alignedCenters) {
+    expect(Math.abs(center - railCenter), JSON.stringify({ railCenter, alignedCenters })).toBeLessThanOrEqual(1);
+  }
+
   await page.getByRole('button', { name: 'Ciutkan atau lebarkan navigasi' }).first().click();
   await expect(sidebar).toHaveAttribute('data-collapsible', '');
   await page.emulateMedia({ reducedMotion: 'reduce' });

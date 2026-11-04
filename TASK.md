@@ -40,3 +40,7 @@
 - [x] **T-UI.G.1** Perbarui tampilan login dan gunakan foto latar pilihan pengguna tanpa mengubah alur autentikasi. — 2026-11-04 — Layout dua panel responsif, teks brand dipertahankan.
 - [x] **T-UI.G.2** Ganti logo pada header, login, halaman offline, favicon, dan ikon PWA/home screen. — 2026-11-04 — Ikon diregenerasi dari logo pilihan pengguna; app logo termasuk aset precache PWA. Typecheck/lint/build, unit 200/200, auth E2E 5/5, PWA 1/1, auth visual 1/1, dan visual 41/41 lulus. Production READY di `indotek-pro.vercel.app` (Vercel `8GkVK7aYQqoU7zn3iFAcmUAeMwBN`, commit `1b4408e`); logo dan manifest HTTP 200.
 - [x] Polish shell, scrollbar, top bar, dan KPI; audit overflow/responsivitas menyeluruh, termasuk perbaikan scroll internal onboarding pada 1366×768. — 2026-11-03 — Laporan: [audit](./UI_OVERFLOW_AUDIT_REPORT.md), [final](./UI_OVERFLOW_FINAL_REPORT.md); seluruh 43 tes visual terbaru lulus.
+
+## FASE UI-H — Polish navigasi
+
+- [x] **T-UI.H.1** Rapikan alignment ikon pada rail sidebar desktop saat diciutkan. — 2026-11-04 — Ikon organisasi, menu navigasi, dan toggle ditengah-ratakan; 30 baseline visual rail 768px diperbarui. Typecheck/lint, build, unit, dan 16 tes visual navigasi lulus.
