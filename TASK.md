@@ -80,6 +80,7 @@
 ## FASE UI-G — Autentikasi
 
 - [x] **T-UI.G.1** Perbarui tampilan halaman masuk menyerupai referensi shadcn-admin dengan layout dua panel responsif, tanpa mengubah alur Supabase Auth. — 2026-11-04 — Panel kiri memakai foto konstruksi pilihan pengguna dengan crop dan overlay netral; logo tetap terbaca. Alur login, daftar, validasi, serta pemulihan kata sandi tetap. Snapshot 375/768/1280 light/dark diperbarui; responsif 360px dan reduced-motion diperiksa. Auth E2E 5/5, visual 1/1, typecheck/lint/build, dan unit 198/198 lulus.
+- [x] **T-UI.G.2** Ganti logo aplikasi di header, login, halaman offline, favicon, dan ikon PWA/home screen dengan logo pilihan pengguna; pertahankan nama dan warna brand. — 2026-11-04 — Mengganti aset logo, memperbarui generator ikon, serta menambahkan verifikasi logo offline dan lintas viewport. Auth E2E 5/5, auth visual 1/1, PWA offline 1/1, typecheck/lint/build dan unit 198/198 lulus. Visual UI 37/39; dua kegagalan tidak terkait logo: navigasi langsung ke Settings terputus dan pemulihan scroll browser gagal.
 
 ## Decision Log — Fase UI
 

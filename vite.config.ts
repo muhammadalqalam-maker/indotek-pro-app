@@ -10,7 +10,7 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icon.svg'],
+        includeAssets: ['favicon.ico', 'favicon-32.png', 'apple-touch-icon.png', 'app-logo.png'],
         manifest: {
           id: '/',
           name: 'Indotek Pro',

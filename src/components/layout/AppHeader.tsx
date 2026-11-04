@@ -105,9 +105,12 @@ export const AppHeader: React.FC<{
       <div className="flex min-w-0 items-center gap-2 sm:gap-4">
         {/* Brand */}
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:flex-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-accent-600 flex items-center justify-center shadow-md shadow-accent-500/20 text-primary-900 font-black tracking-wider text-sm">
-            IP
-          </div>
+          <img
+            className="size-9 shrink-0 rounded-xl bg-primary-50 p-1 shadow-sm"
+            src="/app-logo.png"
+            alt=""
+            aria-hidden="true"
+          />
           <div className="block min-w-0 flex-1 truncate text-sm font-semibold sm:hidden">
             {routeLabel}
           </div>

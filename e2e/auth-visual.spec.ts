@@ -38,6 +38,9 @@ test('authentication screen has responsive light and dark baselines', async ({ b
 
       for (const viewport of viewports) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
+        const displayedLogo = page.locator('img[src="/app-logo.png"]:visible');
+        await expect(displayedLogo).toHaveCount(1);
+        await expect(displayedLogo).toHaveJSProperty('naturalWidth', 512);
         await expect(page).toHaveScreenshot(`auth-${viewport.name}-${theme}.png`, {
           animations: 'disabled',
           caret: 'hide',

@@ -10,4 +10,6 @@ test('uncached route navigation while offline uses the precached offline page', 
 
   await expect(page).toHaveURL(/\/field-reports$/);
   await expect(page.getByRole('heading', { name: 'Anda sedang offline' })).toBeVisible();
+  await expect(page.locator('.brand img')).toHaveAttribute('src', '/app-logo.png');
+  await expect(page.locator('.brand img')).toHaveJSProperty('naturalWidth', 512);
 });

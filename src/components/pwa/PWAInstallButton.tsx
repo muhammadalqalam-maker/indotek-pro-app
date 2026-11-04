@@ -40,9 +40,12 @@ export const PWAInstallButton: React.FC<{ variant?: 'compact' | 'full' }> = ({ v
           <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl dark:bg-surface border border-border dark:border-border">
             <div className="flex items-center justify-between pb-3 border-b border-border dark:border-border">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-accent-500/10 text-accent-600 flex items-center justify-center font-bold">
-                  IP
-                </div>
+                <img
+                  className="size-8 rounded-lg bg-primary-50 p-1"
+                  src="/app-logo.png"
+                  alt=""
+                  aria-hidden="true"
+                />
                 <div>
                   <h3 className="text-sm font-bold text-text">Install di iPhone / iPad</h3>
                   <p className="text-xs text-muted-foreground">Jadikan aplikasi standalone</p>

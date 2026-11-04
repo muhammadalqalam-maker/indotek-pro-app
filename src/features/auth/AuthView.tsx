@@ -99,14 +99,14 @@ export function AuthView() {
         />
         <div aria-hidden="true" className="absolute inset-0 bg-primary-900/20" />
         <div className="relative z-10 flex w-fit items-center gap-3 rounded-lg bg-primary-900/80 px-3 py-2">
-          <img className="size-10 rounded-lg" src="/pwa-192x192.png" alt="" />
+          <img className="size-10 rounded-lg bg-primary-50 p-1" src="/app-logo.png" alt="" />
           <span className="text-sm font-semibold tracking-wide text-primary-50">{messages.appName}</span>
         </div>
       </aside>
 
       <section className="flex min-h-screen flex-col items-center justify-center gap-8 px-4 py-8 sm:px-6 lg:px-12">
         <div className="flex w-full max-w-md items-center gap-3 lg:hidden">
-          <img className="size-10 rounded-lg" src="/pwa-192x192.png" alt="" />
+          <img className="size-10 rounded-lg bg-primary-50 p-1" src="/app-logo.png" alt="" />
           <span className="text-sm font-semibold tracking-wide text-text">{messages.appName}</span>
         </div>
         <Card className="w-full max-w-md shadow-lg">
