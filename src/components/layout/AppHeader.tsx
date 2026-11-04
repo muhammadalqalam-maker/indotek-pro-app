@@ -98,11 +98,11 @@ export const AppHeader: React.FC<{
   return (
     <header
       ref={headerRef}
-      className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-nowrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-2 py-2 backdrop-blur-md transition-shadow sm:flex-wrap sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0"
+      className="safe-area-topbar sticky top-0 z-30 flex min-h-14 w-full flex-nowrap items-center justify-between gap-2 border-b border-border bg-surface/95 px-3 py-1 backdrop-blur-md transition-shadow sm:flex-wrap sm:px-4 lg:h-16 lg:flex-nowrap lg:px-6 lg:py-0"
       data-scrolled="false"
     >
       {/* Left: Mobile Toggle & Brand & Org Selector */}
-      <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-4 lg:flex-1 lg:gap-3">
         {/* Brand */}
         <div className="flex min-w-0 flex-1 items-center gap-2.5 sm:flex-none">
           <img
@@ -114,7 +114,7 @@ export const AppHeader: React.FC<{
           <div className="block min-w-0 flex-1 truncate text-sm font-semibold sm:hidden">
             {routeLabel}
           </div>
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-base tracking-tight text-text">
                 Indotek<span className="text-accent-600">Pro</span>
@@ -139,7 +139,7 @@ export const AppHeader: React.FC<{
               setOrgDropdownOpen((prev) => !prev);
               setRoleDropdownOpen(false);
             }}
-            className="flex size-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 p-0 text-left transition hover:bg-surface sm:min-h-0 sm:w-auto sm:max-w-[220px] sm:justify-start sm:p-2.5 disabled:cursor-wait disabled:opacity-70"
+            className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-surface-2 p-0 text-left transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:w-auto sm:max-w-[220px] sm:justify-start sm:p-2.5 lg:shrink disabled:cursor-wait disabled:opacity-70"
           >
             <Building2 className="size-4 shrink-0 text-muted-foreground" />
             <div className="hidden truncate sm:block">
@@ -235,14 +235,14 @@ export const AppHeader: React.FC<{
         </Breadcrumb>
 
         {/* Global Project Context Selector */}
-        <div className="hidden items-center gap-1.5 lg:flex">
+        <div className="hidden min-w-0 items-center gap-1.5 lg:flex">
           <Layers className="w-3.5 h-3.5 text-muted-foreground" />
           <select
             value={selectedProjectId}
             onChange={(e) => handleProjectChange(e.target.value)}
             disabled={isLoading || projects.length === 0}
             aria-label={shellMessages.projectContext}
-            className="text-xs rounded-xl border border-border bg-bg px-2.5 py-1.5 text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary-500 max-w-[190px]"
+            className="min-h-11 w-full min-w-0 max-w-[190px] rounded-lg border border-border bg-surface-2 px-2.5 text-xs text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
           >
             <option value="all">{shellMessages.allProjects(projects.length)}</option>
             {projects.map((p) => (
@@ -255,17 +255,17 @@ export const AppHeader: React.FC<{
       </div>
 
       {/* Right Controls */}
-      <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         {/* Command Palette Trigger */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-border bg-surface-2 px-2 text-muted-foreground transition hover:text-text md:min-w-0 md:px-3 md:py-1.5"
+          className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-lg border border-border bg-surface-2 px-2 text-muted-foreground transition hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 md:min-w-0 md:px-3 md:py-1.5"
           title={shellMessages.commandPalette}
           aria-label={shellMessages.commandPalette}
         >
           <Search className="w-3.5 h-3.5" />
           <span className="hidden text-xs md:inline">{shellMessages.commandPalettePlaceholder}</span>
-          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground lg:inline">
+          <kbd className="hidden rounded border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground 2xl:inline">
             Ctrl/⌘ K
           </kbd>
         </button>
@@ -277,13 +277,16 @@ export const AppHeader: React.FC<{
               setRoleDropdownOpen((prev) => !prev);
               setOrgDropdownOpen(false);
             }}
-            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition ${
+            className={`hidden min-h-11 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 sm:flex ${
               ROLE_BADGE_COLORS[currentRole] || 'border-border'
             }`}
             title="Ganti Peran Pengguna untuk Simulasi RBAC"
+            aria-label={`Peran saat ini: ${ROLE_LABELS[currentRole]}. Ganti peran`}
           >
             <Shield className="w-3.5 h-3.5" />
-            <span className="font-semibold">{ROLE_LABELS[currentRole].split(' ')[0]}</span>
+            <span className="hidden font-semibold sm:inline lg:hidden xl:inline">
+              {ROLE_LABELS[currentRole].split(' ')[0]}
+            </span>
             <ChevronDown className="w-3 h-3 opacity-60" />
           </button>
 
@@ -332,7 +335,7 @@ export const AppHeader: React.FC<{
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex min-h-12 min-w-12 items-center justify-center rounded-xl p-2 text-muted-foreground dark:text-muted-foreground hover:bg-surface-2 dark:hover:bg-surface-2 transition sm:min-h-0 sm:min-w-0"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-muted-foreground dark:text-muted-foreground hover:bg-surface-2 dark:hover:bg-surface-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
           aria-label={isDark ? 'Ganti ke tema terang' : 'Ganti ke tema gelap'}
         >
           {isDark ? <Sun className="w-4 h-4 text-accent-500" /> : <Moon className="w-4 h-4 text-muted-foreground" />}
@@ -343,7 +346,7 @@ export const AppHeader: React.FC<{
             type="button"
             onClick={() => void signOut()}
             aria-label="Keluar"
-            className="hidden min-h-12 min-w-12 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-surface-2 dark:border-border dark:text-muted-foreground dark:hover:bg-surface-2 sm:flex sm:h-auto sm:w-auto sm:min-h-0 sm:min-w-0 sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
+            className="hidden min-h-11 min-w-11 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-surface-2 dark:border-border dark:text-muted-foreground dark:hover:bg-surface-2 sm:flex sm:h-auto sm:w-auto sm:px-3 sm:py-2 sm:text-xs sm:font-semibold"
             title={authSession.user.email || 'Keluar'}
           >
             <LogOut className="h-4 w-4 sm:hidden" />

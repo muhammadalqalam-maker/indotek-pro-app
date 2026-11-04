@@ -49,3 +49,7 @@
 ## FASE UI-I — Filter chips
 
 - [x] **T-UI.I.1** Seragamkan filter chips di Dokumen, Approval, notifikasi, dan periode laporan. — 2026-11-04 — Komponen bersama `FilterChips` mengikuti pola segmented shadcn-admin; interaksi, gaya aktif, dan scroll horizontal lulus di 375/768/1280px serta light/dark. Typecheck, lint, build, 200 unit, dan 5 tes visual lulus.
+
+## FASE UI-J — Penyempurnaan top bar
+
+- [x] **T-UI.J.1** Rapikan hierarki, alignment, jarak, dan responsivitas top bar tanpa mengubah fungsi. — 2026-11-04 — Header mobile diringkas, kontrol desktop diseragamkan, dan konteks rute tetap terbaca pada 1024–1440px. Visual baseline diperbarui; 33 tes visual, 200 unit, typecheck, lint, dan build lulus.

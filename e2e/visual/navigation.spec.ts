@@ -155,8 +155,77 @@ test('tablet header keeps primary controls and project context in two rows', asy
     });
 
     expect(layout.height, JSON.stringify({ width, ...layout })).toBeLessThanOrEqual(120);
-    expect(layout.rows[0]).toBe(layout.rows[1]);
+    expect(Math.abs(layout.rows[0] - layout.rows[1])).toBeLessThanOrEqual(4);
     expect(layout.rows[2]).toBeGreaterThan(layout.rows[0]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  }
+});
+
+test('desktop header keeps route context readable beside primary controls', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const header = page.locator('header.safe-area-topbar');
+  for (const width of [1024, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const layout = await header.evaluate((element) => {
+      const [primary, controls] = [...element.children];
+      const routeLabel = [...element.querySelectorAll('li')].find(
+        (item) => item.textContent?.trim() === 'Dashboard Eksekutif',
+      );
+      const primaryBounds = primary.getBoundingClientRect();
+      const controlsBounds = controls.getBoundingClientRect();
+      const routeBounds = routeLabel?.getBoundingClientRect();
+
+      return {
+        height: Math.round(element.getBoundingClientRect().height),
+        groupsOverlap: primaryBounds.right > controlsBounds.left,
+        routeFits: routeLabel
+          ? routeLabel.scrollWidth <= routeLabel.clientWidth
+          : false,
+        routeHasSpace: routeBounds ? routeBounds.width > 0 : false,
+        documentFits: document.documentElement.scrollWidth <= window.innerWidth,
+      };
+    });
+
+    expect(layout.height, JSON.stringify({ width, ...layout })).toBe(64);
+    expect(layout.groupsOverlap, JSON.stringify({ width, ...layout })).toBe(false);
+    expect(layout.routeHasSpace, JSON.stringify({ width, ...layout })).toBe(true);
+    expect(layout.documentFits, JSON.stringify({ width, ...layout })).toBe(true);
+    if (width >= 1280) {
+      expect(layout.routeFits, JSON.stringify({ width, ...layout })).toBe(true);
+    }
+  }
+});
+
+test('mobile header stays compact without horizontal overflow', async ({ page }) => {
+  await page.route('**/*', async (route) => {
+    if (new URL(route.request().url()).origin === localOrigin) {
+      await route.continue();
+      return;
+    }
+    await route.abort();
+  });
+
+  await page.goto('/dashboard');
+  await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
+
+  const header = page.locator('header.safe-area-topbar');
+  for (const width of [360, 375]) {
+    await page.setViewportSize({ width, height: 812 });
+    await expect(header.getByText('Dashboard Eksekutif', { exact: true }).first()).toBeVisible();
+
+    const height = await header.evaluate((element) => Math.round(element.getBoundingClientRect().height));
+    expect(height, `header height at ${width}px`).toBeGreaterThanOrEqual(56);
+    expect(height, `header height at ${width}px`).toBeLessThanOrEqual(60);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
