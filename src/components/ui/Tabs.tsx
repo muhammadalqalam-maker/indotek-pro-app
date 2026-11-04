@@ -16,7 +16,10 @@ export function TabsList({ className, variant, ...props }: ComponentProps<typeof
     <ShadcnTabsList
       {...props}
       variant={variant ?? 'default'}
-      className={cn('inline-flex min-h-11 items-center gap-1 overflow-x-auto rounded-[10px] bg-surface-2 p-1', className)}
+      className={cn(
+        'inline-flex min-h-11 items-center gap-1 overflow-x-auto overflow-y-hidden whitespace-nowrap rounded-[10px] bg-surface-2 p-1',
+        className,
+      )}
     />
   );
 }
