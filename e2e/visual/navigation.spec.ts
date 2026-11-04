@@ -190,6 +190,13 @@ test('desktop sidebar groups routes and persists keyboard collapse state', async
   await expect(sidebar).toHaveAttribute('data-collapsible', 'icon');
   await expect.poll(() => page.evaluate(() => document.cookie)).toContain('sidebar_state=false');
 
+  await page.setViewportSize({ width: 1516, height: 900 });
+  const main = page.locator('main[aria-busy="false"]');
+  await expect.poll(async () => {
+    const bounds = await main.boundingBox();
+    return bounds ? 1516 - (bounds.x + bounds.width) : Number.POSITIVE_INFINITY;
+  }).toBeLessThanOrEqual(8);
+
   await page.reload();
   await expect(page.locator('main[aria-busy="false"]')).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('[data-slot="sidebar"][data-collapsible]')).toHaveAttribute('data-collapsible', 'icon');

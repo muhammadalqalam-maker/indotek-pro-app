@@ -44,3 +44,4 @@
 ## FASE UI-H — Polish navigasi
 
 - [x] **T-UI.H.1** Rapikan alignment ikon pada rail sidebar desktop saat diciutkan. — 2026-11-04 — Ikon organisasi, menu navigasi, dan toggle ditengah-ratakan; 30 baseline visual rail 768px diperbarui. Typecheck/lint, build, unit, dan 16 tes visual navigasi lulus.
+- [x] **T-UI.H.2** Hilangkan ruang kosong berlebih di sisi kanan konten desktop. — 2026-11-04 — Tes desktop pada lebar layout setara screenshot mereproduksi gap 164px; batas container disesuaikan ke token konten 1440px. Tes visual navigasi, typecheck, lint, dan build lulus.
