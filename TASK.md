@@ -38,4 +38,4 @@
 ## FASE UI-G — Autentikasi
 
 - [x] **T-UI.G.1** Perbarui tampilan login dan gunakan foto latar pilihan pengguna tanpa mengubah alur autentikasi. — 2026-11-04 — Layout dua panel responsif, teks brand dipertahankan.
-- [x] **T-UI.G.2** Ganti logo pada header, login, halaman offline, favicon, dan ikon PWA/home screen. — 2026-11-04 — Ikon diregenerasi dari logo pilihan pengguna; app logo termasuk aset precache PWA. Typecheck/lint/build, unit 200/200, auth E2E 5/5, PWA 1/1, auth visual 1/1, dan visual 41/41 lulus.
+- [x] **T-UI.G.2** Ganti logo pada header, login, halaman offline, favicon, dan ikon PWA/home screen. — 2026-11-04 — Ikon diregenerasi dari logo pilihan pengguna; app logo termasuk aset precache PWA. Typecheck/lint/build, unit 200/200, auth E2E 5/5, PWA 1/1, auth visual 1/1, dan visual 41/41 lulus. Production READY di `indotek-pro.vercel.app` (Vercel `8GkVK7aYQqoU7zn3iFAcmUAeMwBN`, commit `1b4408e`); logo dan manifest HTTP 200.
